@@ -1,0 +1,4 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #F5EAD0; color: #1A1613; font: 500 16px/1.5 system-ui, sans-serif; }
+.fitting-out { min-height: 100svh; display: grid; place-content: center; gap: 12px; padding: 24px; text-align: center; }
+.fitting-out h1 { font-size: clamp(40px, 8vw, 96px); line-height: 1; }
