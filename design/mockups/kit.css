@@ -1,0 +1,57 @@
+/* What every theme mockup shares: the reset, the mockup bar at the top (a control for choosing a
+   name, not part of the shop), the Storefront / Behind the scenes switch's show-and-hide, and the
+   brand kit at each page's foot. The kit is a spec sheet, so it is laid out the same on all five;
+   each page tints it with --kit-ink and --kit-line. */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+h1, h2, h3, p, ul, ol, figure, dl, dd { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+img, svg { display: block; max-width: 100%; }
+img { height: auto; }
+a { color: inherit; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+[data-mascot] svg { width: 100%; height: 100%; overflow: visible; }
+[data-menu] em { display: none; font-style: normal; }
+/* the drop of spring water that stands in for the apostrophe in "Sally Mander's" */
+.drop { display: inline-block; width: .18em; height: .25em; margin: 0 -.04em 0 -.035em; vertical-align: .5em; rotate: 14deg; fill: var(--drop, currentColor); }
+
+html[data-view="front"] .back, html[data-view="back"] .front { display: none !important; }
+
+#mock { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 9px 18px; background: #16161A; color: #EDEBE6; font: 500 12.500px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: .01em; }
+#mock a { opacity: .7; text-underline-offset: 3px; }
+#mock b { font-weight: 600; }
+.mock-names { display: flex; gap: 6px; align-items: center; margin-left: auto; overflow-x: auto; max-width: 100%; }
+.mock-names > span { opacity: .6; margin-right: 4px; white-space: nowrap; }
+#mock button { padding: 6px 11px; border-radius: 99px; border: 1px solid #FFFFFF33; white-space: nowrap; }
+#mock button[aria-pressed="true"] { background: #EDEBE6; color: #16161A; border-color: #EDEBE6; }
+
+.kit { padding: 56px var(--gutter, 56px) 64px; color: var(--kit-ink, #222); border-top: 1px solid var(--kit-line, #0002); }
+.kit-h { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; opacity: .7; margin-bottom: 20px; }
+.kit-tiles { display: grid; grid-template-columns: 1.5fr 1.5fr 1fr; gap: 14px; }
+.kit-tile { border-radius: var(--kit-radius, 6px); padding: 30px 34px; display: flex; gap: 22px; align-items: center; justify-content: center; min-height: 190px; outline: 1px solid var(--kit-line, #0002); outline-offset: -1px; }
+.kit-m { flex: 0 0 108px; height: 108px; }
+.kit-m svg { width: 100%; height: 100%; overflow: visible; }
+.kit-w { font-size: clamp(26px, 3vw, 44px); }
+.kit-mark .kit-m { flex-basis: 132px; height: 132px; }
+.kit-row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 28px; align-items: start; }
+.kit-chips { display: flex; flex-wrap: wrap; gap: 14px 22px; }
+.kit-chips li { display: grid; grid-template-columns: 34px auto; column-gap: 10px; align-items: center; font-size: 13px; line-height: 1.25; }
+.kit-chips i { grid-row: span 2; width: 34px; height: 34px; border-radius: 50%; outline: 1px solid var(--kit-line, #0002); outline-offset: -1px; }
+.kit-chips b { font-weight: 600; }
+.kit-chips span { opacity: .65; font-size: 12px; letter-spacing: .04em; }
+.kit-type li { font-size: 22px; line-height: 1.25; padding: 10px 0; border-bottom: 1px solid var(--kit-line, #0002); display: flex; gap: 18px; align-items: baseline; }
+.kit-type span { font: 500 11px/1 system-ui, sans-serif; letter-spacing: .1em; text-transform: uppercase; opacity: .6; flex: 0 0 150px; }
+.sim-note { padding: 18px var(--gutter, 56px) 28px; font-size: 12.500px; line-height: 1.5; opacity: .7; color: var(--kit-ink, #222); }
+
+@media (max-width: 720px) {
+  #mock { padding: 8px 12px; }
+  #mock b { flex: 1 1 60%; }
+  .mock-names { margin-left: 0; }
+  .kit { padding: 36px 20px 40px; }
+  .kit-tiles, .kit-row { grid-template-columns: 1fr; }
+  .kit-tile { min-height: 150px; padding: 26px; }
+  .kit-type li { font-size: 18px; flex-direction: column; gap: 6px; }
+  .kit-type span { flex: none; }
+  .sim-note { padding: 14px 20px 24px; }
+}

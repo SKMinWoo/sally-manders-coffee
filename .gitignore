@@ -1,0 +1,18 @@
+# dependencies and builds
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# secrets: only the example is committed
+.env*
+!.env.example
+
+# Vercel's local link
+.vercel/
+
+# Blender renders and their working files; the shipped cup lives in public/
+design/art/out/
+*.blend1
+__pycache__/

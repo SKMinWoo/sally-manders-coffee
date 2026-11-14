@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sally Mander's · logo sheet</title>
+<link rel="stylesheet" href="kit.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Archivo:wdth,wght@62..125,100..900&display=swap">
+<style>
+  :root { --cream: #FBF3E4; --pool: #14464E; --mauve: #BF98A6; --gill: #E15A4E; --spring: #98D8D8; --pecan: #7D4E33; --line: #14464E22; }
+  body { background: var(--cream); color: var(--pool); font: 400 16px/1.5 Archivo, system-ui, sans-serif; }
+  main { max-width: 1240px; margin: 0 auto; padding: 0 clamp(20px, 4vw, 56px) 80px; }
+  .eyebrow { font: 600 12px/1 Archivo, sans-serif; font-stretch: 75%; letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
+  section { padding-top: 64px; }
+  section > .eyebrow { display: flex; gap: 14px; align-items: center; margin-bottom: 20px; }
+  section > .eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .note { max-width: 62ch; margin-top: 14px; font-size: 15px; opacity: .82; }
+
+  /* the lockup: Sally beside (or above) her name */
+  .lk { display: inline-flex; align-items: center; gap: .26em; font-size: 64px; color: inherit; }
+  .lk-m { flex: none; width: 2.3em; }
+  .lk-m svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .lk-t { display: grid; gap: .2em; }
+  .lk-w { font-size: 1em; white-space: nowrap; }
+  .lk-s { font: 600 .17em/1 Archivo, sans-serif; font-stretch: 75%; letter-spacing: .16em; text-transform: uppercase; white-space: nowrap; padding-left: .2em; }
+  .lk.stack { flex-direction: column; text-align: center; gap: .1em; }
+  .lk.stack .lk-s { padding-left: 0; }
+  .lk-star { display: inline-block; width: 1.05em; height: 1.05em; margin: 0 .55em; vertical-align: -.17em; fill: var(--drop); }
+  .lk.line .lk-m { width: 1.3em; height: 1.3em; }
+
+  .hero { display: grid; place-items: center; min-height: 480px; margin-top: 28px; border-radius: 28px; background: #F6EAD3; position: relative; overflow: hidden; }
+  .hero .lk { font-size: clamp(54px, 9vw, 122px); position: relative; z-index: 1; }
+
+  .tiles { display: grid; grid-template-columns: 1.25fr 1fr 1fr; gap: 16px; }
+  .tile { border-radius: 22px; min-height: 300px; display: grid; place-items: center; padding: 30px; }
+  .tile .lk { font-size: clamp(34px, 3.6vw, 50px); }
+  .tile .roundel { width: min(240px, 100%); }
+  .tile .head { width: min(230px, 86%); }
+
+  .sizes { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 30px 44px; padding: 30px 34px; border: 1px solid var(--line); border-radius: 22px; }
+  .sizes figure { display: grid; justify-items: center; gap: 12px; }
+  .sizes figcaption { font: 600 11px/1 Archivo, sans-serif; font-stretch: 75%; letter-spacing: .1em; opacity: .65; }
+  .sizes .app { border-radius: 23%; background: var(--spring); display: grid; place-items: center; }
+  .sizes .app svg { width: 84%; }
+  .sizes .hm svg { display: block; width: 100%; height: 100%; }
+
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .mono { border-radius: 22px; min-height: 230px; display: grid; place-items: center; padding: 26px; }
+  .mono .lk { font-size: clamp(30px, 3.4vw, 46px); }
+
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .ba figure { border-radius: 22px; background: #F6EAD3; padding: 26px; display: grid; justify-items: center; gap: 10px; }
+  .ba svg, .ba img { width: min(280px, 100%); }
+  .ba figcaption { font-size: 14px; opacity: .8; text-align: center; max-width: 40ch; }
+
+  .cupwrap { display: grid; grid-template-columns: .9fr 1.1fr; gap: 16px; align-items: stretch; }
+  .cup { border-radius: 22px; background: var(--spring); display: grid; place-items: end center; padding: 26px 26px 0; overflow: hidden; }
+  .cup img { width: min(330px, 80%); margin-bottom: -4%; filter: drop-shadow(0 18px 18px #14464E30); }
+  .use { border-radius: 22px; background: var(--pool); color: var(--cream); padding: 34px; display: grid; gap: 22px; align-content: center; }
+  .card { background: var(--cream); color: var(--pool); border-radius: 16px; padding: 20px 22px; display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: center; max-width: 440px; }
+  .card .lk { font-size: 26px; grid-column: 1 / -1; }
+  .stamps { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-top: 8px; }
+  .stamps span { aspect-ratio: 1; border-radius: 50%; border: 1.5px dashed #14464E55; display: grid; place-items: center; }
+  .stamps span.on { border: 1.500px solid #E15A4E; }
+  .stamps svg { width: 88%; }
+  .card small { grid-column: 1 / -1; font-size: 12.500px; opacity: .75; }
+
+  .spec { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 16px 26px; }
+  .chips li { display: grid; grid-template-columns: 44px auto; column-gap: 12px; align-items: center; font-size: 14px; line-height: 1.25; }
+  .chips i { grid-row: span 2; width: 44px; height: 44px; border-radius: 50%; outline: 1px solid var(--line); outline-offset: -1px; }
+  .chips b { font-weight: 600; }
+  .chips span { opacity: .65; font-size: 12px; letter-spacing: .05em; }
+  .type li { padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; gap: 20px; align-items: baseline; font-size: 30px; line-height: 1.1; }
+  .type span { font: 600 11px/1 Archivo, sans-serif; font-stretch: 75%; letter-spacing: .12em; text-transform: uppercase; opacity: .6; flex: 0 0 130px; }
+
+  @media (max-width: 820px) {
+    .tiles, .two, .ba, .cupwrap, .spec { grid-template-columns: 1fr; }
+    .hero { min-height: 340px; }
+    .hero .lk { flex-direction: column; text-align: center; gap: .05em; }
+    .hero .lk .lk-s { padding-left: 0; }
+    .type li { font-size: 24px; flex-direction: column; gap: 6px; }
+    .type span { flex: none; }
+  }
+</style>
+<main>
+  <section style="padding-top:44px">
+    <p class="eyebrow">Sally Mander's · logo sheet · a simulated coffee shop in Austin, Texas</p>
+    <div class="hero" id="hero"></div>
+    <p class="note">Sally is a Barton Springs salamander: she lives in the springs of one Austin creek and nowhere else. She is drawn in profile, as the real animal is usually seen: a long flat head, a small gold-ringed eye, three feathered red gills a side, a freckled mauve body and a long tail. Here she lives in a mug, her chin on the rim, facing her name. The name is set in Caprasimo, a soft, heavy display serif, over a line of condensed Archivo.</p>
+  </section>
+
+  <section><p class="eyebrow">The system</p><div class="tiles" id="tiles"></div></section>
+  <section><p class="eyebrow">Small sizes</p><div class="sizes" id="sizes"></div>
+    <p class="note">Below about 48 pixels her tail and arm go and only her head shows over the mug. At 32 and below she is redrawn with thicker gills, a larger eye and no freckles, so she still reads on a browser tab.</p></section>
+  <section><p class="eyebrow">One ink</p><div class="two" id="mono"></div></section>
+  <section><p class="eyebrow">On a cup, on a card</p><div class="cupwrap">
+    <div class="cup"><img src="assets/cup-brand-sally.png" width="900" height="1200" alt="A cream to-go cup with a dark lid, printed with Sally and her name"></div>
+    <div class="use" id="use"></div></div></section>
+  <section><p class="eyebrow">Before and after</p><div class="ba" id="ba"></div></section>
+  <section><p class="eyebrow">Colour and type</p><div class="spec"><ul class="chips" id="chips"></ul><ul class="type" id="type"></ul></div></section>
+</main>
+<script src="names.js"></script>
+<script>
+  {
+    const B = BRAND, S = NAMES.sally, P = B.pal;
+    const mono = (bg, ink) => ({ bg, ink, fill: ink, accent: ink, paper: bg, mono: true });
+    // a five-pointed star, point up, centred on (x, y)
+    const star = (x, y, r) => "M" + Array.from({ length: 10 }, (_, i) => { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * 0.42 : r; return `${(x + q * Math.cos(a)).toFixed(2)} ${(y + q * Math.sin(a)).toFixed(2)}`; }).join("L") + "Z";
+    const SUB = `Spring-fed coffee<svg class="lk-star" viewBox="-6 -6 12 12" aria-hidden="true"><path d="${star(0, 0.4, 5.6)}"/></svg>Austin, Texas`;
+    const lockup = (p, kind = "") => `<span class="lk ${kind}" style="color:${p.ink};--drop:${p.accent}">
+      <span class="lk-m">${S.mascot(p)}</span><span class="lk-t"><span class="lk-w" style="${B.wm}">${S.word(kind !== "line")}</span>${kind === "line" ? "" : `<span class="lk-s">${SUB}</span>`}</span></span>`;
+    // the roundel: Sally in her mug sits inside the cream disc with a margin all round.
+    // A paper-coloured outline (the same drawing, every shape filled and stroked in the paper
+    // colour) keeps her clear of the ring where she crosses it.
+    const roundel = (p) => {
+      const art = S.mascot(p).replace(/^<svg[^>]*>|<\/svg>$/g, "");
+      const [bx, by, bw, bh] = S.box, o = S.optic, k = 57.5 / o.reach;
+      const place = (body) => `<svg x="${120 - (o.cx - bx) * k}" y="${151 - (o.cy - by) * k}" width="${bw * k}" height="${bh * k}" viewBox="${S.box.join(" ")}" overflow="visible">${body}</svg>`;
+      return `<svg class="roundel" viewBox="20 50 200 200" role="img" aria-label="Sally Mander's roundel">
+      <style>.rd-sil * { fill: ${p.bg}; stroke: ${p.bg}; stroke-width: 9px; stroke-linejoin: round; }</style>
+      <defs><path id="rd-top" d="M42 150A78 78 0 0 1 198 150"/><path id="rd-bot" d="M31 150A89 89 0 0 0 209 150"/></defs>
+      <circle cx="120" cy="150" r="99" fill="${p.ink}"/><circle cx="120" cy="150" r="67" fill="${p.bg}"/>
+      <circle cx="120" cy="150" r="95.6" fill="none" stroke="${p.bg}" stroke-width="1.2"/><circle cx="120" cy="150" r="70.4" fill="none" stroke="${p.bg}" stroke-width="1.2"/>
+      <circle cx="120" cy="150" r="63.4" fill="none" stroke="${p.ink}" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="0 3.9"/>
+      ${[120 - 83, 120 + 83].map((x) => `<path fill="${p.bg}" d="${star(x, 150, 5.6)}"/>`).join("")}
+      <g fill="${p.bg}" font-family="Archivo, sans-serif" font-weight="700" font-size="15.5" letter-spacing="2.6" text-anchor="middle" style="font-stretch:75%"><text><textPath href="#rd-top" startOffset="50%">SALLY MANDER’S</textPath></text><text><textPath href="#rd-bot" startOffset="50%">SPRING-FED COFFEE</textPath></text></g>
+      <g class="rd-sil">${place(art)}</g>${place(art)}</svg>`;
+    };
+    const $ = (id) => document.getElementById(id);
+
+    $("hero").innerHTML = lockup(P.paper);
+    $("tiles").innerHTML =
+      `<div class="tile" style="background:${P.dark.bg}">${lockup(P.dark, "stack")}</div>` +
+      `<div class="tile" style="background:${P.pop.bg}">${roundel({ ...P.paper, bg: P.paper.bg })}</div>` +
+      `<div class="tile" style="background:#F6EAD3"><span class="head">${S.mascot(P.paper, { head: true })}</span></div>`;
+    $("sizes").innerHTML =
+      [120, 72].map((s) => `<figure><span style="width:${s}px;height:${s}px">${S.mascot(P.paper)}</span><figcaption>${s} PX</figcaption></figure>`).join("") +
+      [48, 32, 24, 16].map((s) => `<figure><span class="hm" style="width:${Math.round(s * 1.22)}px;height:${s}px">${S.mascot(P.paper, { head: true, tiny: s <= 32 })}</span><figcaption>${s} PX</figcaption></figure>`).join("") +
+      [64, 32].map((s) => `<figure><span class="app" style="width:${s}px;height:${s}px">${S.mascot(P.pop, { head: true, tiny: s <= 32 })}</span><figcaption>ICON ${s}</figcaption></figure>`).join("");
+    $("mono").innerHTML =
+      `<div class="mono" style="background:#F6EAD3">${lockup(mono("#F6EAD3", "#14464E"))}</div>` +
+      `<div class="mono" style="background:#7D4E33">${lockup(mono("#7D4E33", "#FBF3E4"))}</div>`;
+    $("use").innerHTML = `<div class="card">${lockup(P.paper, "line")}
+      <div class="stamps">${Array.from({ length: 8 }, (_, i) => `<span${i < 5 ? ' class="on"' : ""}>${i < 5 ? S.mascot(mono("#FBF3E4", "#E15A4E"), { head: true, tiny: true }) : ""}</span>`).join("")}</div>
+      <small>Eight stamps and the ninth cup is on Sally. Five down.</small></div>
+      <p style="font-size:15px;opacity:.85;max-width:44ch">Her head over the mug, in one ink, is the stamp. The full lockup goes on the cup, the door and the top of the site.</p>`;
+    $("ba").innerHTML =
+      `<figure><img src="logo-before.svg" alt="The first drawing of Sally"><figcaption>Before: stick gills that read as a sun, a plain black mug, fingers like a comb.</figcaption></figure>` +
+      `<figure>${S.mascot(P.paper)}<figcaption>After: a Barton Springs salamander, not an axolotl. Long flat head, gold-ringed eye, feathered gills, freckles, slender toes over the rim, peeking out of a striped diner mug with the tip of her tail curling up behind her.</figcaption></figure>`;
+    $("chips").innerHTML = B.colors.map(([n, hex]) => `<li><i style="background:${hex}"></i><b>${n}</b><span>${hex}</span></li>`).join("");
+    $("type").innerHTML = B.type.map(([n, fam, w]) => `<li style="font-family:${fam};font-weight:${w}"><span>${n}</span>Two shots, one kolache</li>`).join("");
+  }
+</script>
+</html>

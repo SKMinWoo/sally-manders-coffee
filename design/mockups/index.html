@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sally Mander's · five themes (mockups)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caprasimo&family=Archivo:wght@400;500;600&display=swap">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  img, svg { display: block; max-width: 100%; height: auto; }
+  body { background: #F3EFE6; color: #1F1D1A; font: 400 16px/1.55 Archivo, system-ui, sans-serif; padding: 0 clamp(16px, 4vw, 56px) 64px; }
+  header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px; align-items: end; padding: 48px 0 32px; border-bottom: 1px solid #1F1D1A; }
+  h1 { font: 400 clamp(40px, 5.4vw, 76px)/1 Caprasimo, serif; }
+  header p { max-width: 62ch; margin-top: 14px; font-size: 17px; }
+  header a { font-weight: 600; color: inherit; }
+  .k { font: 600 12px/1.4 Archivo, sans-serif; letter-spacing: .12em; text-transform: uppercase; opacity: .65; }
+  .themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 28px; margin-top: 36px; }
+  article { background: #FFFDF8; border: 1px solid #1F1D1A22; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .face { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 18px; align-items: center; padding: 22px 24px; min-height: 196px; }
+  .face img { width: 116px; filter: drop-shadow(4px 6px 0 #0000001F); }
+  .face .wm { font-size: clamp(28px, 2.6vw, 38px); }
+  .body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+  h2 { font: 600 22px/1.2 Archivo, sans-serif; }
+  .chips { display: flex; gap: 6px; }
+  .chips i { width: 22px; height: 22px; border-radius: 50%; outline: 1px solid #0000001F; outline-offset: -1px; }
+  .type { font-size: 13.5px; opacity: .75; }
+  .go { display: flex; gap: 10px; margin-top: auto; padding-top: 8px; flex-wrap: wrap; }
+  .go a { padding: 10px 14px; border: 1px solid #1F1D1A; border-radius: 6px; color: inherit; text-decoration: none; font-weight: 600; font-size: 14px; }
+  .go a:first-child { background: #1F1D1A; color: #FFFDF8; }
+  .notes { margin-top: 44px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 28px; border-top: 1px solid #1F1D1A33; padding-top: 24px; }
+  .notes p { margin-top: 8px; font-size: 15px; }
+  @media (max-width: 640px) { header { grid-template-columns: minmax(0, 1fr); } }
+</style>
+<body>
+<header>
+  <div>
+    <p class="k">Phase 1 · pick a theme</p>
+    <h1>Sally Mander’s, five ways</h1>
+    <p>One shop, one salamander, five looks. Each page has the storefront and, behind the header switch, the back office for the same simulated day. Sally's drawing is the same in all five; only the inks and type change. Her settled mark is on the <a href="logo.html">logo sheet</a>.</p>
+  </div>
+</header>
+
+<div class="themes" id="themes"></div>
+
+<div class="notes">
+  <div><p class="k">What works</p><p>The Storefront / Behind the scenes switch on every page. Add <code>?view=back</code> to a link to open straight on the back office.</p></div>
+  <div><p class="k">What is stubbed</p><p>Ordering, the menu tabs, the stamp card and every other link. The numbers are one seeded day from the simulator (258 orders, $1,758.75), not live.</p></div>
+  <div><p class="k">Type is separable</p><p>Each theme sets the wordmark in its own face. The logo sheet's Caprasimo and Archivo could stay the brand type under any of them.</p></div>
+</div>
+
+<script src="names.js"></script><script src="themes.js"></script>
+<script>
+  {
+    const n = NAMES.sally;
+    for (const id of THEME_IDS) {
+      const l = document.createElement("link");
+      l.rel = "stylesheet"; l.href = fontsHref(THEMES[id]);
+      document.head.append(l);
+    }
+    document.getElementById("themes").innerHTML = THEME_IDS.map((id) => {
+      const t = THEMES[id], p = t.pal[t.cup.pal];
+      return `<article>
+        <div class="face" style="background:${p.bg};color:${t.cup.ink}">
+          <img src="assets/cup-${id}-sally.png" width="900" height="1200" alt="">
+          <span class="wm" style="${t.wm}">${n.word(false)}</span>
+        </div>
+        <div class="body">
+          <p class="k">Theme ${t.n}</p>
+          <h2>${t.title}</h2>
+          <p>${t.idea}</p>
+          <div class="chips">${t.colors.map(([name, hex]) => `<i title="${name} ${hex}" style="background:${hex}"></i>`).join("")}</div>
+          <p class="type">${[...new Set(t.type.map(([name]) => name.replace(/ (italic|bold)$/i, "")))].join(" · ")}</p>
+          <div class="go"><a href="${t.file}">Storefront</a><a href="${t.file}?view=back">Behind the scenes</a></div>
+        </div>
+      </article>`;
+    }).join("");
+  }
+</script>
+</body>
+</html>

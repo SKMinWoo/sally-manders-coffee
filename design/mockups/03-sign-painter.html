@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en" data-theme="sign" data-view="front">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sally Mander's · Sign painter and ticket rail (mockup)</title>
+<link rel="stylesheet" href="kit.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yellowtail&family=Big+Shoulders+Display:wght@600;800;900&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+  :root { --cream: #F5EAD0; --black: #1A1613; --red: #C9321F; --teal: #1F9E98; --mustard: #EDB230; --pink: #EE9E9B; --check: #EEF1DE; --rule: #6E9A7A;
+    --gutter: clamp(18px, 4vw, 56px); --kit-ink: var(--black); --kit-line: #1A161326; --kit-radius: 10px; }
+  body { background: var(--cream); color: var(--black); font: 500 16px/1.5 Barlow, system-ui, sans-serif; }
+  .block { font-family: "Big Shoulders Display", sans-serif; font-weight: 900; text-transform: uppercase; line-height: .92; letter-spacing: .01em; }
+  .cond { font-family: "Barlow Condensed", sans-serif; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+  .script { font-family: Yellowtail, cursive; font-weight: 400; }
+  /* a sign painter's drop shade: a solid offset in a second enamel, then a hairline keyline */
+  .shade { text-shadow: .04em .045em 0 var(--red), .065em .07em 0 var(--black); }
+
+  header { display: flex; align-items: center; gap: 20px; padding: 12px var(--gutter); background: var(--black); color: var(--cream); }
+  .lockup { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .lockup [data-mascot] { width: 80px; height: 58px; }
+  .lockup [data-wm] { font-size: 34px; }
+  header .hours { margin-left: auto; font-size: 14px; color: var(--mustard); }
+  .switch { display: flex; gap: 0; border: 2px solid var(--cream); border-radius: 6px; overflow: hidden; }
+  .switch button { padding: 8px 14px; font: 700 15px/1 "Barlow Condensed", sans-serif; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
+  .switch button[aria-pressed="true"] { background: var(--red); }
+
+  /* the wall sign */
+  .wall { background: var(--teal); padding: clamp(26px, 4vw, 56px) var(--gutter); display: grid; grid-template-columns: 1.35fr .65fr; gap: 28px; align-items: center; }
+  .sign { background: var(--black); color: var(--cream); border-radius: 14px; padding: clamp(28px, 4vw, 56px) clamp(24px, 4vw, 60px) clamp(30px, 4vw, 52px); position: relative; box-shadow: 0 0 0 6px var(--cream), 0 0 0 9px var(--black); text-align: center; }
+  .sign::before { content: ""; position: absolute; inset: 12px; border: 2px solid var(--mustard); border-radius: 8px; pointer-events: none; }
+  .sign .est { color: var(--mustard); font-size: 15px; }
+  .sign h1 { font-size: clamp(76px, 10vw, 150px); line-height: 1.02; margin: 6px 0 14px; color: var(--cream); }
+  .ribbon { display: inline-block; background: var(--red); color: var(--cream); padding: 10px 26px 8px; font-size: clamp(22px, 2.4vw, 34px); clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%); }
+  .sign .line { margin-top: 20px; font-size: 19px; color: var(--pink); }
+  .cta { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+  .cta a { padding: 13px 22px 11px; border-radius: 6px; text-decoration: none; font: 700 17px/1 "Barlow Condensed", sans-serif; letter-spacing: .1em; text-transform: uppercase; border: 2px solid var(--cream); }
+  .cta a:first-child { background: var(--mustard); border-color: var(--mustard); color: var(--black); }
+  .cupside { position: relative; display: grid; place-items: center; }
+  .cupside .disc { position: absolute; width: 92%; aspect-ratio: 1; border-radius: 50%; background: var(--mustard); box-shadow: 0 0 0 6px var(--cream); }
+  .cupside .arc { position: absolute; width: 92%; aspect-ratio: 1; }
+  .cupside img { position: relative; width: 62%; rotate: 5deg; filter: drop-shadow(-12px 12px 0 #1A161340); }
+
+  section { padding: 0 var(--gutter); }
+
+  /* the menu board */
+  .boardrow { padding-top: 64px; padding-bottom: 64px; }
+  .boardrow h2 { font-size: clamp(56px, 6vw, 92px); text-align: center; color: var(--red); margin-bottom: 28px; }
+  .board { background: var(--black); color: var(--cream); border-radius: 12px; padding: clamp(26px, 3.6vw, 48px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px 48px; box-shadow: 0 0 0 10px #6B4A2E, 0 24px 40px -20px #1A161390; }
+  .board h3 { font-size: 30px; color: var(--mustard); border-bottom: 3px solid var(--mustard); padding-bottom: 6px; margin-bottom: 12px; }
+  .board .col-bar { grid-row: span 2; }
+  [data-menu] li { display: grid; grid-template-columns: auto 1fr auto; gap: 0 10px; align-items: baseline; padding: 6px 0; }
+  [data-menu] b, [data-menu] i, [data-menu] span { grid-row: 1; }
+  [data-menu] b { font: 800 25px/1.05 "Big Shoulders Display", sans-serif; text-transform: uppercase; letter-spacing: .02em; }
+  [data-menu] i { border-bottom: 2px dotted #F5EAD055; translate: 0 -5px; }
+  [data-menu] span { font: 700 22px/1 "Barlow Condensed", sans-serif; color: var(--mustard); }
+  [data-menu] small { grid-row: 2; grid-column: 1 / -1; font-size: 15px; color: var(--pink); }
+  [data-menu] .house b { font: 400 34px/1 Yellowtail, cursive; text-transform: none; color: var(--pink); }
+
+  /* the guest check */
+  .checkrow { display: grid; grid-template-columns: 1fr auto; gap: 56px; align-items: center; padding-bottom: 80px; max-width: 1120px; margin: 0 auto; }
+  .checkrow h2 { font-size: clamp(56px, 6vw, 88px); line-height: 1; color: var(--red); margin: 8px 0 12px; }
+  .checkrow p { max-width: 44ch; font-size: 17px; }
+  .check { width: min(360px, 100%); background: var(--check); color: #26412F; border-radius: 3px; padding: 18px 20px 22px; rotate: 2deg; box-shadow: 0 18px 28px -14px #1A161366; font-family: "Barlow Condensed", sans-serif; }
+  .check .top { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--rule); padding-bottom: 8px; }
+  .check .top b { font: 900 26px/1 "Big Shoulders Display", sans-serif; color: var(--red); letter-spacing: .04em; }
+  .check .no { font-size: 20px; font-weight: 700; color: var(--red); }
+  .check .meta { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 2px solid var(--rule); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+  .check .meta span { padding: 6px 4px; border-right: 1px solid var(--rule); }
+  .check .meta span:last-child { border-right: 0; }
+  .check .meta em { display: block; font: 400 21px/1.1 Yellowtail, cursive; letter-spacing: 0; text-transform: none; color: #1F3B8A; }
+  .check dl { display: grid; grid-template-columns: 1fr auto; font-size: 18px; line-height: 34px; background: repeating-linear-gradient(transparent 0 33px, #6E9A7A88 33px 34px); }
+  .check dt { font: 400 24px/34px Yellowtail, cursive; color: #1F3B8A; }
+  .check dd { font: 400 24px/34px Yellowtail, cursive; color: #1F3B8A; text-align: right; }
+  .check .total { color: var(--red); }
+  .check .thanks { margin-top: 10px; text-align: center; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+
+  /* behind the scenes: the ticket rail */
+  .kitchen { background: var(--black); color: var(--cream); padding-top: 44px; padding-bottom: 60px; }
+  .kitchen .script { font-size: clamp(60px, 7vw, 104px); line-height: 1; color: var(--cream); }
+  .kitchen .sub { color: #F5EAD0BB; max-width: 60ch; margin-top: 10px; }
+  .rail { margin-top: 40px; position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding-top: 18px; }
+  .rail::before { content: ""; position: absolute; left: -12px; right: -12px; top: 0; height: 18px; border-radius: 4px; background: linear-gradient(#E8E6E1, #8D8A84 55%, #5D5A55); box-shadow: 0 6px 10px #0008; }
+  .ticket { background: var(--check); color: #26412F; padding: 22px 18px 18px; border-radius: 0 0 3px 3px; font-family: "Barlow Condensed", sans-serif; box-shadow: 0 14px 20px -10px #000A; transform-origin: 50% 0; }
+  .ticket:nth-child(1) { rotate: -1.5deg; } .ticket:nth-child(2) { rotate: 1deg; } .ticket:nth-child(3) { rotate: -.6deg; } .ticket:nth-child(4) { rotate: 1.6deg; }
+  .ticket .cond { font-size: 13px; color: var(--red); border-bottom: 2px solid var(--rule); padding-bottom: 6px; }
+  .ticket strong { display: block; font: 900 clamp(44px, 4.4vw, 66px)/1 "Big Shoulders Display", sans-serif; margin: 12px 0 4px; white-space: nowrap; }
+  .ticket small { font: 400 21px/1.15 Yellowtail, cursive; color: #1F3B8A; }
+  .boards2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 26px; margin-top: 44px; }
+  .boards2 > div { border: 2px solid #F5EAD033; border-radius: 12px; padding: 26px 28px; }
+  .boards2 h3 { font-size: 34px; color: var(--mustard); margin: 6px 0 20px; }
+  [data-hours] { display: grid; grid-template-columns: repeat(12, 1fr); gap: 7px; height: 240px; }
+  [data-hours] li { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+  [data-hours] i { width: 100%; height: calc(var(--v) * 76%); background: var(--teal); border-top: 4px solid var(--cream); }
+  [data-hours] .peak i { background: var(--red); }
+  [data-hours] b { font: 700 15px/1 "Barlow Condensed", sans-serif; }
+  [data-hours] span { font: 600 12px/1 "Barlow Condensed", sans-serif; opacity: .7; text-transform: uppercase; }
+  [data-top] { counter-reset: n; }
+  [data-top] li { display: grid; grid-template-columns: 34px 1fr auto; grid-template-rows: auto 8px; gap: 6px 10px; padding: 9px 0; counter-increment: n; }
+  [data-top] li::before { content: counter(n); grid-row: span 2; font: 900 30px/1 "Big Shoulders Display", sans-serif; color: var(--mustard); }
+  [data-top] b { grid-row: 1; grid-column: 2; font: 800 22px/1 "Big Shoulders Display", sans-serif; text-transform: uppercase; }
+  [data-top] span { grid-row: 1; grid-column: 3; font: 700 20px/1 "Barlow Condensed", sans-serif; }
+  [data-top] i { grid-row: 2; grid-column: 2 / -1; width: calc(var(--v) * 100%); background: var(--pink); }
+  .note { margin-top: 18px; font-size: 15px; color: #F5EAD0CC; }
+
+  @media (max-width: 860px) {
+    header { flex-wrap: wrap; gap: 10px 14px; }
+    header .hours { display: none; }
+    .switch { margin-left: auto; }
+    .switch button { padding: 8px 10px; font-size: 13px; }
+    .wall, .checkrow, .boards2 { grid-template-columns: minmax(0, 1fr); }
+    .sign h1 { font-size: 21vw; }
+    .cupside { width: min(320px, 86%); margin: 0 auto; aspect-ratio: 1; }
+    .board { grid-template-columns: minmax(0, 1fr); }
+    .board .col-bar { grid-row: auto; }
+    .board .col-food { grid-column: auto !important; }
+    .col-food ul { columns: 1 !important; }
+    .rail { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 14px; }
+    .rail::before { left: -6px; right: -6px; }
+    .ticket strong { font-size: 40px; }
+    [data-hours] { gap: 3px; height: 200px; }
+    [data-hours] b { font-size: 11px; }
+    [data-hours] span { font-size: 9px; }
+    .boards2 > div { padding: 22px 18px; }
+  }
+  @media (max-width: 480px) { .lockup [data-wm] { font-size: 28px; } .lockup [data-mascot] { width: 62px; height: 45px; } .rail { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+<body>
+<header>
+  <a class="lockup" href="#"><span data-mascot="dark"></span><span data-wm></span></a>
+  <span class="hours cond">Open 6 to 6 · South Austin</span>
+  <nav class="switch" aria-label="View"><button data-go="front">Storefront</button><button data-go="back">Behind the scenes</button></nav>
+</header>
+
+<main class="front">
+  <div class="wall">
+    <div class="sign">
+      <p class="cond est">Coffee · Est. this morning · Austin, Texas</p>
+      <h1 class="script shade" data-wm></h1>
+      <p class="ribbon block">Coffee · Kolaches · Tacos</p>
+      <p class="line" data-line></p>
+      <div class="cta"><a href="#">Order ahead</a><a href="#board">See the board</a></div>
+    </div>
+    <div class="cupside">
+      <span class="disc"></span>
+      <svg class="arc" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="arc" d="M30 100a70 70 0 0 1 140 0"/></defs>
+        <text font-family="Barlow Condensed" font-weight="700" font-size="15" letter-spacing="4" fill="#1A1613"><textPath href="#arc" startOffset="50%" text-anchor="middle">HOT · ICED · TO GO</textPath></text></svg>
+      <img data-cup width="900" height="1200" alt="">
+    </div>
+  </div>
+
+  <section class="boardrow" id="board">
+    <h2 class="script shade" style="text-shadow:.03em .04em 0 var(--black)">Today's board</h2>
+    <div class="board">
+      <div class="col-bar"><h3 class="block">Espresso bar</h3><ul data-menu="bar"></ul></div>
+      <div><h3 class="block">Brewed</h3><ul data-menu="brewed"></ul></div>
+      <div><h3 class="block">Not coffee</h3><ul data-menu="not-coffee"></ul></div>
+      <div style="grid-column:span 2" class="col-food"><h3 class="block">From the warmer</h3><ul data-menu="food" style="columns:2;column-gap:48px"></ul></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="checkrow">
+      <div>
+        <p class="cond" style="color:var(--teal)">Your order</p>
+        <h2 class="script">On the rail</h2>
+        <p>Your check goes up on the rail behind the counter the moment you order, and comes down when your drink does. The rail is how the shop keeps time. <span data-local></span></p>
+      </div>
+      <div class="check">
+        <div class="top"><b>Guest check</b><span class="no">№ <span data-day="ticketNo"></span></span></div>
+        <div class="meta"><span>Date<em data-day="dateShort"></em></span><span>Server<em>Sally</em></span><span>Ready<em data-day="waitP50"></em></span></div>
+        <dl>
+          <dt>1 <span data-house></span></dt><dd>6.25</dd>
+          <dt>1 Kolache</dt><dd>4.00</dd>
+          <dt>Tax</dt><dd>.85</dd>
+          <dt class="total">Total</dt><dd class="total">11.10</dd>
+        </dl>
+        <p class="thanks">Thank you · come again</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<main class="back">
+  <section class="kitchen">
+    <p class="cond" style="color:var(--mustard)">Behind the scenes · <span data-day="date"></span></p>
+    <h2 class="script">The rail, at close</h2>
+    <p class="sub">The day's numbers, pinned up where the checks hang. A simulated day; every figure comes from the simulator.</p>
+    <div class="rail">
+      <div class="ticket"><p class="cond">Orders</p><strong data-day="orders"></strong><small><span data-day="cups"></span> cups, <span data-day="items"></span> items</small></div>
+      <div class="ticket"><p class="cond">Takings</p><strong data-day="revenue"></strong><small><span data-day="avgTicket"></span> a check</small></div>
+      <div class="ticket"><p class="cond">Usual wait · p50</p><strong data-day="waitP50"></strong><small>half were up sooner</small></div>
+      <div class="ticket"><p class="cond">Long wait · p95</p><strong data-day="waitP95"></strong><small>one in twenty took longer</small></div>
+    </div>
+    <div class="boards2">
+      <div>
+        <p class="cond" style="color:var(--pink)">Orders by hour</p><h3 class="block">The rush</h3>
+        <ol data-hours></ol>
+        <p class="note">Busiest hour <b data-day="peakHour"></b>, <span data-day="peakOrders"></span> orders. <span data-day="morningShare"></span> of the day's orders came in before 10 am.</p>
+      </div>
+      <div>
+        <p class="cond" style="color:var(--pink)">Best sellers</p><h3 class="block">Most called for</h3>
+        <ol data-top="5"></ol>
+      </div>
+    </div>
+  </section>
+</main>
+
+<section id="kit" class="kit"></section>
+<p class="sim-note">Sally Mander's is a simulated coffee shop, built to show how its developer works. Ordering and the links are stubs in this mockup; only the two views switch.</p>
+<script src="day.js"></script><script src="names.js"></script><script src="themes.js"></script><script src="shop.js"></script><script src="intro.js"></script>
+</body>
+</html>

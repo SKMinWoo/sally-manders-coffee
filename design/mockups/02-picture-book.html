@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en" data-theme="book" data-view="front">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sally Mander's · Mid-century picture book (mockup)</title>
+<link rel="stylesheet" href="kit.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shrikhand&family=Josefin+Sans:wght@400;600;700&family=Libre+Caslon+Text:ital,wght@0,400;1,400&display=swap">
+<style>
+  :root { --cream: #F4EBD9; --walnut: #4A2F20; --teal: #2F6F6A; --rose: #E39C9A; --coral: #D24F34; --brass: #D9A441; --page: #FBF5E9;
+    --gutter: clamp(18px, 4vw, 56px); --kit-ink: var(--walnut); --kit-line: #4A2F2026; --kit-radius: 4px; }
+  body { background: var(--cream); color: var(--walnut); font: 400 17px/1.6 "Libre Caslon Text", Georgia, serif; }
+  .caps { font: 700 12px/1.2 "Josefin Sans", sans-serif; letter-spacing: .18em; text-transform: uppercase; }
+  .display { font-family: Shrikhand, serif; font-weight: 400; line-height: 1; }
+
+  header { display: flex; align-items: center; gap: 22px; padding: 18px var(--gutter); }
+  .lockup { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .lockup [data-mascot] { width: 66px; height: 48px; }
+  .lockup [data-wm] { font-size: 27px; }
+  header nav.links { margin-left: auto; display: flex; gap: 26px; }
+  header nav.links a { text-decoration: none; }
+  .switch { display: flex; gap: 4px; padding: 4px; background: var(--walnut); border-radius: 99px; }
+  .switch button { padding: 8px 16px 6px; border-radius: 99px; color: var(--cream); font: 600 13px/1 "Josefin Sans", sans-serif; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+  .switch button[aria-pressed="true"] { background: var(--brass); color: var(--walnut); }
+
+  /* a book spread: two pages on a walnut board */
+  .spread { margin: 8px var(--gutter) 0; display: grid; grid-template-columns: 1fr 1fr; background: var(--page); border-radius: 6px; box-shadow: 0 0 0 10px var(--walnut), 0 26px 40px -18px #4A2F2080; position: relative; }
+  .spread::after { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 60px; translate: -50%; background: linear-gradient(90deg, transparent, #4A2F2014 45%, #4A2F2024 50%, #4A2F2014 55%, transparent); pointer-events: none; }
+  .leaf { padding: clamp(28px, 4.4vw, 64px); position: relative; }
+  .folio { position: absolute; bottom: 20px; font: 600 12px/1 "Josefin Sans", sans-serif; letter-spacing: .14em; opacity: .6; }
+  .leaf:first-child .folio { left: clamp(28px, 4.4vw, 64px); }
+  .leaf:last-child .folio { right: clamp(28px, 4.4vw, 64px); }
+  .story { display: flex; flex-direction: column; justify-content: center; padding-bottom: 80px; }
+  .story h1 { font-size: clamp(58px, 7.4vw, 112px); color: var(--coral); margin: 18px 0 20px; }
+  .story .tell { font-size: clamp(20px, 1.8vw, 25px); line-height: 1.5; font-style: italic; max-width: 26ch; }
+  .story .tell b { font-style: normal; font-family: Shrikhand, serif; font-weight: 400; color: var(--teal); }
+  .story .after { margin-top: 18px; max-width: 40ch; font-size: 16px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+  .cta a { padding: 14px 24px 12px; border-radius: 99px; font: 700 14px/1 "Josefin Sans", sans-serif; letter-spacing: .1em; text-transform: uppercase; text-decoration: none; border: 2px solid var(--walnut); }
+  .cta a:first-child { background: var(--coral); border-color: var(--coral); color: var(--page); }
+  .plate { padding: 0; overflow: hidden; border-radius: 0 6px 6px 0; min-height: 560px; }
+  .plate svg.scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .plate img { position: absolute; left: 50%; bottom: 13%; width: 46%; translate: -50% 0; rotate: 4deg; filter: drop-shadow(-14px 10px 0 #4A2F2030); }
+
+  section { padding: 0 var(--gutter); }
+  .chapter { text-align: center; padding-top: 80px; }
+  .chapter h2 { font-size: clamp(40px, 5vw, 72px); margin: 10px 0 8px; }
+  .chapter p { font-style: italic; font-size: 19px; }
+
+  /* the menu, as a two-page list with cut-paper tabs */
+  .menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 26px 40px; max-width: 1080px; margin: 40px auto 0; }
+  .group { background: var(--page); border-radius: 18px; padding: 28px 32px 26px; position: relative; }
+  .group h3 { display: inline-block; font: 400 23px/1 Shrikhand, serif; padding: 9px 18px 7px; border-radius: 99px; color: var(--page); margin: -48px 0 14px -6px; }
+  .g-bar h3 { background: var(--coral); } .g-brewed h3 { background: var(--teal); } .g-not h3 { background: var(--brass); color: var(--walnut); } .g-food h3 { background: var(--walnut); }
+  [data-menu] li { display: grid; grid-template-columns: auto 1fr auto; gap: 0 12px; align-items: baseline; padding: 8px 0; }
+  [data-menu] b, [data-menu] i, [data-menu] span { grid-row: 1; }
+  [data-menu] b { font-weight: 400; font-size: 21px; }
+  [data-menu] i { border-bottom: 2px dotted #4A2F2055; translate: 0 -6px; }
+  [data-menu] span { font: 600 17px/1 "Josefin Sans", sans-serif; }
+  [data-menu] small { grid-row: 2; grid-column: 1 / -1; font-style: italic; font-size: 15px; opacity: .85; }
+  [data-menu] .house b { font-family: Shrikhand, serif; color: var(--coral); font-size: 23px; }
+
+  /* the library card */
+  .card-row { display: grid; grid-template-columns: 1fr auto; gap: 56px; align-items: center; max-width: 1080px; margin: 0 auto; padding: 90px 0 90px; }
+  .card-row h2 { font-size: clamp(34px, 4vw, 56px); margin: 10px 0 14px; color: var(--teal); }
+  .card-row p { max-width: 44ch; }
+  .libcard { width: min(400px, 100%); background: #FFF9EC; border-radius: 4px; padding: 20px 24px 104px; rotate: -2.5deg; box-shadow: 0 18px 30px -16px #4A2F2070;
+    background-image: repeating-linear-gradient(#FFF9EC 0 29px, #2F6F6A40 29px 30px); background-position: 0 92px; position: relative; }
+  .libcard::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: var(--coral); border-radius: 4px 4px 0 0; }
+  .libcard .head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 2px solid var(--coral); padding-bottom: 8px; margin-bottom: 12px; }
+  .libcard .head { gap: 16px; }
+  .libcard .head b { font: 400 21px/1 Shrikhand, serif; white-space: nowrap; color: var(--coral); }
+  .libcard dl { display: grid; grid-template-columns: 1fr auto; align-items: baseline; font-size: 16px; line-height: 30px; }
+  .libcard dd { font-family: "Josefin Sans", sans-serif; font-weight: 600; text-align: right; }
+  .libcard .total { font-weight: 700; }
+  .stampmark { position: absolute; right: 22px; bottom: 16px; padding: 8px 12px 6px; border: 3px solid var(--coral); color: var(--coral); border-radius: 6px; rotate: -11deg; font: 700 15px/1.1 "Josefin Sans", sans-serif; letter-spacing: .1em; text-transform: uppercase; text-align: center; opacity: .85; }
+
+  /* behind the scenes */
+  .back .chapter { padding-top: 54px; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; max-width: 1180px; margin: 40px auto 0; }
+  .stat { border-radius: 22px; padding: 26px 24px 24px; }
+  .stat:nth-child(1) { background: var(--teal); color: var(--page); }
+  .stat:nth-child(2) { background: var(--coral); color: var(--page); }
+  .stat:nth-child(3) { background: var(--brass); }
+  .stat:nth-child(4) { background: var(--page); }
+  .stat strong { display: block; font: 400 clamp(36px, 3.8vw, 56px)/1 Shrikhand, serif; margin: 14px 0 10px; white-space: nowrap; }
+  .stat small { font-size: 15px; font-style: italic; }
+  .pair { display: grid; grid-template-columns: 1.35fr 1fr; gap: 26px; max-width: 1180px; margin: 26px auto 0; padding-bottom: 80px; }
+  .pair > div { background: var(--page); border-radius: 22px; padding: 30px 32px; }
+  .pair h3 { font: 400 30px/1 Shrikhand, serif; margin: 10px 0 24px; }
+  [data-hours] { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; height: 250px; }
+  [data-hours] li { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+  [data-hours] i { width: 100%; height: calc(var(--v) * 78%); background: var(--teal); border-radius: 99px 99px 4px 4px; }
+  [data-hours] .peak i { background: var(--coral); }
+  [data-hours] b { font: 600 13px/1 "Josefin Sans", sans-serif; }
+  [data-hours] span { font: 600 11px/1 "Josefin Sans", sans-serif; opacity: .7; }
+  [data-top] li { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 12px; gap: 6px 12px; padding: 10px 0; }
+  [data-top] b { font-weight: 400; font-size: 19px; grid-row: 1; }
+  [data-top] span { font: 600 16px/1 "Josefin Sans", sans-serif; grid-row: 1; }
+  [data-top] i { grid-row: 2; grid-column: 1 / -1; width: calc(var(--v) * 100%); background: var(--rose); border-radius: 99px; }
+  [data-top] li:first-child i { background: var(--coral); }
+  .note { margin-top: 18px; font-style: italic; font-size: 16px; }
+
+  @media (max-width: 860px) {
+    header { flex-wrap: wrap; gap: 14px; }
+    header nav.links { display: none; }
+    .switch { margin-left: auto; }
+    .switch button { padding: 8px 11px 6px; font-size: 11.5px; }
+    .spread { grid-template-columns: 1fr; margin-top: 4px; }
+    .spread::after { display: none; }
+    .story { padding-bottom: 64px; }
+    .plate { min-height: 420px; border-radius: 0 0 6px 6px; }
+    .menu, .card-row, .stats, .pair { grid-template-columns: minmax(0, 1fr); }
+    .g-food ul { columns: 1 !important; }
+    .menu { gap: 44px; }
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .stat { padding: 20px 18px; }
+    .stat strong { font-size: 30px; }
+    .card-row { gap: 36px; padding: 70px 0; }
+    [data-hours] { gap: 3px; height: 200px; }
+    [data-hours] b { font-size: 10px; }
+    [data-hours] span { font-size: 8.5px; }
+    .pair > div { padding: 24px 20px; }
+  }
+  @media (max-width: 480px) { .lockup [data-wm] { font-size: 22px; } .lockup [data-mascot] { width: 54px; height: 39px; } }
+</style>
+<body>
+<header>
+  <a class="lockup" href="#"><span data-mascot="paper"></span><span data-wm></span></a>
+  <nav class="links caps"><a href="#menu">Menu</a><a href="#">Visit</a><a href="#">Our story</a></nav>
+  <nav class="switch" aria-label="View"><button data-go="front">Storefront</button><button data-go="back">Behind the scenes</button></nav>
+</header>
+
+<main class="front">
+  <div class="spread">
+    <div class="leaf story">
+      <p class="caps">Chapter one · Austin, Texas</p>
+      <h1 class="display" data-wm="stack"></h1>
+      <p class="tell">This is <b>Sally</b>. She lives in a mug by the springs, and every morning at six she opens the shop.</p>
+      <p class="after"><span data-local></span> So she makes the coffee where she can keep an eye on them.</p>
+      <div class="cta"><a href="#">Order ahead</a><a href="#menu">Read the menu</a></div>
+      <span class="folio">1</span>
+    </div>
+    <div class="leaf plate" aria-hidden="true">
+      <svg class="scene" viewBox="0 0 600 640" preserveAspectRatio="xMidYMid slice">
+        <rect width="600" height="640" fill="#F6E4C4"/>
+        <circle cx="430" cy="150" r="86" fill="#D9A441"/>
+        <path fill="#E39C9A" d="M0 330C90 270 170 262 250 300S420 360 600 280V640H0Z"/>
+        <path fill="#2F6F6A" d="M0 410C120 350 230 372 330 410S510 452 600 404V640H0Z"/>
+        <ellipse cx="300" cy="560" rx="250" ry="52" fill="#4F9C93"/>
+        <ellipse cx="300" cy="560" rx="190" ry="34" fill="#7CC0B6"/>
+        <path fill="#4A2F20" d="M84 410V300M84 330l-26-26M84 352l30-30" stroke="#4A2F20" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="70" cy="280" r="34" fill="#4A2F20"/><circle cx="104" cy="300" r="28" fill="#4A2F20"/>
+        <path fill="none" stroke="#F4EBD9" stroke-width="5" stroke-linecap="round" d="M220 548h50M330 572h60M190 580h28"/>
+      </svg>
+      <img data-cup width="900" height="1200" alt="">
+      <span class="folio" style="color:#F4EBD9;opacity:.85">2</span>
+    </div>
+  </div>
+
+  <section class="chapter" id="menu">
+    <p class="caps">Chapter two</p>
+    <h2 class="display">What Sally makes</h2>
+    <p>Everything is made at the counter, one cup at a time.</p>
+  </section>
+  <section>
+    <div class="menu">
+      <div class="group g-bar"><h3>From the bar</h3><ul data-menu="bar"></ul></div>
+      <div>
+        <div class="group g-brewed"><h3>Brewed</h3><ul data-menu="brewed"></ul></div>
+        <div class="group g-not" style="margin-top:52px"><h3>Not coffee</h3><ul data-menu="not-coffee"></ul></div>
+      </div>
+      <div class="group g-food" style="grid-column:1/-1"><h3>Something to eat</h3><ul data-menu="food" style="columns:2;column-gap:40px"></ul></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card-row">
+      <div>
+        <p class="caps">Your order</p>
+        <h2 class="display">Stamped and on its way</h2>
+        <p>Each order gets a card with its number, stamped when it goes up on the counter. That stamp is how the shop knows how long you waited.</p>
+      </div>
+      <div class="libcard">
+        <div class="head"><b data-name></b><span class="caps">No. <span data-day="ticketNo"></span></span></div>
+        <dl>
+          <dt>1 <span data-house></span></dt><dd>6.25</dd>
+          <dt>1 Sausage kolache</dt><dd>4.00</dd>
+          <dt>Tax, 8.25%</dt><dd>0.85</dd>
+          <dt class="total">Total</dt><dd class="total">11.10</dd>
+        </dl>
+        <span class="stampmark">Ready in <span data-day="waitP50"></span><br><span data-day="dateShort"></span></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<main class="back">
+  <section class="chapter">
+    <p class="caps">Behind the scenes · <span data-day="date"></span></p>
+    <h2 class="display">How the day went</h2>
+    <p>A simulated day at the shop. Every figure comes from the simulator, not from a person typing.</p>
+  </section>
+  <section>
+    <div class="stats">
+      <div class="stat"><p class="caps">Orders</p><strong data-day="orders"></strong><small><span data-day="cups"></span> cups and <span data-day="items"></span> items</small></div>
+      <div class="stat"><p class="caps">Takings</p><strong data-day="revenue"></strong><small>about <span data-day="avgTicket"></span> an order</small></div>
+      <div class="stat"><p class="caps">Usual wait</p><strong data-day="waitP50"></strong><small>half were ready sooner (p50)</small></div>
+      <div class="stat"><p class="caps">Longest waits</p><strong data-day="waitP95"></strong><small>the slowest one in twenty (p95)</small></div>
+    </div>
+    <div class="pair">
+      <div>
+        <p class="caps">Orders by hour</p><h3>The morning rush</h3>
+        <ol data-hours></ol>
+        <p class="note">The busiest hour was <b data-day="peakHour"></b>, with <span data-day="peakOrders"></span> orders; <span data-day="morningShare"></span> of the day came in before ten.</p>
+      </div>
+      <div>
+        <p class="caps">Best sellers</p><h3>Sally's favourites</h3>
+        <ol data-top="5"></ol>
+      </div>
+    </div>
+  </section>
+</main>
+
+<section id="kit" class="kit"></section>
+<p class="sim-note">Sally Mander's is a simulated coffee shop, built to show how its developer works. Ordering and the links are stubs in this mockup; only the two views switch.</p>
+<script src="day.js"></script><script src="names.js"></script><script src="themes.js"></script><script src="shop.js"></script>
+</body>
+</html>

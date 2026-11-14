@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en" data-theme="cozy" data-view="front">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sally Mander's · Cozy-game café (mockup)</title>
+<link rel="stylesheet" href="kit.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  :root { --oat: #FFF5E4; --plum: #55406B; --plumd: #3B2A4D; --blossom: #F2A3B5; --coral: #EF6A5A; --butter: #FFD27A; --mint: #BFE3CF; --peach: #F9C6A5; --card: #FFFBF3;
+    --gutter: clamp(16px, 4vw, 52px); --kit-ink: var(--plum); --kit-line: #55406B22; --kit-radius: 24px; }
+  body { background: var(--oat); color: var(--plum); font: 600 16px/1.5 Nunito, system-ui, sans-serif; }
+  .round { font-family: Fredoka, sans-serif; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 13px; border-radius: 99px; font: 600 13px/1 Fredoka, sans-serif; letter-spacing: .02em; }
+  /* the soft, pressable panels of a cozy game: a solid lip under each one, no blur */
+  .panel { background: var(--card); border-radius: 28px; box-shadow: 0 6px 0 #55406B1F; border: 2.5px solid #55406B1A; }
+
+  header { display: flex; align-items: center; gap: 18px; margin: 14px var(--gutter) 0; padding: 10px 12px 10px 18px; }
+  .lockup { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .lockup [data-mascot] { width: 58px; height: 42px; }
+  .lockup [data-wm] { font-size: 26px; }
+  header .open { margin-left: auto; background: var(--mint); }
+  header .open::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #3E9C6C; }
+  .switch { display: flex; gap: 4px; padding: 4px; background: #55406B14; border-radius: 99px; }
+  .switch button { padding: 9px 16px; border-radius: 99px; font: 600 14px/1 Fredoka, sans-serif; white-space: nowrap; }
+  .switch button[aria-pressed="true"] { background: var(--plum); color: var(--oat); box-shadow: 0 3px 0 var(--plumd); }
+
+  section { padding: 0 var(--gutter); }
+
+  /* the counter */
+  .counter { display: grid; grid-template-columns: 1.15fr .85fr; gap: 22px; margin-top: 22px; }
+  .hello { padding: clamp(28px, 4vw, 54px); display: flex; flex-direction: column; justify-content: center; }
+  .hello h1 { font-size: clamp(54px, 6.6vw, 100px); color: var(--plum); margin: 14px 0 18px; }
+  .bubble { position: relative; background: var(--blossom); color: var(--plumd); padding: 18px 22px; border-radius: 24px 24px 24px 6px; font: 500 clamp(19px, 1.7vw, 23px)/1.35 Fredoka, sans-serif; max-width: 30ch; }
+  .mood { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .mood .pill { background: #55406B12; }
+  .mood .pill b { color: var(--coral); }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .cta a { padding: 15px 24px; border-radius: 99px; font: 600 16px/1 Fredoka, sans-serif; text-decoration: none; background: var(--card); border: 2.5px solid var(--plum); box-shadow: 0 4px 0 var(--plum); }
+  .cta a:first-child { background: var(--coral); border-color: var(--coral); color: #fff; box-shadow: 0 4px 0 #B8483B; }
+  .window { background: var(--mint); border-radius: 28px; position: relative; overflow: hidden; min-height: 480px; display: grid; place-items: end center; box-shadow: 0 6px 0 #55406B1F; }
+  .window::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 22%; background: var(--peach); border-top: 8px solid #E8AE89; }
+  .window .sunny { position: absolute; top: 9%; right: 10%; width: 22%; aspect-ratio: 1; border-radius: 50%; background: var(--butter); box-shadow: 0 0 0 16px #FFD27A55, 0 0 0 32px #FFD27A30; }
+  .window .cloud { position: absolute; top: 20%; left: 9%; width: 30%; height: 13%; border-radius: 99px; background: #FFFFFFB3; }
+  .window .cloud::after { content: ""; position: absolute; left: 22%; bottom: 45%; width: 46%; height: 120%; border-radius: 50%; background: inherit; }
+  .window img { position: relative; width: 50%; margin-bottom: 8%; filter: drop-shadow(0 10px 0 #55406B22); }
+  .window .price { position: absolute; left: 8%; bottom: 30%; background: var(--card); padding: 10px 14px; border-radius: 16px; rotate: -6deg; font: 600 14px/1.2 Fredoka, sans-serif; box-shadow: 0 4px 0 #55406B22; }
+  .window .price b { display: block; font-size: 22px; color: var(--coral); }
+
+  /* the menu, as inventory slots */
+  .menuwrap { margin-top: 22px; padding: clamp(24px, 3.4vw, 44px); }
+  .menuwrap h2 { font: 700 clamp(34px, 3.8vw, 52px)/1 Fredoka, sans-serif; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 26px; }
+  .tabs .pill { background: #55406B10; }
+  .tabs .pill:first-child { background: var(--butter); }
+  .shelves { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .shelf h3 { font: 600 15px/1 Fredoka, sans-serif; opacity: .75; margin: 0 0 12px 4px; }
+  [data-menu] { display: grid; gap: 10px; }
+  [data-menu] li { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 10px; padding: 13px 14px 13px 16px; border-radius: 18px; background: var(--oat); border: 2px solid #55406B14; }
+  [data-menu] b, [data-menu] span { grid-row: 1; }
+  [data-menu] b { font: 600 17px/1.15 Fredoka, sans-serif; }
+  [data-menu] span { font: 700 14px/1 Fredoka, sans-serif; background: var(--card); padding: 6px 9px; border-radius: 99px; border: 2px solid #55406B1A; }
+  [data-menu] small { grid-row: 2; grid-column: 1 / -1; font-size: 13px; font-weight: 600; opacity: .8; }
+  [data-menu] .house { background: var(--blossom); border-color: transparent; }
+  [data-menu] .house span { background: var(--plum); color: var(--oat); border-color: var(--plum); }
+
+  /* the order and the stamp card */
+  .pocket { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 22px; padding-bottom: 60px; }
+  .order, .stamps { padding: 30px 32px; }
+  .order h2, .stamps h2 { font: 700 30px/1.05 Fredoka, sans-serif; margin: 10px 0 18px; }
+  .order .pill, .stamps .pill { background: var(--butter); }
+  .order dl { display: grid; grid-template-columns: 1fr auto; gap: 10px 14px; font-size: 16px; }
+  .order dd { font-family: Fredoka, sans-serif; font-weight: 600; text-align: right; }
+  .order .total { border-top: 2.5px dashed #55406B33; padding-top: 10px; font-weight: 800; font-size: 18px; }
+  .progress { margin-top: 22px; }
+  .progress .bar { height: 18px; border-radius: 99px; background: #55406B14; overflow: hidden; margin-top: 8px; }
+  .progress .bar i { display: block; width: 62%; height: 100%; border-radius: 99px; background: repeating-linear-gradient(-45deg, var(--coral) 0 10px, #F2877A 10px 20px); }
+  .stamps .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 380px; }
+  .stamps .grid span { aspect-ratio: 1; border-radius: 50%; border: 3px dashed #55406B33; display: grid; place-items: center; }
+  .stamps .grid span.on { border: 3px solid var(--coral); background: #FFE9E4; }
+  .stamps .grid svg { width: 72%; height: auto; }
+  .stamps p { margin-top: 16px; }
+
+  /* behind the scenes: the end-of-day report */
+  .report { margin-top: 22px; padding: clamp(26px, 3.6vw, 48px); }
+  .report h2 { font: 700 clamp(40px, 5vw, 72px)/1 Fredoka, sans-serif; margin: 12px 0 8px; }
+  .report .sub { max-width: 60ch; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 30px; }
+  .tile { border-radius: 24px; padding: 22px 22px 20px; box-shadow: 0 5px 0 #55406B1F; }
+  .tile:nth-child(1) { background: var(--mint); } .tile:nth-child(2) { background: var(--butter); } .tile:nth-child(3) { background: var(--blossom); } .tile:nth-child(4) { background: var(--peach); }
+  .tile .pill { background: #FFFFFF99; }
+  .tile strong { display: block; font: 700 clamp(36px, 3.6vw, 54px)/1 Fredoka, sans-serif; margin: 16px 0 6px; white-space: nowrap; }
+  .tile small { font-size: 14px; }
+  .pair { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; margin-top: 22px; padding-bottom: 60px; }
+  .pair > div { padding: 28px 30px; }
+  .pair h3 { font: 700 28px/1 Fredoka, sans-serif; margin: 10px 0 22px; }
+  .pair .pill { background: #55406B12; }
+  [data-hours] { display: grid; grid-template-columns: repeat(12, 1fr); gap: 8px; height: 240px; }
+  [data-hours] li { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+  [data-hours] i { width: 100%; height: calc(var(--v) * 76%); background: var(--mint); border: 2.5px solid #55406B22; border-radius: 14px; }
+  [data-hours] .peak i { background: var(--coral); border-color: #B8483B; }
+  [data-hours] b { font: 600 13px/1 Fredoka, sans-serif; }
+  [data-hours] span { font: 600 11px/1 Fredoka, sans-serif; opacity: .65; }
+  [data-top] { display: grid; gap: 10px; }
+  [data-top] li { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 12px; gap: 8px 12px; padding: 12px 14px; border-radius: 18px; background: var(--oat); }
+  [data-top] b { grid-row: 1; font: 600 17px/1 Fredoka, sans-serif; }
+  [data-top] span { grid-row: 1; font: 700 15px/1 Fredoka, sans-serif; }
+  [data-top] i { grid-row: 2; grid-column: 1 / -1; width: calc(var(--v) * 100%); background: var(--blossom); border-radius: 99px; }
+  [data-top] li:first-child i { background: var(--coral); }
+  .note { margin-top: 18px; font-size: 15px; }
+
+  @media (max-width: 900px) {
+    header { flex-wrap: wrap; border-radius: 24px; }
+    header .open { display: none; }
+    .switch { margin-left: auto; }
+    .switch button { padding: 8px 11px; font-size: 13px; }
+    .counter, .pocket, .pair { grid-template-columns: minmax(0, 1fr); }
+    .window { min-height: 380px; }
+    .shelves { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .tile strong { font-size: 32px; }
+    [data-hours] { gap: 3px; height: 200px; }
+    [data-hours] i { border-radius: 8px; border-width: 2px; }
+    [data-hours] b { font-size: 10px; }
+    [data-hours] span { font-size: 8.5px; }
+    .pair > div, .order, .stamps { padding: 24px 20px; }
+  }
+  @media (max-width: 520px) {
+    .shelves { grid-template-columns: minmax(0, 1fr); }
+    .lockup [data-wm] { font-size: 21px; } .lockup [data-mascot] { width: 48px; height: 35px; }
+  }
+</style>
+<body>
+<header class="panel">
+  <a class="lockup" href="#"><span data-mascot="paper"></span><span data-wm></span></a>
+  <span class="pill open">Open now · till 6 pm</span>
+  <nav class="switch" aria-label="View"><button data-go="front">Storefront</button><button data-go="back">Behind the scenes</button></nav>
+</header>
+
+<main class="front">
+  <section class="counter">
+    <div class="hello panel">
+      <span class="pill" style="background:var(--butter);align-self:flex-start">Austin, Texas · <span data-day="dateShort"></span></span>
+      <h1 class="round" data-wm="stack"></h1>
+      <p class="bubble">Morning! I've got the espresso warmed up. What can I make you?</p>
+      <div class="mood"><span class="pill">Sally's mood: <b>busy but happy</b></span><span class="pill">Rush at <b data-day="peakHour"></b></span><span class="pill">Usual wait <b data-day="waitP50"></b></span></div>
+      <div class="cta"><a href="#">Order ahead</a><a href="#menu">Browse the menu</a></div>
+    </div>
+    <div class="window" aria-hidden="true">
+      <span class="sunny"></span><span class="cloud"></span>
+      <span class="price">Today's special<b data-house></b>6.25</span>
+      <img data-cup width="900" height="1200" alt="">
+    </div>
+  </section>
+
+  <section>
+    <div class="menuwrap panel" id="menu">
+      <h2>The menu</h2>
+      <div class="tabs"><span class="pill">Everything</span><span class="pill">Hot</span><span class="pill">Iced</span><span class="pill">Something to eat</span></div>
+      <div class="shelves">
+        <div class="shelf"><h3>From the bar</h3><ul data-menu="bar"></ul></div>
+        <div class="shelf"><h3>Brewed</h3><ul data-menu="brewed"></ul></div>
+        <div class="shelf"><h3>Not coffee</h3><ul data-menu="not-coffee"></ul></div>
+        <div class="shelf"><h3>Something to eat</h3><ul data-menu="food"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pocket">
+    <div class="order panel">
+      <span class="pill">Your order · #<span data-day="ticketNo"></span></span>
+      <h2>Sally's on it!</h2>
+      <dl>
+        <dt><span data-house></span></dt><dd>6.25</dd>
+        <dt>Sausage kolache</dt><dd>4.00</dd>
+        <dt>Tax</dt><dd>0.85</dd>
+        <dt class="total">Total</dt><dd class="total">11.10</dd>
+      </dl>
+      <div class="progress"><span>Steaming the milk… ready in about <b data-day="waitP50"></b></span><div class="bar"><i></i></div></div>
+    </div>
+    <div class="stamps panel">
+      <span class="pill">Stamp card</span>
+      <h2>Five down, three to go</h2>
+      <div class="grid" id="stamps"></div>
+      <p>Every eighth drink is on Sally. The card lives on your phone, so you can't lose it in the wash.</p>
+    </div>
+  </section>
+</main>
+
+<main class="back">
+  <section>
+    <div class="report panel">
+      <span class="pill" style="background:var(--butter)">Behind the scenes · <span data-day="date"></span></span>
+      <h2>End of the day!</h2>
+      <p class="sub">Here's how the counter did today. It's a simulated day, and every number comes straight from the simulator.</p>
+      <div class="tiles">
+        <div class="tile"><span class="pill">Orders</span><strong data-day="orders"></strong><small><span data-day="cups"></span> cups and <span data-day="items"></span> items</small></div>
+        <div class="tile"><span class="pill">Takings</span><strong data-day="revenue"></strong><small><span data-day="avgTicket"></span> an order on average</small></div>
+        <div class="tile"><span class="pill">Usual wait · p50</span><strong data-day="waitP50"></strong><small>half were ready sooner</small></div>
+        <div class="tile"><span class="pill">Longest waits · p95</span><strong data-day="waitP95"></strong><small>one order in twenty took longer</small></div>
+      </div>
+    </div>
+  </section>
+  <section class="pair">
+    <div class="panel">
+      <span class="pill">Orders by hour</span><h3>When everyone came by</h3>
+      <ol data-hours></ol>
+      <p class="note">The rush peaked at <b data-day="peakHour"></b> with <span data-day="peakOrders"></span> orders, and <span data-day="morningShare"></span> of the day came in before 10 am.</p>
+    </div>
+    <div class="panel">
+      <span class="pill">Best sellers</span><h3>Everyone's favourites</h3>
+      <ol data-top="5"></ol>
+    </div>
+  </section>
+</main>
+
+<section id="kit" class="kit"></section>
+<p class="sim-note">Sally Mander's is a simulated coffee shop, built to show how its developer works. Ordering, the menu tabs and the stamp card are stubs in this mockup; only the two views switch.</p>
+<script src="day.js"></script><script src="names.js"></script><script src="themes.js"></script><script src="shop.js"></script>
+<script>
+  // the stamp card: five of eight stamped with Sally's small head mark
+  const head = NAMES.sally.mascot(THEMES.cozy.pal.paper, { head: true, tiny: true });
+  document.getElementById("stamps").innerHTML = Array.from({ length: 8 }, (_, i) => i < 5 ? `<span class="on">${head}</span>` : "<span></span>").join("");
+</script>
+</body>
+</html>

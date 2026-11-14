@@ -1,0 +1,30 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Cup art</title>
+<!-- art/logos.mjs photographs #art for each theme and name (?t=poster&n=grackle) as the print
+     on its Blender cup: the mascot in the theme's inks over the name in the theme's type. -->
+<link rel="stylesheet" href="kit.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  #art { width: 1024px; height: 1024px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; }
+  #m { width: 600px; height: 600px; flex: none; }
+  #m svg { width: 100%; height: 100%; overflow: visible; }
+  #w { white-space: nowrap; text-align: center; font-size: 200px; }
+</style>
+<div id="art"><div id="m"></div><div id="w"></div></div>
+<script src="names.js"></script>
+<script src="themes.js"></script>
+<script>
+  {
+    const q = new URLSearchParams(location.search);
+    const T = q.get("t") === "brand" ? BRAND : THEMES[q.get("t") ?? "poster"], n = NAMES[q.get("n") ?? "sally"];
+    document.head.append(Object.assign(document.createElement("link"), { rel: "stylesheet", href: fontsHref(T) }));
+    document.getElementById("m").innerHTML = n.mascot(T.pal[T.cup.pal]);
+    const w = document.getElementById("w");
+    w.style.cssText = T.wm + ";color:" + T.cup.ink + ";--drop:" + T.pal[T.cup.pal].accent;
+    w.innerHTML = n.word(true);
+    // size the name to the print's width once its font has arrived
+    window.fit = () => { w.style.fontSize = "200px"; w.style.fontSize = Math.min(150, (200 * 880) / w.scrollWidth) + "px"; };
+    document.fonts.ready.then(window.fit);
+  }
+</script>
