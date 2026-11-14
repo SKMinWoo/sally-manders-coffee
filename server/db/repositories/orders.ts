@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, lte, type SQL } from "drizzle-orm";
+import { and, count, eq, gt, inArray, lte, type SQL } from "drizzle-orm";
 import type { ShopDate } from "@/lib/time";
 import type { SimDay } from "@/server/sim/day";
 import type { Db } from "../client";
@@ -15,6 +15,12 @@ export function placedBy(asOf: Date): SQL {
 /** Orders placed on `day` up to `asOf`. */
 export async function countOrders(db: Db, day: ShopDate, asOf: Date): Promise<number> {
   const [row] = await db.select({ n: count() }).from(orders).where(and(eq(orders.day, day), placedBy(asOf)));
+  return row?.n ?? 0;
+}
+
+/** Orders placed after `from` and up to `asOf`, whatever their day: how busy the counter is right now. */
+export async function countPlacedBetween(db: Db, from: Date, asOf: Date): Promise<number> {
+  const [row] = await db.select({ n: count() }).from(orders).where(and(gt(orders.placedAt, from), placedBy(asOf)));
   return row?.n ?? 0;
 }
 

@@ -12,6 +12,16 @@ export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
 
 let cached: Db | undefined;
 
+/**
+ * The database the app reads: Neon when DATABASE_URL is set, and in development without it, a
+ * local PGlite seeded with a week of simulated days (server/db/local.ts).
+ */
+export async function shopDb(): Promise<Db> {
+  if (process.env.DATABASE_URL || process.env.NODE_ENV === "production") return db();
+  const { localDb } = await import("./local");
+  return localDb();
+}
+
 /** The shop's database, from DATABASE_URL. Created on first use, so builds don't need it. */
 export function db(): Db {
   if (cached) return cached;

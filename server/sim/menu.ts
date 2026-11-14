@@ -42,3 +42,14 @@ export function daypartOf(hour: number): 0 | 1 | 2 | 3 {
 }
 
 export const isCup = (item: MenuItem) => item.group !== "food";
+
+/** The house drink, lettered in script on the board. */
+export const HOUSE_ID = "sixty-eight";
+
+/** The board's sections, in the order they are painted. */
+export const MENU_GROUPS: { id: MenuGroup; title: string }[] = [
+  { id: "bar", title: "Espresso bar" },
+  { id: "brewed", title: "Brewed" },
+  { id: "not-coffee", title: "Not coffee" },
+  { id: "food", title: "From the warmer" },
+];

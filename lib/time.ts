@@ -24,6 +24,17 @@ export function shopClock(at: Date): { date: ShopDate; hour: number; minute: num
   return { date: `${p.year}-${p.month}-${p.day}`, hour: Number(p.hour), minute: Number(p.minute) };
 }
 
+/** "2m 05s": a wait, the way the rail writes it. */
+export function formatWait(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  return `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`;
+}
+
+/** "Fri 13 Nov": a date, the way a guest check writes it. */
+export function formatCheckDate(date: ShopDate): string {
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString("en-GB", { timeZone: "UTC", weekday: "short", day: "numeric", month: "short" });
+}
+
 /** Today's date in Austin. */
 export function shopToday(now: Date = new Date()): ShopDate {
   return shopClock(now).date;

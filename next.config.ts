@@ -19,6 +19,8 @@ const csp = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // PGlite loads its WebAssembly from beside its own files, so it runs from node_modules unbundled.
+  serverExternalPackages: ["@electric-sql/pglite"],
   async headers() {
     return [
       {
