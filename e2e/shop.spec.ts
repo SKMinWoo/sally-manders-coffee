@@ -1,0 +1,70 @@
+// The storefront, the switch between the two views, and every page on a phone.
+
+import { taxCents } from "@/lib/money";
+import { cents, expect, expectNoSidewaysScroll, test } from "./fixtures";
+
+const PAGES = ["/", "/order", "/behind", "/docs", "/office", "/office/twelve-factor"];
+
+test("the board shows the whole menu, in its four sections, with prices", async ({ page }) => {
+  await page.goto("/");
+  const board = page.locator("#board");
+  await expect(board.getByRole("heading", { level: 3 })).toHaveText(["Espresso bar", "Brewed", "Not coffee", "From the warmer"]);
+  await expect(board.getByRole("listitem")).toHaveCount(13);
+  for (const price of await board.getByRole("listitem").locator("span").filter({ hasText: /^\$?\d+\.\d\d$/ }).allInnerTexts()) {
+    expect(cents(price)).toBeGreaterThan(0);
+  }
+  await expect(board).toContainText("iced hibiscus espresso, cold as the springs");
+});
+
+test("the example check on the storefront adds up", async ({ page }) => {
+  await page.goto("/");
+  const check = page.locator("section", { has: page.locator("#rail-title") }).locator("dl");
+  const lines = check.locator("> div");
+  const amount = async (i: number) => cents(await lines.nth(i).locator("dd").innerText());
+  const subtotal = (await amount(0)) + (await amount(1));
+  expect(await amount(2), "tax").toBe(taxCents(subtotal));
+  expect(await amount(3), "total").toBe(subtotal + taxCents(subtotal));
+});
+
+test("“Order ahead” opens the order page, from the wall sign and from the rail", async ({ page }) => {
+  await page.goto("/");
+  const links = page.getByRole("link", { name: "Order ahead" });
+  await expect(links).toHaveCount(2);
+  for (const a of await links.all()) await expect(a).toHaveAttribute("href", "/order");
+  await links.last().click();
+  await expect(page).toHaveURL(/\/order$/);
+  await expect(page.getByRole("heading", { name: "Pick from the board" })).toBeVisible();
+});
+
+test("the switch moves between the storefront and behind the scenes, and says where you are", async ({ page }) => {
+  await page.goto("/");
+  const view = page.getByRole("navigation", { name: "View" });
+  await expect(view.getByRole("link", { name: "Storefront" })).toHaveAttribute("aria-current", "page");
+
+  await view.getByRole("link", { name: "Behind the scenes" }).click();
+  await expect(page).toHaveURL(/\/behind$/);
+  await expect(page.getByRole("heading", { name: "The rail, so far" })).toBeVisible();
+  await expect(view.getByRole("link", { name: "Behind the scenes" })).toHaveAttribute("aria-current", "page");
+  await expect(view.getByRole("link", { name: "Storefront" })).not.toHaveAttribute("aria-current", /./);
+
+  await page.getByRole("link", { name: "Sally Mander’s" }).click();
+  await expect(page).toHaveURL(/\/$/);
+});
+
+test("every page is sent with its security headers", async ({ page }) => {
+  for (const path of PAGES) {
+    const res = await page.goto(path);
+    const h = res!.headers();
+    expect(h["content-security-policy"], path).toContain("frame-ancestors 'none'");
+    expect(h["x-content-type-options"], path).toBe("nosniff");
+    expect(h["x-powered-by"], path).toBeUndefined();
+  }
+});
+
+for (const path of PAGES) {
+  test(`${path} fits the screen and has a title`, async ({ page }) => {
+    await page.goto(path);
+    await expectNoSidewaysScroll(page);
+    await expect(page).toHaveTitle(/Sally Mander/);
+  });
+}

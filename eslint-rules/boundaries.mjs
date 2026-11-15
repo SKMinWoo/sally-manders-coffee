@@ -4,8 +4,8 @@
 // and may use only the modules listed for it below, so the dependencies run one way and can't
 // form a cycle. Under them is a shared kernel (lib/ and server/platform/) that anything may use
 // and that uses no module. Around them are the edges, where the modules meet the outside world:
-// the routes and pages, the API's handlers, the scripts and the tests. An edge may wire any modules
-// together, but only through their public entries.
+// the routes and pages, the API's handlers, the scripts and the tests, unit and browser (e2e/).
+// An edge may wire any modules together, but only through their public entries.
 //
 // `check()` is the whole rule as a plain function, so the lint rule, its tests and the CI figures
 // on /office all apply exactly the same one.
@@ -28,7 +28,7 @@ const KERNEL = [/^lib\//, /^server\/platform\//];
  * The edges: they may use any module, through its index. The local development database is one
  * because it seeds itself by running the simulator, which is wiring, not platform code.
  */
-const EDGES = [/^app\//, /^components\//, /^scripts\//, /^server\/api\//, /\.test\.tsx?$/, /^server\/platform\/db\/local\.ts$/];
+const EDGES = [/^app\//, /^components\//, /^scripts\//, /^server\/api\//, /\.test\.tsx?$/, /^e2e\//, /^server\/platform\/db\/local\.ts$/];
 
 const SOURCE = /\.(?:tsx?|mjs|js)$/;
 

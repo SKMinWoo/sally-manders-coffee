@@ -187,6 +187,25 @@ test("re-architecture: modules, imports checked across a boundary, breaches and 
   }
 });
 
+test("ui-tests: the browser suite's tests, its runs and how they ended, beside the unit and API tests", async () => {
+  const at = NOON.getTime() + 540_000;
+  const value = { tests: 35, projects: ["desktop", "phone"], runs: 70, passed: 68, flaky: 1, failed: 1, skipped: 0, durationMs: 32_700 };
+  const body = { run: run(501), facts: [{ kind: "ui-tests", value }, report(501, 70).facts[0]] };
+  assert.equal((await ingestCi(db, req(body), new Date(at), SECRET)).status, 201);
+  const e = Engineering.parse((await engineering(db, new Date(at + 60_000))).body);
+  const c = e.claims.find((x) => x.id === "ui-tests")!;
+  assert.equal(c.status, "running");
+  const f = new Map(c.figures.map((x) => [x.label, x.display]));
+  assert.equal(f.get("Browser tests here (100+ Selenium at GM)"), "35");
+  assert.equal(f.get("Runs on desktop and phone, last main"), "68 passed, 1 flaky, 1 failed");
+  assert.equal(f.get("The browser suite took"), "33 s");
+  assert.equal(f.get("Unit, repository and API tests (300+ at GM)"), "70");
+  for (const bad of [{ ...value, projects: [] }, { ...value, projects: ["Desktop Chrome"] }, { ...value, passed: -1 }, { ...value, retries: 1 }]) {
+    const b = { run: run(502), facts: [{ kind: "ui-tests", value: bad }] };
+    assert.equal((await ingestCi(db, req(b), new Date(at), SECRET)).status, 422, JSON.stringify(bad));
+  }
+});
+
 test("every file a claim or a factor points at is in the repository", () => {
   const paths = [
     ...CLAIMS.flatMap((c) => c.code.map((x) => x.path)),

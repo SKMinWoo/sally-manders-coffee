@@ -23,12 +23,16 @@ export async function countPlacedBetween(db: Db, from: Date, asOf: Date): Promis
   return row?.n ?? 0;
 }
 
-/** Visitor orders placed on `day` up to `asOf`: how full the order-ahead rail is. */
-export async function countVisitorOrders(db: Db, day: ShopDate, asOf: Date): Promise<number> {
+/**
+ * Every visitor order on `day`: how full the order-ahead rail is, and so the next ticket. Unlike
+ * the simulator's orders, a visitor's is never written ahead, so there's no "up to now" to apply;
+ * applying one hid an order stored a moment ago by a request that started a moment later.
+ */
+export async function countVisitorOrders(db: Db, day: ShopDate): Promise<number> {
   const [row] = await db
     .select({ n: count() })
     .from(orders)
-    .where(and(eq(orders.day, day), eq(orders.source, "visitor"), placedBy(asOf)));
+    .where(and(eq(orders.day, day), eq(orders.source, "visitor")));
   return row?.n ?? 0;
 }
 

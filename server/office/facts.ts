@@ -14,6 +14,20 @@ const Severities = z.strictObject({ critical: Count, high: Count, moderate: Coun
 export const FACT_KINDS = {
   /** `npm test` on main: the unit, repository and API contract tests (node:test). */
   "unit-tests": z.strictObject({ passed: Count, failed: Count, skipped: Count, durationMs: Count }),
+  /**
+   * `npx playwright test` on main: the browser tests (e2e/), each run once per project. A run that
+   * failed and then passed on its retry is flaky, counted apart from the clean passes.
+   */
+  "ui-tests": z.strictObject({
+    tests: Count,
+    projects: z.array(z.string().regex(/^[a-z0-9-]{1,32}$/)).min(1).max(8),
+    runs: Count,
+    passed: Count,
+    flaky: Count,
+    failed: Count,
+    skipped: Count,
+    durationMs: Count,
+  }),
   /** Node's coverage of every module in lib/ and server/, and the gate's verdict (null: no bar set yet). */
   coverage: z.strictObject({
     lines: Percent,

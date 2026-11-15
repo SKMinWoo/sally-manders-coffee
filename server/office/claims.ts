@@ -122,10 +122,15 @@ export const CLAIMS: Claim[] = [
     id: "ui-tests",
     role: SDET,
     gm: "Built and scaled **100+ Selenium UI tests** and **300+ end-to-end integration and API tests** running in Azure DevOps CI/CD.",
-    twin: "A Playwright suite through the order flow, the countdown, the docs and phone widths, beside the API contract tests, all run on every pull request.",
+    twin: "A Playwright suite that orders ahead, waits out the countdown, exports the sales, reads the docs and checks every page on a desktop and a phone, beside the unit and API contract tests, all run on every pull request.",
     exhibit: 3,
-    status: "coming",
-    code: [],
+    status: "running",
+    code: [
+      { label: "The order flow, end to end", path: "e2e/order.spec.ts" },
+      { label: "The console guard and per-test visitors", path: "e2e/fixtures.ts" },
+      { label: "The suite's setup", path: "playwright.config.ts" },
+      { label: "How the counts reach this page", path: "scripts/ci/ui-test-facts.mjs" },
+    ],
   },
   {
     id: "quality-gates",

@@ -15,7 +15,7 @@ concurrency:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: read
       # read-only: lets the security figures count open CodeQL alerts
@@ -45,6 +45,14 @@ jobs:
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+      # The browser tests run the build above with `next start`, on a fresh PGlite (LOCAL_DB in
+      # playwright.config.ts), never on Neon. Chromium's headless shell is fetched here, on the
+      # runner, from Playwright's own CDN; nothing is downloaded on a laptop.
+      - name: Browser for the UI tests
+        run: npx playwright install --with-deps --only-shell chromium
+      # Gate: every browser test passes on desktop and phone. The counts land in .ci/ui-tests.json.
+      - name: UI tests (Playwright, desktop and phone)
+        run: npx playwright test
 
       # SonarCloud runs once SONAR_TOKEN is set; until then (and on forks, which get no secrets) it skips.
       - name: Is SonarCloud set up?
