@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import s from "./Header.module.css";
 
 const VIEWS = [
-  { href: "/", label: "Storefront", match: (p: string) => !p.startsWith("/behind") },
+  { href: "/", label: "Storefront", match: (p: string) => p === "/" || p.startsWith("/order") },
   { href: "/behind", label: "Behind the scenes", match: (p: string) => p.startsWith("/behind") },
 ];
 

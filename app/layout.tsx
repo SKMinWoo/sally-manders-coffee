@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Header } from "@/components/shop/Header";
 import { fontVariables } from "./fonts";
 import "./globals.css";
@@ -16,7 +17,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {children}
         <p className="sim-note">
           Sally Mander&rsquo;s is a simulated coffee shop, built to show how its developer works. The orders,
-          the takings and the waits come from a simulator; nothing here is for sale.
+          the takings and the waits come from a simulator; nothing here is for sale. The figures are open:{" "}
+          <Link href="/docs">read the API</Link>.
         </p>
       </body>
     </html>
