@@ -1,5 +1,5 @@
 // Public order ids: what goes in the URL of an order's status page. Ten characters from an
-// alphabet with no look-alikes (no 0/O, 1/I/L) is 32^10, about 10^15, so an id can't be guessed
+// alphabet with no look-alikes (no 0/O, 1/I/L) is 31^10, about 8 × 10^14, so an id can't be guessed
 // by walking through them the way a ticket number could.
 
 const ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"; // 31 characters

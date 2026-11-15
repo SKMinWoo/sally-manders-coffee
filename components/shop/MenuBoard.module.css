@@ -14,19 +14,37 @@
 .bar { grid-row: span 2; }
 .food { grid-column: span 2; }
 .food ul { columns: 2; column-gap: 48px; }
+.board li { break-inside: avoid; }
 
-.board li { display: grid; grid-template-columns: auto 1fr auto; gap: 0 10px; align-items: baseline; padding: 6px 0; break-inside: avoid; }
-.board li > b, .board li > i, .board li > span { grid-row: 1; }
-.board li > b {
+.item { display: grid; grid-template-columns: auto 1fr auto; gap: 0 10px; align-items: baseline; padding: 6px 0; width: 100%; text-align: left; }
+.item > b, .item > i, .item > .price { grid-row: 1; }
+.item > b {
   font: 800 25px/1.05 var(--font-block), sans-serif;
   font-variation-settings: "opsz" 72;
   text-transform: uppercase;
   letter-spacing: .02em;
 }
-.board li > i { border-bottom: 2px dotted #F5EAD055; translate: 0 -5px; }
-.board li > span { font: 700 22px/1 var(--font-cond), sans-serif; color: var(--mustard); }
-.board li > small { grid-row: 2; grid-column: 1 / -1; font-size: 15px; color: var(--pink); }
-.board li.house > b { font: 400 34px/1 var(--font-script), cursive; font-variation-settings: normal; text-transform: none; color: var(--pink); }
+.item > i { position: relative; border-bottom: 2px dotted #F5EAD055; translate: 0 -5px; font-style: normal; }
+.price { font: 700 22px/1 var(--font-cond), sans-serif; color: var(--mustard); }
+.item > small { grid-row: 2; grid-column: 1 / -1; font-size: 15px; color: var(--pink); }
+.house .item > b { font: 400 34px/1 var(--font-script), cursive; font-variation-settings: normal; text-transform: none; color: var(--pink); }
+
+/* the order page: each row is a button; a chalk mark counts what's on the check */
+.orderable .item { cursor: pointer; border-radius: 6px; padding: 6px 8px; margin: 0 -8px; width: calc(100% + 16px); transition: background-color .15s ease-out; }
+.orderable .item:hover { background: #F5EAD014; }
+.orderable .item:active { background: #F5EAD024; }
+.count {
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  translate: -50% 0;
+  padding: 2px 8px 1px;
+  border-radius: 99px;
+  background: var(--mustard);
+  color: var(--black);
+  font: 700 15px/1.1 var(--font-cond), sans-serif;
+  letter-spacing: .04em;
+}
 
 @media (max-width: 860px) {
   .board { grid-template-columns: minmax(0, 1fr); }

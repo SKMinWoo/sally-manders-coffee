@@ -1,0 +1,2 @@
+ALTER TABLE "orders" ADD COLUMN "visitor_hash" text;--> statement-breakpoint
+CREATE INDEX "orders_visitor_placed" ON "orders" USING btree ("visitor_hash","placed_at") WHERE "orders"."visitor_hash" is not null;

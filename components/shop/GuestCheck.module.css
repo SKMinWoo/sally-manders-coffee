@@ -21,4 +21,21 @@
 .line dt, .line dd { font: 400 24px/34px var(--font-script), cursive; color: var(--pen); }
 .line dd { text-align: right; }
 .total dt, .total dd { color: var(--red); }
+.empty dt { color: #2B3A8A88; }
+
+/* the order page: a small − and + before each line, inside the paper */
+.steps { display: inline-flex; gap: 3px; margin-right: 8px; vertical-align: 3px; }
+.steps button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--check-ink);
+  color: var(--check);
+  font: 700 17px/24px var(--font-cond), sans-serif;
+  text-align: center;
+  cursor: pointer;
+}
+.steps button:hover { background: var(--red); }
+.steps button { position: relative; }
+.steps button::before { content: ""; position: absolute; inset: -8px -2px; } /* a 40px-tall target for a thumb */
 .thanks { margin-top: 10px; text-align: center; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }

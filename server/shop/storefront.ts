@@ -17,6 +17,8 @@ export interface Pulse {
   nextTicket: string;
   /** what a two-item order would wait right now, in seconds */
   waitForTwo: number;
+  /** orders in the last hour over this hour's capacity */
+  load: number;
 }
 
 export const getPulse = unstable_cache(
@@ -25,7 +27,7 @@ export const getPulse = unstable_cache(
     const now = new Date();
     const date = shopToday(now);
     const [placed, load] = await Promise.all([countOrders(db, date, now), loadNow(db, now)]);
-    return { date, nextTicket: String(placed + 1).padStart(4, "0"), waitForTwo: expectedWait(2, load) };
+    return { date, nextTicket: String(placed + 1).padStart(4, "0"), waitForTwo: expectedWait(2, load), load };
   },
   ["pulse"],
   { revalidate: 60 },
