@@ -9,7 +9,7 @@ next-env.d.ts
 .env*
 !.env.example
 
-# the development database (server/db/local.ts)
+# the development database (server/platform/db/local.ts)
 .pglite/
 
 # what a CI run measured (scripts/ci/), posted to /office

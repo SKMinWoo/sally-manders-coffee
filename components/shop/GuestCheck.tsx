@@ -1,7 +1,7 @@
 import { formatPrice, taxCents } from "@/lib/money";
 import { formatCheckDate, formatWait } from "@/lib/time";
-import type { MenuRow } from "@/server/db/repositories/menu";
-import type { Pulse } from "@/server/shop/storefront";
+import type { MenuRow } from "@/server/menu";
+import type { Pulse } from "@/server/orders";
 import s from "./GuestCheck.module.css";
 
 export interface CheckLine {

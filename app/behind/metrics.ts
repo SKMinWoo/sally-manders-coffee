@@ -1,6 +1,6 @@
 import { formatMoney } from "@/lib/money";
 import { formatWait } from "@/lib/time";
-import type { DaySummary } from "@/server/db/repositories/metrics";
+import type { DaySummary } from "@/server/reporting";
 
 export type MetricKey = "sales" | "orders" | "avgCheck" | "waitP50" | "waitP95" | "visitorOrders";
 

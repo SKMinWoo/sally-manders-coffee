@@ -1,9 +1,9 @@
 // What the back office shows and /api/v1/engineering returns: each résumé claim with the figures
 // its twin has measured. One function feeds both, so the page and the API cannot disagree.
 
-import type { Db } from "@/server/db/client";
-import { latestFacts, ordersToDate, type StoredFact } from "@/server/db/repositories/facts";
-import { spanStats } from "@/server/db/repositories/sales";
+import type { Db } from "@/server/platform/db/client";
+import { latestFacts, ordersToDate, type StoredFact } from "./repository";
+import { spanStats } from "@/server/reporting";
 import { addDays, shopToday } from "@/lib/time";
 import { CLAIMS, codeUrl, type Claim } from "./claims";
 import type { FactValue } from "./facts";
@@ -81,6 +81,17 @@ function exportFigures(f: StoredFact | undefined, lines28: number, now: Date): F
   ];
 }
 
+function boundaryFigures(f: StoredFact | undefined): Figure[] {
+  if (!f) return [];
+  const b = f.value as FactValue<"boundaries">;
+  return [
+    fromCi(`Domain modules, ${b.publicEntries === b.modules ? "each behind one public entry" : `${b.publicEntries} with a public entry`}`, b.modules, n(b.modules), f),
+    fromCi(`Imports across a boundary, of ${n(b.imports)} checked`, b.crossings, n(b.crossings), f),
+    fromCi("Boundary breaches", b.violations, n(b.violations), f),
+    fromCi("Decision records", b.decisions, n(b.decisions), f),
+  ];
+}
+
 /** Each running claim's figures. A claim whose figure hasn't been measured yet shows none, never a guess. */
 async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> {
   const today = shopToday(now);
@@ -92,6 +103,7 @@ async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> 
   const tests = facts.get("unit-tests");
   const t = tests?.value as FactValue<"unit-tests"> | undefined;
   return {
+    "re-architecture": boundaryFigures(facts.get("boundaries")),
     "excel-export": exportFigures(facts.get("export"), recent.lines, now),
     devsecops: [...coverageFigures(facts.get("coverage")), ...securityFigures(facts.get("security"))],
     "full-stack": [

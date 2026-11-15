@@ -3,8 +3,8 @@
 // Safe to run again: days already written are skipped.
 
 import { parseArgs } from "node:util";
-import { db } from "@/server/db/client";
-import { backfillDays, ensureDays } from "@/server/sim/run";
+import { db } from "@/server/platform/db/client";
+import { backfillDays, ensureDays } from "@/server/simulator";
 
 try {
   process.loadEnvFile(".env.local");

@@ -4,7 +4,7 @@ import { useActionState, useMemo, useSyncExternalStore } from "react";
 import { GuestCheck } from "@/components/shop/GuestCheck";
 import { MenuBoard } from "@/components/shop/MenuBoard";
 import { formatWait } from "@/lib/time";
-import type { MenuRow } from "@/server/db/repositories/menu";
+import type { MenuGroup, MenuRow } from "@/server/menu";
 import { putOnRail, type OrderState } from "./actions";
 import { CART_KEY } from "./cart";
 import s from "./order.module.css";
@@ -54,7 +54,19 @@ function writeCart(c: Cart) {
  * the server action prices it again from the database, so nothing here is trusted.
  * `waits[n]` is the wait for an n-item order at the shop's current load.
  */
-export function OrderForm({ menu, date, waits }: { menu: MenuRow[]; date: string; waits: number[] }) {
+export function OrderForm({
+  menu,
+  groups,
+  houseId,
+  date,
+  waits,
+}: {
+  menu: MenuRow[];
+  groups: { id: MenuGroup; title: string }[];
+  houseId: string;
+  date: string;
+  waits: number[];
+}) {
   const raw = useSyncExternalStore(subscribe, snapshot, () => "{}");
   const cart = useMemo(() => parseCart(raw), [raw]);
   const [state, action, pending] = useActionState<OrderState, FormData>(putOnRail, null);
@@ -75,7 +87,7 @@ export function OrderForm({ menu, date, waits }: { menu: MenuRow[]; date: string
 
   return (
     <div>
-      <MenuBoard menu={menu} title="Pick from the board" onAdd={(id) => step(id, 1)} counts={cart} />
+      <MenuBoard menu={menu} groups={groups} houseId={houseId} title="Pick from the board" onAdd={(id) => step(id, 1)} counts={cart} />
       <form action={action} className={s.form}>
         <div className={`steel-rail ${s.rail}`} aria-hidden="true" />
         <GuestCheck ticket="A-··" date={date} ready={ready} lines={lines} onStep={step} empty="Tap the board to add" />

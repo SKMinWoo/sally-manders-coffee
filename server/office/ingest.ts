@@ -1,10 +1,10 @@
 // POST /api/ingest/ci: where CI runs on main report what they measured. The route only adapts
 // this function, so the tests exercise exactly what production runs.
 
-import { problem, type ApiResult } from "@/server/api/v1";
-import type { Db } from "@/server/db/client";
-import { recordFacts } from "@/server/db/repositories/facts";
-import { bearerAuthorised } from "@/server/shop/cron";
+import { problem, type ApiResult } from "@/server/platform/http";
+import type { Db } from "@/server/platform/db/client";
+import { recordFacts } from "./repository";
+import { bearerAuthorised } from "@/server/platform/auth";
 import { IngestBody } from "./facts";
 
 /** A run's report is a few hundred bytes; anything far bigger is not one. */

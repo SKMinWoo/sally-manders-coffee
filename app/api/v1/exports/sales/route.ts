@@ -1,7 +1,7 @@
-import { respond } from "@/server/api/respond";
+import { respond } from "@/server/platform/http";
 import { problem } from "@/server/api/v1";
-import { shopDb } from "@/server/db/client";
-import { exportSales, XLSX, type ExportResult } from "@/server/export/sales";
+import { shopDb } from "@/server/platform/db/client";
+import { exportSales, XLSX, type ExportResult } from "@/server/reporting";
 
 // never cached: each request is checked against what the visitor already has
 const COMMON = { "Cache-Control": "private, no-cache", "Access-Control-Expose-Headers": "ETag, X-Export-Rows" };

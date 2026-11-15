@@ -88,7 +88,5 @@ export const Engineering = z
   .object({ asOf: z.iso.datetime({ offset: true }), claims: z.array(Claim) })
   .meta({ id: "Engineering" });
 
-/** RFC 9457 problem details. */
-export const Problem = z
-  .object({ type: z.string(), title: z.string(), status: z.int(), detail: z.string().optional() })
-  .meta({ id: "Problem" });
+// RFC 9457 problem details: defined with the results every module returns, listed here with the rest
+export { Problem } from "@/server/platform/http";

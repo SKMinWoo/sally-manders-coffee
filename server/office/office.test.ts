@@ -1,12 +1,14 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import type { Db } from "@/server/db/client";
-import { testDb } from "@/server/db/test-db";
-import { ensureDays } from "@/server/sim/run";
+import type { Db } from "@/server/platform/db/client";
+import { testDb } from "@/server/platform/db/test-db";
+import { ensureDays } from "@/server/simulator";
 import { openApiDocument } from "@/server/api/openapi";
 import { Engineering, Problem } from "@/server/api/schemas";
 import { engineering } from "@/server/api/v1";
+import { existsSync } from "node:fs";
 import { CLAIMS } from "./claims";
+import { FACTORS } from "./twelve-factor";
 import { REPO } from "./facts";
 import { ingestCi, MAX_BODY_BYTES, type IngestRequest } from "./ingest";
 
@@ -162,4 +164,37 @@ test("excel-export: the shop's own month counted live, and the CI benchmark's ro
   assert.equal(f.get("Lines in the shop's last 28 days")!.source, "live");
   const bad = { ...body, facts: [{ kind: "export", value: { ...value, heapPeakMb: -1 } }] };
   assert.equal((await ingestCi(db, req(bad), new Date(at), SECRET)).status, 422);
+});
+
+test("re-architecture: modules, imports checked across a boundary, breaches and decisions", async () => {
+  const at = NOON.getTime() + 480_000;
+  const value = {
+    modules: 5, publicEntries: 5, files: 96, imports: 371, crossings: 48, violations: 0,
+    uses: ["office→orders", "orders→menu"], decisions: 4,
+  };
+  const body = { run: run(401), facts: [{ kind: "boundaries", value }] };
+  assert.equal((await ingestCi(db, req(body), new Date(at), SECRET)).status, 201);
+  const e = Engineering.parse((await engineering(db, new Date(at + 60_000))).body);
+  const c = e.claims.find((x) => x.id === "re-architecture")!;
+  const f = new Map(c.figures.map((x) => [x.label, x.display]));
+  assert.equal(f.get("Domain modules, each behind one public entry"), "5");
+  assert.equal(f.get("Imports across a boundary, of 371 checked"), "48");
+  assert.equal(f.get("Boundary breaches"), "0");
+  assert.equal(f.get("Decision records"), "4");
+  for (const uses of [["orders->menu"], ["Orders→Menu"]]) {
+    const bad = { ...body, facts: [{ kind: "boundaries", value: { ...value, uses } }] };
+    assert.equal((await ingestCi(db, req(bad), new Date(at), SECRET)).status, 422, `uses ${uses[0]}`);
+  }
+});
+
+test("every file a claim or a factor points at is in the repository", () => {
+  const paths = [
+    ...CLAIMS.flatMap((c) => c.code.map((x) => x.path)),
+    ...FACTORS.flatMap((f) => f.evidence.map((x) => x.path)),
+  ];
+  for (const p of paths) {
+    const file = p.startsWith("/") ? `app${p}/page.tsx` : p; // a page of the site, or a file
+    assert.ok(existsSync(file), `${p} is linked but ${file} doesn't exist`);
+  }
+  assert.deepEqual(FACTORS.map((f) => f.n), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
 });

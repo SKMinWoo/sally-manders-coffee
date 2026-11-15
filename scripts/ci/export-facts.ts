@@ -8,10 +8,10 @@
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import { addDays } from "@/lib/time";
-import { testDb } from "@/server/db/test-db";
-import { checkSalesWorkbook } from "@/server/export/check";
-import { exportSales } from "@/server/export/sales";
-import { ensureDays } from "@/server/sim/run";
+import { testDb } from "@/server/platform/db/test-db";
+import { checkSalesWorkbook } from "@/server/reporting";
+import { exportSales } from "@/server/reporting";
+import { ensureDays } from "@/server/simulator";
 
 const LAST = "2026-10-29"; // a fixed span, so the row counts are the same on every run
 const NOW = new Date(`${addDays(LAST, 1)}T17:00:00Z`);
