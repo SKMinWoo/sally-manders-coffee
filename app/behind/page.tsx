@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { formatCheckDate, weekdayOf } from "@/lib/time";
+import { addDays, formatCheckDate, weekdayOf } from "@/lib/time";
 import { getBehind } from "@/server/shop/behind";
+import { ExportSales } from "./ExportSales";
 import { HourChart } from "./HourChart";
 import { LEAD_METRICS, METRICS, type MetricKey } from "./metrics";
 import s from "./page.module.css";
@@ -110,6 +111,8 @@ export default async function Behind() {
             </ol>
           </div>
         </div>
+
+        <ExportSales from={addDays(b.date, -27)} to={b.date} />
 
         <p className={s.source}>
           Of today&rsquo;s {b.today.orders.toLocaleString("en-US")} orders, <b>{b.today.visitorOrders}</b>{" "}

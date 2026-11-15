@@ -148,3 +148,18 @@ test("the claims: eleven, one exhibit each, and the API documents them", () => {
   assert.ok(doc.paths["/engineering"]);
   assert.ok(doc.components.schemas.Engineering && doc.components.schemas.Figure);
 });
+
+test("excel-export: the shop's own month counted live, and the CI benchmark's rows, time and heap", async () => {
+  const at = NOON.getTime() + 420_000;
+  const value = { days: 90, rows: 38_266, bytes: 315_783, durationMs: 1_934, heapPeakMb: 1, baseline: { days: 14, rows: 5_845, heapPeakMb: 0.9 } };
+  const body = { run: run(301), facts: [{ kind: "export", value }] };
+  assert.equal((await ingestCi(db, req(body), new Date(at), SECRET)).status, 201);
+  const e = Engineering.parse((await engineering(db, new Date(at + 60_000))).body);
+  const f = new Map(e.claims.find((c) => c.id === "excel-export")!.figures.map((x) => [x.label, x]));
+  assert.equal(f.get("Rows in a 90-day export")!.display, "38,266");
+  assert.equal(f.get("Streamed and checked in")!.display, "1.9 s");
+  assert.equal(f.get("Peak live heap (14 days: 0.9 MB)")!.display, "1.0 MB");
+  assert.equal(f.get("Lines in the shop's last 28 days")!.source, "live");
+  const bad = { ...body, facts: [{ kind: "export", value: { ...value, heapPeakMb: -1 } }] };
+  assert.equal((await ingestCi(db, req(bad), new Date(at), SECRET)).status, 422);
+});

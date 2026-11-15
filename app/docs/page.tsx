@@ -76,11 +76,14 @@ export default function Docs() {
 
         {Object.entries(doc.paths).map(([path, item]) => {
           const op = item.get;
-          const ok = op.responses["200"].content["application/json"].schema.$ref.split("/").pop()!;
+          const content = op.responses["200"].content;
+          // a JSON endpoint lists its fields; the export answers with a file, so it names the file instead
+          const ok = "application/json" in content ? content["application/json"].schema.$ref.split("/").pop()! : null;
+          const id = `ep-${path.replace(/\W+/g, "-")}`;
           const example = `/api/v1${path.replace("{date}", "today")}`;
           return (
-            <section key={path} className={s.endpoint} aria-labelledby={`ep-${ok}`}>
-              <h2 id={`ep-${ok}`} className={s.path}>
+            <section key={path} className={s.endpoint} aria-labelledby={id}>
+              <h2 id={id} className={s.path}>
                 <span className={s.get}>GET</span> <code>/api/v1{path}</code>
               </h2>
               <p className={s.summary}>{op.summary}</p>
@@ -88,7 +91,7 @@ export default function Docs() {
               <p className={s.try}>
                 Try it: <a href={example}>{example}</a>
               </p>
-              <Fields schema={schemas[ok]!} schemas={schemas} />
+              {ok ? <Fields schema={schemas[ok]!} schemas={schemas} /> : <p className={s.desc}>{op.responses["200"].description}.</p>}
             </section>
           );
         })}

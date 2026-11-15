@@ -55,7 +55,7 @@ test("tomorrow is a 404 even though its orders are already written; a bad date i
     const future = await handler(db, "2026-11-14", NOON);
     assert.equal(future.status, 404);
     assert.equal(Problem.parse(future.body).status, 404);
-    for (const bad of ["2026-02-30", "yesterday", "13-11-2026", "2026-11-13' or 1=1"]) {
+    for (const bad of ["2026-02-30", "2026-13-01", "yesterday", "13-11-2026", "2026-11-13' or 1=1"]) {
       assert.equal((await handler(db, bad, NOON)).status, 400, bad);
     }
   }
@@ -73,7 +73,7 @@ test("responses carry the cache policy, and errors are problem+json", async () =
 
 test("the OpenAPI document covers every endpoint, and every $ref resolves", () => {
   const doc = openApiDocument();
-  assert.deepEqual(Object.keys(doc.paths).sort(), ["/days/{date}", "/days/{date}/hours", "/days/{date}/items", "/engineering", "/health", "/menu"]);
+  assert.deepEqual(Object.keys(doc.paths).sort(), ["/days/{date}", "/days/{date}/hours", "/days/{date}/items", "/engineering", "/exports/sales", "/health", "/menu"]);
   // collect every $ref, not only the well-formed ones, so a malformed ref fails instead of being skipped
   const refs = [...JSON.stringify(doc).matchAll(/"\$ref":"([^"]*)"/g)].map((m) => m[1]!);
   assert.ok(refs.length > 0);

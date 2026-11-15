@@ -35,6 +35,8 @@ test("calendar helpers", () => {
   assert.equal(weekdayOf("2026-11-14"), 6); // a Saturday
   assert.ok(isShopDate("2026-11-14"));
   assert.ok(!isShopDate("2026-02-30"));
+  assert.ok(!isShopDate("2026-13-01"), "a month 13 is false, not a RangeError");
+  assert.ok(!isShopDate("2026-00-10"));
   assert.ok(!isShopDate("today"));
 });
 
