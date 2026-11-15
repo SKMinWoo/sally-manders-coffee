@@ -28,6 +28,16 @@ export const FACT_KINDS = {
     audit: z.strictObject({ production: Severities, all: Severities }),
     sonarGate: z.enum(["OK", "WARN", "ERROR"]).nullable(),
   }),
+  /** The sales export streamed from a fixed 90-day simulated history, and a 14-day one to compare. */
+  export: z.strictObject({
+    days: Count,
+    rows: Count,
+    bytes: Count,
+    durationMs: Count,
+    /** the most live (collected) JS heap seen while streaming, in MB */
+    heapPeakMb: z.number().nonnegative().max(4096),
+    baseline: z.strictObject({ days: Count, rows: Count, heapPeakMb: z.number().nonnegative().max(4096) }),
+  }),
 } as const;
 
 export type FactKind = keyof typeof FACT_KINDS;

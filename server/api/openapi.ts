@@ -55,6 +55,23 @@ export function openApiDocument() {
       "/days/{date}/items": {
         get: { summary: "Items sold, most first, so far", description: SO_FAR, parameters: [dateParam], responses: { "200": json("DayItems", "Items"), ...dayErrors } },
       },
+      "/exports/sales": {
+        get: {
+          summary: "Every order line over a span of Austin days, as an Excel workbook",
+          description:
+            "Streamed as it is read, so its size doesn't depend on memory. Refused with 409 if any check in the span doesn't add up. Send back the ETag as If-None-Match and a repeat with nothing new is a 304; a HEAD answers the same way without the workbook.",
+          parameters: [
+            { name: "from", in: "query", required: false, description: "First Austin day, YYYY-MM-DD (default: 27 days before to)", schema: { type: "string", format: "date" } },
+            { name: "to", in: "query", required: false, description: "Last Austin day, no later than today (default: today); at most 92 days in all", schema: { type: "string", format: "date" } },
+          ],
+          responses: {
+            "200": { description: "The workbook: a Sales sheet and a Totals sheet", content: { "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": { schema: { type: "string", contentMediaType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" } } } },
+            "304": { description: "Nothing changed since the workbook whose ETag was sent" },
+            "400": problem("Not a span the export takes"),
+            "409": problem("A check in the span doesn't add up, so nothing was exported"),
+          },
+        },
+      },
       "/engineering": {
         get: {
           summary: "Each résumé claim, its twin here, and what the twin has measured",
