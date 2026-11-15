@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { connection } from "next/server";
+import o from "./order/order.module.css";
 import { ExampleCheck } from "@/components/shop/GuestCheck";
 import { MenuBoard } from "@/components/shop/MenuBoard";
 import { WallSign } from "@/components/shop/WallSign";
@@ -21,6 +23,7 @@ export default async function Storefront() {
             drink does. The rail is how the shop keeps time. The Barton Springs salamander lives in the springs
             of one Austin creek and nowhere else.
           </p>
+          <Link href="/order" className={o.go} style={{ display: "inline-block", marginTop: 22 }}>Order ahead</Link>
         </div>
         <ExampleCheck menu={menu} pulse={pulse} />
       </section>

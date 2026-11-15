@@ -5,6 +5,8 @@ import type { Pulse } from "@/server/shop/storefront";
 import s from "./GuestCheck.module.css";
 
 export interface CheckLine {
+  /** the menu id; needed only when the check can be edited */
+  id?: string;
   qty: number;
   name: string;
   cents: number;
@@ -13,8 +15,23 @@ export interface CheckLine {
 /**
  * A diner guest check: green rules, the server's ballpoint, the total in red. The same paper is
  * used for the checks on the rail behind the scenes, so the two views read as one shop.
+ * Given `onStep` (the order page), each line gets a − and + in the margin.
  */
-export function GuestCheck({ ticket, date, ready, lines }: { ticket: string; date: string; ready: string; lines: CheckLine[] }) {
+export function GuestCheck({
+  ticket,
+  date,
+  ready,
+  lines,
+  onStep,
+  empty,
+}: {
+  ticket: string;
+  date: string;
+  ready: string;
+  lines: CheckLine[];
+  onStep?: (id: string, delta: 1 | -1) => void;
+  empty?: string;
+}) {
   const subtotal = lines.reduce((sum, l) => sum + l.qty * l.cents, 0);
   const tax = taxCents(subtotal);
   return (
@@ -28,10 +45,24 @@ export function GuestCheck({ ticket, date, ready, lines }: { ticket: string; dat
         <span>Server<em>Sally</em></span>
         <span>Ready<em>{ready}</em></span>
       </div>
-      <dl>
+      <dl aria-live={onStep ? "polite" : undefined}>
+        {lines.length === 0 && empty && (
+          <div className={`${s.line} ${s.empty}`}>
+            <dt>{empty}</dt>
+            <dd />
+          </div>
+        )}
         {lines.map((l) => (
-          <div key={l.name} className={s.line}>
-            <dt>{l.qty} {l.name}</dt>
+          <div key={l.id ?? l.name} className={`${s.line} ${onStep ? s.editable : ""}`}>
+            <dt>
+              {onStep && l.id && (
+                <span className={s.steps}>
+                  <button type="button" onClick={() => onStep(l.id!, -1)} aria-label={`One less ${l.name}`}>−</button>
+                  <button type="button" onClick={() => onStep(l.id!, 1)} aria-label={`One more ${l.name}`}>+</button>
+                </span>
+              )}
+              {l.qty} {l.name}
+            </dt>
             <dd>{formatPrice(l.qty * l.cents)}</dd>
           </div>
         ))}

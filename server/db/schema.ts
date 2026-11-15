@@ -44,9 +44,15 @@ export const orders = pgTable("orders", {
   readyAt: timestamp({ withTimezone: true }).notNull(),
   subtotalCents: integer().notNull(),
   taxCents: integer().notNull(),
+  /**
+   * Visitor orders only: an HMAC of the visitor's IP under a server-side salt, for rate limiting.
+   * The IP itself is never stored, and without the salt the hash can't be walked back to one.
+   */
+  visitorHash: text(),
 }, (t) => [
   unique("orders_day_ticket").on(t.day, t.ticket),
   index("orders_day_placed").on(t.day, t.placedAt),
+  index("orders_visitor_placed").on(t.visitorHash, t.placedAt).where(sql`${t.visitorHash} is not null`),
   check("orders_ready_after_placed", sql`${t.readyAt} > ${t.placedAt}`),
   check("orders_money_whole", sql`${t.subtotalCents} > 0 and ${t.taxCents} >= 0`),
 ]);
