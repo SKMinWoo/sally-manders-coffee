@@ -1,5 +1,5 @@
 .row { padding: 64px var(--gutter); }
-.title { font-size: clamp(56px, 6vw, 92px); text-align: center; color: var(--red); margin-bottom: 28px; text-shadow: .03em .04em 0 var(--black); }
+.title { font-size: clamp(46px, 6vw, 92px); text-align: center; color: var(--red); margin-bottom: 28px; text-shadow: .03em .04em 0 var(--black); }
 .board {
   background: var(--black);
   color: var(--cream);

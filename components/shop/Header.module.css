@@ -23,7 +23,17 @@
   .switch { margin-left: auto; }
   .switch a { padding: 8px 10px; font-size: 13px; }
 }
+.short, .shortLabel { display: none; }
+
+/* a phone: the lockup and the switch share one row, with the switch's short labels */
 @media (max-width: 480px) {
-  .wordmark { font-size: 28px; }
-  .mark { width: 62px; height: 45px; }
+  .header { flex-wrap: nowrap; gap: 10px; }
+  .lockup { gap: 8px; min-width: 0; }
+  .wordmark { font-size: 25px; white-space: nowrap; }
+  .mark { width: 52px; height: 38px; flex: none; }
+  .switch { flex: none; }
+  .switch a { padding: 8px 9px; }
+  .long { display: none; }
+  .short { display: inline; }
+  .shortLabel { display: block; }
 }

@@ -18,8 +18,19 @@
 .note { text-align: center; padding: 0; }
 
 /* the status page */
-.status { display: grid; justify-items: center; gap: 22px; padding: 56px var(--gutter) 72px; text-align: center; }
-.rail { width: min(520px, 100%); height: 14px; border-radius: 7px; background: linear-gradient(#C9C2B4, #8E8678); box-shadow: inset 0 -2px 0 #0003; margin-bottom: -26px; position: relative; z-index: 1; }
+.status {
+  display: grid;
+  justify-items: center;
+  gap: 22px;
+  padding: 56px var(--gutter) 72px;
+  text-align: center;
+  /* the rail is fixed to the turquoise wall from out front; the check hangs down past it */
+  background: linear-gradient(var(--teal) 0 64px, var(--cream) 64px 70px, transparent 70px);
+}
+/* the check hangs from the rail; on the order page the rail is wider, with the check held under it */
+.rail { width: min(520px, 100%); margin-bottom: -26px; position: relative; z-index: 1; }
+.form .rail { width: min(620px, 100%); margin-top: 8px; }
+.form .rail + * { width: min(400px, 100%); }
 .clock { font: 800 clamp(48px, 9vw, 88px)/1 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; color: var(--red); font-variant-numeric: tabular-nums; }
 .up { font: 400 clamp(44px, 8vw, 76px)/1 var(--font-script), cursive; color: var(--teal); }
 .label { font: 700 15px/1 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; }

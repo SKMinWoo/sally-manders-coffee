@@ -7,6 +7,9 @@
   rotate: 2deg;
   box-shadow: 0 18px 28px -14px #1A161366;
   font-family: var(--font-cond), sans-serif;
+  text-align: left; /* never inherit a centred page's alignment */
+  max-width: calc(100% - 16px); /* room for the tilt at phone width */
+  transform-origin: 50% 0; /* it hangs from the top */
 }
 .top { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--rule); padding-bottom: 8px; }
 .top b { font: 900 26px/1 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; color: var(--red); letter-spacing: .04em; text-transform: uppercase; }
@@ -24,18 +27,19 @@
 .empty dt { color: #2B3A8A88; }
 
 /* the order page: a small − and + before each line, inside the paper */
-.steps { display: inline-flex; gap: 3px; margin-right: 8px; vertical-align: 3px; }
+.steps { display: inline-flex; gap: 6px; margin-right: 10px; vertical-align: 2px; }
 .steps button {
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--check-ink);
   color: var(--check);
-  font: 700 17px/24px var(--font-cond), sans-serif;
+  font: 700 20px/30px var(--font-cond), sans-serif;
   text-align: center;
   cursor: pointer;
 }
 .steps button:hover { background: var(--red); }
 .steps button { position: relative; }
-.steps button::before { content: ""; position: absolute; inset: -8px -2px; } /* a 40px-tall target for a thumb */
+.steps button::before { content: ""; position: absolute; inset: -7px -3px; } /* a 44px-tall target for a thumb */
+.steps button:active { translate: 0 1px; }
 .thanks { margin-top: 10px; text-align: center; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
