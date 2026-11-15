@@ -41,6 +41,8 @@ test("a day so far: today and its date give the same answer, and later orders do
   assert.equal(a.orders, sofar.length);
   assert.equal(a.salesCents, sofar.reduce((n, o) => n + o.subtotalCents, 0));
   assert.equal(a.averageCheckCents, Math.round(a.salesCents / a.orders));
+  // percentile_cont interpolates (production showed 299.59999999999997); the API sends whole seconds
+  assert.ok(Number.isInteger(a.waitP50Seconds) && Number.isInteger(a.waitP95Seconds));
 
   const hours = DayHours.parse((await dayHours(db, "today", NOON)).body).hours;
   assert.equal(hours.reduce((n, h) => n + h.orders, 0), a.orders);

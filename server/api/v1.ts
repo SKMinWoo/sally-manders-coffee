@@ -57,8 +57,8 @@ export async function day(db: Db, param: string, now: Date): Promise<ApiResult> 
     salesCents: s.salesCents,
     taxCents: s.taxCents,
     averageCheckCents: s.orders ? Math.round(s.salesCents / s.orders) : null,
-    waitP50Seconds: s.waitP50,
-    waitP95Seconds: s.waitP95,
+    waitP50Seconds: s.waitP50 === null ? null : Math.round(s.waitP50),
+    waitP95Seconds: s.waitP95 === null ? null : Math.round(s.waitP95),
   });
 }
 

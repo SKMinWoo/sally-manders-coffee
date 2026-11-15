@@ -6,7 +6,7 @@ import { z } from "zod";
 
 const ShopDate = z.iso.date().describe("An Austin calendar date (America/Chicago), YYYY-MM-DD");
 const Cents = z.int().nonnegative().describe("Whole US cents");
-const Seconds = z.number().nonnegative().describe("Seconds, placed to ready");
+const Seconds = z.number().int().nonnegative().describe("Whole seconds, placed to ready (rounded)");
 
 export const Health = z
   .object({
