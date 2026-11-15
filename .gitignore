@@ -9,6 +9,9 @@ next-env.d.ts
 .env*
 !.env.example
 
+# the development database (server/db/local.ts)
+.pglite/
+
 # Vercel's local link
 .vercel/
 

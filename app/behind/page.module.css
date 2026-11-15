@@ -1,0 +1,4 @@
+.band { background: var(--teal); color: var(--black); padding: 14px var(--gutter) 12px; font-size: 14px; border-bottom: 6px solid var(--cream); }
+.kitchen { background: var(--black); color: var(--cream); padding: 44px var(--gutter) 60px; }
+.title { font-size: clamp(60px, 7vw, 104px); line-height: 1; }
+.sub { color: #F5EAD0BB; max-width: 60ch; margin-top: 10px; }

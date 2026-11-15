@@ -7,7 +7,7 @@ import { testDb } from "../test-db";
 import { simulateDay } from "@/server/sim/day";
 import { backfillDays, daysAhead, ensureDays } from "@/server/sim/run";
 import { listMenu } from "./menu";
-import { countOrders, writeSimDay } from "./orders";
+import { countOrders, countPlacedBetween, writeSimDay } from "./orders";
 
 let db: Db, close: () => Promise<void>;
 before(async () => ({ db, close } = await testDb()));
@@ -59,6 +59,11 @@ test("orders that haven't happened yet are invisible", async () => {
   assert.equal(await countOrders(db, DAY, noon), upToNoon);
   assert.equal(await countOrders(db, DAY, new Date(+noon - 1)), upToNoon - atNoon);
   assert.equal(await countOrders(db, DAY, new Date(`${DAY}T05:59:59Z`)), 0, "nothing before the day starts");
+
+  const hourAgo = new Date(+noon - 3_600_000);
+  const lastHour = sim.orders.filter((o) => o.placedAt > hourAgo && o.placedAt <= noon).length;
+  assert.equal(await countPlacedBetween(db, hourAgo, noon), lastHour);
+  assert.equal(await countPlacedBetween(db, hourAgo, hourAgo), 0, "an empty window is empty");
 });
 
 test("the menu is seeded in board order", async () => {
