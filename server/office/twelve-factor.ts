@@ -108,9 +108,10 @@ export const FACTORS: Factor[] = [
     n: 10,
     name: "Dev/prod parity",
     asks: "Keep development, staging and production as alike as possible.",
-    here: "One schema, migrated the same way everywhere; one seeded simulator, so a date comes out the same in development, in tests and in production; and a preview deployment for every pull request, on the same platform as production.",
+    here: "One schema, migrated the same way everywhere; one seeded simulator, so a date comes out the same in development, in tests and in production; the browser tests drive the production build itself, `next start`, not the dev server; and a preview deployment for every pull request, on the same platform as production.",
     evidence: [
       { label: "The migrations", path: "drizzle.config.ts" },
+      { label: "The browser tests, on the production build", path: "playwright.config.ts" },
       { label: "Days written ahead, seeded by date", path: "docs/decisions/0002-days-written-ahead.md" },
       { label: "The development database", path: "server/platform/db/local.ts" },
     ],

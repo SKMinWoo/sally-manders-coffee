@@ -81,6 +81,25 @@ function exportFigures(f: StoredFact | undefined, lines28: number, now: Date): F
   ];
 }
 
+/** Browser tests here against GM's Selenium suite, and the unit and API tests against GM's 300+. */
+function testFigures(ui: StoredFact | undefined, unit: StoredFact | undefined): Figure[] {
+  const out: Figure[] = [];
+  if (ui) {
+    const u = ui.value as FactValue<"ui-tests">;
+    const ended = [`${n(u.passed)} passed`, u.flaky && `${n(u.flaky)} flaky`, u.failed && `${n(u.failed)} failed`].filter(Boolean).join(", ");
+    out.push(
+      fromCi("Browser tests here (100+ Selenium at GM)", u.tests, n(u.tests), ui),
+      fromCi(`Runs on ${u.projects.join(" and ")}, last main`, u.passed, ended, ui),
+      fromCi("The browser suite took", u.durationMs, `${Math.round(u.durationMs / 1000)} s`, ui),
+    );
+  }
+  if (unit) {
+    const t = unit.value as FactValue<"unit-tests">;
+    out.push(fromCi("Unit, repository and API tests (300+ at GM)", t.passed, t.failed ? `${n(t.passed)} passing, ${n(t.failed)} failing` : n(t.passed), unit));
+  }
+  return out;
+}
+
 function boundaryFigures(f: StoredFact | undefined): Figure[] {
   if (!f) return [];
   const b = f.value as FactValue<"boundaries">;
@@ -104,6 +123,7 @@ async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> 
   const t = tests?.value as FactValue<"unit-tests"> | undefined;
   return {
     "re-architecture": boundaryFigures(facts.get("boundaries")),
+    "ui-tests": testFigures(facts.get("ui-tests"), tests),
     "excel-export": exportFigures(facts.get("export"), recent.lines, now),
     devsecops: [...coverageFigures(facts.get("coverage")), ...securityFigures(facts.get("security"))],
     "full-stack": [
