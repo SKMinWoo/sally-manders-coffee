@@ -51,6 +51,18 @@ export function addDays(date: ShopDate, n: number): ShopDate {
   return d.toISOString().slice(0, 10);
 }
 
+/**
+ * The same Austin wall-clock time `days` days earlier: 10:42 last Saturday for 10:42 this one,
+ * even across a daylight-saving change, where subtracting 7 × 24 hours would land an hour off.
+ */
+export function sameTimeDaysBefore(at: Date, days: number): Date {
+  const c = shopClock(at);
+  const hours = hoursOf(addDays(c.date, -days));
+  // the hour that skips forward in spring doesn't exist that day: take the one after it
+  const h = hours.find((x) => x.hour === c.hour) ?? hours.find((x) => x.hour > c.hour) ?? hours[hours.length - 1]!;
+  return new Date(h.start.getTime() + (at.getTime() % HOUR_MS));
+}
+
 /** 0 = Sunday, as Date.getDay. */
 export function weekdayOf(date: ShopDate): number {
   return new Date(`${date}T12:00:00Z`).getUTCDay();

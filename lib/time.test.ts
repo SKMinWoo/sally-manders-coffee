@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { addDays, hoursOf, isShopDate, shopClock, shopToday, weekdayOf } from "./time";
+import { addDays, hoursOf, isShopDate, shopClock, shopToday, sameTimeDaysBefore, weekdayOf } from "./time";
 
 test("an ordinary day has 24 hours, starting at Austin midnight", () => {
   const h = hoursOf("2026-11-14");
@@ -36,4 +36,11 @@ test("calendar helpers", () => {
   assert.ok(isShopDate("2026-11-14"));
   assert.ok(!isShopDate("2026-02-30"));
   assert.ok(!isShopDate("today"));
+});
+
+test("the same time last week is the same Austin wall clock, across a clock change", () => {
+  // Sat 7 Nov 2026 10:42 CST is 16:42 UTC; a week before, 31 Oct, Austin was on CDT, so 15:42 UTC
+  assert.equal(sameTimeDaysBefore(new Date("2026-11-07T16:42:30Z"), 7).toISOString(), "2026-10-31T15:42:30.000Z");
+  // an ordinary week: exactly 7 × 24 hours
+  assert.equal(sameTimeDaysBefore(new Date("2026-11-14T18:05:00Z"), 7).toISOString(), "2026-11-07T18:05:00.000Z");
 });
