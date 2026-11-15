@@ -15,7 +15,22 @@ describes: each claim gets a small working twin here that you can click, read or
 | `design/art/` | The Blender script that renders the to-go cup |
 | `design/sim/` | The first, aggregate-only simulator the mockups were filled from |
 
-The application itself arrives through the pull requests that follow this commit.
+The application is Next.js (App Router) and TypeScript on Vercel, with Postgres on Neon through
+Drizzle, and zod at every boundary. Decisions worth explaining are written down in
+[`docs/decisions/`](docs/decisions/).
+
+## Working on it
+
+Node 24 or later.
+
+```bash
+npm ci
+npm run dev      # http://localhost:3000
+npm run check    # typecheck, lint, tests
+```
+
+Dependencies are pinned to exact versions and installed with scripts disabled (`.npmrc`), and CI
+verifies their registry signatures on every run.
 
 ## Viewing the mockups
 
