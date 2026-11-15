@@ -50,3 +50,22 @@ export async function expectNoSidewaysScroll(page: Page) {
 
 /** "$4.25" or "4.25" as cents. */
 export const cents = (text: string) => Math.round(Number(text.replace(/[^0-9.]/g, "")) * 100);
+
+/** React has hydrated the board, so a tap reaches its handler instead of a dead button. */
+export async function openOrderPage(page: Page) {
+  await page.goto("/order");
+  await page.waitForFunction(() => {
+    const b = document.querySelector("#board button");
+    return !!b && Object.keys(b).some((k) => k.startsWith("__reactProps"));
+  });
+}
+
+export const add = (page: Page, name: string) => page.getByRole("button", { name: new RegExp(`^Add ${name},`) }).click();
+
+/** Places an order of `items` and lands on its page. */
+export async function placeOrder(page: Page, items: string[]) {
+  await openOrderPage(page);
+  for (const name of items) await add(page, name);
+  await page.getByRole("button", { name: "Put it on the rail" }).click();
+  await page.waitForURL(/\/order\/[2-9a-z]{10}$/);
+}

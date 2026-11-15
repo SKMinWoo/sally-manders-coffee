@@ -19,8 +19,13 @@ export default defineConfig({
   retries: CI ? 1 : 0,
   workers: CI ? 2 : undefined,
   reporter: CI
-    ? [["list"], ["./scripts/ci/ui-test-facts.mjs", { outputFile: ".ci/ui-tests.json" }], ["html", { open: "never" }]]
-    : [["list"]],
+    ? [
+        ["list"],
+        ["./scripts/ci/ui-test-facts.mjs", { outputFile: ".ci/ui-tests.json" }],
+        ["./scripts/ci/barcode-facts.mjs", { outputFile: ".ci/barcodes.json" }],
+        ["html", { open: "never" }],
+      ]
+    : [["list"], ["./scripts/ci/barcode-facts.mjs", { outputFile: ".ci/barcodes.json" }]],
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
     screenshot: "only-on-failure",

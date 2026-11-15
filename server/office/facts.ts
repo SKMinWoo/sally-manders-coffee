@@ -28,6 +28,20 @@ export const FACT_KINDS = {
     skipped: Count,
     durationMs: Count,
   }),
+  /**
+   * The barcode tests (e2e/barcode.spec.ts) on main: barcodes read back from screenshots, of real
+   * order pages and of a generated sheet, and damaged ones that had to be refused. A misread is
+   * any barcode read as something it doesn't say, damaged or not.
+   */
+  barcodes: z.strictObject({
+    read: Count,
+    onPages: Count,
+    unread: Count,
+    misread: Count,
+    damaged: Count,
+    refused: Count,
+    durationMs: Count,
+  }),
   /** Node's coverage of every module in lib/ and server/, and the gate's verdict (null: no bar set yet). */
   coverage: z.strictObject({
     lines: Percent,

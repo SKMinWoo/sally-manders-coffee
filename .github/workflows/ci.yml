@@ -50,7 +50,8 @@ jobs:
       # runner, from Playwright's own CDN; nothing is downloaded on a laptop.
       - name: Browser for the UI tests
         run: npx playwright install --with-deps --only-shell chromium
-      # Gate: every browser test passes on desktop and phone. The counts land in .ci/ui-tests.json.
+      # Gate: every browser test passes on desktop and phone, the barcode tests among them. The
+      # counts land in .ci/ui-tests.json, and what the barcode tests read in .ci/barcodes.json.
       - name: UI tests (Playwright, desktop and phone)
         run: npx playwright test
 

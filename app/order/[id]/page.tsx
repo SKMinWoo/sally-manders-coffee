@@ -30,6 +30,7 @@ export default async function OrderStatus({ params }: { params: Promise<{ id: st
         date={formatCheckDate(order.day)}
         ready={formatWait(wait)}
         lines={order.lines.map((l) => ({ id: l.itemId, qty: l.qty, name: l.name, cents: l.priceCents }))}
+        barcode={order.publicId}
       />
       <Countdown readyAt={order.readyAt.getTime()} serverNow={now.getTime()} />
       <Link href="/order" className={s.again}>Order something else</Link>

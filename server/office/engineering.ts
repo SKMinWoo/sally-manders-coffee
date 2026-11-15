@@ -100,6 +100,19 @@ function testFigures(ui: StoredFact | undefined, unit: StoredFact | undefined): 
   return out;
 }
 
+/** The barcodes read back from the pixels, the damaged ones refused, and none read wrong. */
+function barcodeFigures(f: StoredFact | undefined): Figure[] {
+  if (!f) return [];
+  const b = f.value as FactValue<"barcodes">;
+  const shown = b.read + b.unread;
+  return [
+    fromCi(`Barcodes read back from screenshots, last main (${n(b.onPages)} on real order pages)`, b.read, b.unread ? `${n(b.read)} of ${n(shown)}` : n(b.read), f),
+    fromCi("Damaged barcodes refused", b.refused, `${n(b.refused)} of ${n(b.damaged)}`, f),
+    fromCi("Read as something they don't say", b.misread, n(b.misread), f),
+    fromCi("The barcode pass took (by hand at GM: 2+ days a cycle)", b.durationMs, `${Math.round(b.durationMs / 1000)} s`, f),
+  ];
+}
+
 function boundaryFigures(f: StoredFact | undefined): Figure[] {
   if (!f) return [];
   const b = f.value as FactValue<"boundaries">;
@@ -124,6 +137,7 @@ async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> 
   return {
     "re-architecture": boundaryFigures(facts.get("boundaries")),
     "ui-tests": testFigures(facts.get("ui-tests"), tests),
+    barcode: barcodeFigures(facts.get("barcodes")),
     "excel-export": exportFigures(facts.get("export"), recent.lines, now),
     devsecops: [...coverageFigures(facts.get("coverage")), ...securityFigures(facts.get("security"))],
     "full-stack": [

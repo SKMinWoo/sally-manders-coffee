@@ -1,3 +1,4 @@
+import { bars, QUIET } from "@/lib/code128";
 import { formatPrice, taxCents } from "@/lib/money";
 import { formatCheckDate, formatWait } from "@/lib/time";
 import type { MenuRow } from "@/server/menu";
@@ -15,7 +16,8 @@ export interface CheckLine {
 /**
  * A diner guest check: green rules, the server's ballpoint, the total in red. The same paper is
  * used for the checks on the rail behind the scenes, so the two views read as one shop.
- * Given `onStep` (the order page), each line gets a − and + in the margin.
+ * Given `onStep` (the order page), each line gets a − and + in the margin. Given `barcode` (an
+ * order's status page), it prints that order's id at the foot as a Code 128 barcode.
  */
 export function GuestCheck({
   ticket,
@@ -24,6 +26,7 @@ export function GuestCheck({
   lines,
   onStep,
   empty,
+  barcode,
 }: {
   ticket: string;
   date: string;
@@ -31,6 +34,7 @@ export function GuestCheck({
   lines: CheckLine[];
   onStep?: (id: string, delta: 1 | -1) => void;
   empty?: string;
+  barcode?: string;
 }) {
   const subtotal = lines.reduce((sum, l) => sum + l.qty * l.cents, 0);
   const tax = taxCents(subtotal);
@@ -76,7 +80,25 @@ export function GuestCheck({
         </div>
       </dl>
       <p className={s.thanks}>Thank you · come again</p>
+      {barcode && <Barcode value={barcode} />}
     </div>
+  );
+}
+
+/**
+ * A Code 128 barcode, two pixels a module, in the check's ink. The quiet zone either side (ten
+ * modules) is the check's own paper: the barcode is centred, with at least that much to spare.
+ */
+function Barcode({ value }: { value: string }) {
+  const { modules, bars: list } = bars(value);
+  const width = modules - 2 * QUIET;
+  return (
+    <figure className={s.barcode} data-barcode={value}>
+      <svg viewBox={`0 0 ${width} 1`} width={width * 2} height={44} preserveAspectRatio="none" role="img" aria-label={`Barcode of order ${value}`}>
+        <path d={list.map(({ x, w }) => `M${x - QUIET} 0h${w}v1h-${w}z`).join("")} fill="currentColor" />
+      </svg>
+      <figcaption>{value}</figcaption>
+    </figure>
   );
 }
 

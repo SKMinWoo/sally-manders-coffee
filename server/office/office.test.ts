@@ -206,6 +206,24 @@ test("ui-tests: the browser suite's tests, its runs and how they ended, beside t
   }
 });
 
+test("barcode: read back from the pixels, damaged ones refused, none read wrong", async () => {
+  const at = NOON.getTime() + 600_000;
+  const value = { read: 73, onPages: 2, unread: 1, misread: 0, damaged: 32, refused: 32, durationMs: 23_300 };
+  assert.equal((await ingestCi(db, req({ run: run(601), facts: [{ kind: "barcodes", value }] }), new Date(at), SECRET)).status, 201);
+  const e = Engineering.parse((await engineering(db, new Date(at + 60_000))).body);
+  const c = e.claims.find((x) => x.id === "barcode")!;
+  assert.equal(c.status, "running");
+  const f = new Map(c.figures.map((x) => [x.label, x.display]));
+  assert.equal(f.get("Barcodes read back from screenshots, last main (2 on real order pages)"), "73 of 74");
+  assert.equal(f.get("Damaged barcodes refused"), "32 of 32");
+  assert.equal(f.get("Read as something they don't say"), "0");
+  assert.equal(f.get("The barcode pass took (by hand at GM: 2+ days a cycle)"), "23 s");
+  for (const bad of [{ ...value, misread: -1 }, { ...value, read: 1.5 }, { ...value, scanned: 3 }]) {
+    const b = { run: run(602), facts: [{ kind: "barcodes", value: bad }] };
+    assert.equal((await ingestCi(db, req(b), new Date(at), SECRET)).status, 422, JSON.stringify(bad));
+  }
+});
+
 test("every file a claim or a factor points at is in the repository", () => {
   const paths = [
     ...CLAIMS.flatMap((c) => c.code.map((x) => x.path)),

@@ -43,3 +43,8 @@
 .steps button::before { content: ""; position: absolute; inset: -7px -3px; } /* a 44px-tall target for a thumb */
 .steps button:active { translate: 0 1px; }
 .thanks { margin-top: 10px; text-align: center; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+
+/* the order page: the order's id as a barcode, at the foot of the check */
+.barcode { margin: 14px auto 0; width: fit-content; max-width: 100%; text-align: center; }
+.barcode svg { display: block; max-width: 100%; height: 44px; color: var(--check-ink); }
+.barcode figcaption { margin-top: 4px; font-size: 13px; letter-spacing: .32em; text-indent: .32em; }
