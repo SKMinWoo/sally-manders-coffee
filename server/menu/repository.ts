@@ -1,9 +1,9 @@
 import { asc, eq, sql } from "drizzle-orm";
-import { MENU } from "@/server/sim/menu";
-import type { Db } from "../client";
-import { menuItems } from "../schema";
+import { MENU } from "./catalog";
+import type { Db } from "@/server/platform/db/client";
+import { menuItems } from "@/server/platform/db/schema";
 
-/** Makes the menu table match server/sim/menu.ts. Safe to run on every deploy or cron. */
+/** Makes the menu table match the catalog (./catalog.ts). Safe to run on every deploy or cron. */
 export async function syncMenu(db: Db): Promise<void> {
   await db
     .insert(menuItems)

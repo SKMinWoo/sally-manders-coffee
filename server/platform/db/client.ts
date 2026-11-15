@@ -14,7 +14,7 @@ let cached: Db | undefined;
 
 /**
  * The database the app reads: Neon when DATABASE_URL is set, and in development without it, a
- * local PGlite seeded with a week of simulated days (server/db/local.ts).
+ * local PGlite seeded with a week of simulated days (./local.ts).
  */
 export async function shopDb(): Promise<Db> {
   if (process.env.DATABASE_URL || process.env.NODE_ENV === "production") return db();

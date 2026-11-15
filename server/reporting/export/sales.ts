@@ -3,8 +3,8 @@
 // check's lines must add up to its subtotal) and compared with what the visitor already has.
 
 import { addDays, isShopDate, shopToday } from "@/lib/time";
-import type { Db } from "@/server/db/client";
-import { saleLines, spanStats, type Span, type SpanStats } from "@/server/db/repositories/sales";
+import type { Db } from "@/server/platform/db/client";
+import { saleLines, spanStats, type Span, type SpanStats } from "../sales";
 import { isNothingNew as defaultNothingNew, marksIn, tagFor, type ExportMark } from "./nothing-new";
 import { workbook, type Cell, type Sheet } from "./xlsx";
 

@@ -4,8 +4,8 @@ import { connection } from "next/server";
 import { GuestCheck } from "@/components/shop/GuestCheck";
 import { PUBLIC_ID } from "@/lib/ids";
 import { formatCheckDate, formatWait } from "@/lib/time";
-import { shopDb } from "@/server/db/client";
-import { findOrder } from "@/server/db/repositories/orders";
+import { shopDb } from "@/server/platform/db/client";
+import { findOrder } from "@/server/orders";
 import s from "../order.module.css";
 import { Countdown } from "./Countdown";
 

@@ -2,9 +2,9 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { shopDb } from "@/server/db/client";
-import { placeVisitorOrder } from "@/server/shop/order";
-import { clientIp, visitorHashOf } from "@/server/shop/visitor";
+import { shopDb } from "@/server/platform/db/client";
+import { placeVisitorOrder } from "@/server/orders";
+import { clientIp, visitorHashOf } from "@/server/orders";
 
 export type OrderState = { message: string } | null;
 

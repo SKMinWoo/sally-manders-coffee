@@ -1,7 +1,7 @@
 import { addDays, shopToday, type ShopDate } from "@/lib/time";
-import type { Db } from "@/server/db/client";
-import { syncMenu } from "@/server/db/repositories/menu";
-import { writeSimDay, writtenDays } from "@/server/db/repositories/orders";
+import type { Db } from "@/server/platform/db/client";
+import { syncMenu } from "@/server/menu";
+import { writeSimDay, writtenDays } from "./repository";
 import { simulateDay } from "./day";
 
 export interface RunReport {

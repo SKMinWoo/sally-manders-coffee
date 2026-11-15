@@ -1,12 +1,12 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import type { Db } from "@/server/db/client";
-import { testDb } from "@/server/db/test-db";
-import { simulateDay } from "@/server/sim/day";
-import { ensureDays } from "@/server/sim/run";
-import { cronAuthorised } from "@/server/shop/cron";
+import type { Db } from "@/server/platform/db/client";
+import { testDb } from "@/server/platform/db/test-db";
+import { simulateDay } from "@/server/simulator";
+import { ensureDays } from "@/server/simulator";
+import { cronAuthorised } from "@/server/platform/auth";
 import { openApiDocument } from "./openapi";
-import { respond } from "./respond";
+import { respond } from "../platform/http";
 import { DayHours, DayItems, DaySummary, Health, Menu, Problem } from "./schemas";
 import { day, dayHours, dayItems, health, menu } from "./v1";
 

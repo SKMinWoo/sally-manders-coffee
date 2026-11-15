@@ -1,8 +1,8 @@
 import { and, count, desc, eq } from "drizzle-orm";
-import type { FactKind, IngestBody } from "@/server/office/facts";
-import type { Db } from "../client";
-import { engineeringFacts, orders } from "../schema";
-import { placedBy } from "./orders";
+import type { FactKind, IngestBody } from "./facts";
+import type { Db } from "@/server/platform/db/client";
+import { engineeringFacts, orders } from "@/server/platform/db/schema";
+import { placedBy } from "@/server/orders";
 
 export type StoredFact = { kind: FactKind; value: unknown; runUrl: string; sha: string; recordedAt: Date };
 

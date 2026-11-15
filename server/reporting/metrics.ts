@@ -3,9 +3,9 @@
 
 import { and, desc, eq, sql } from "drizzle-orm";
 import { SHOP_TZ, type ShopDate } from "@/lib/time";
-import type { Db } from "../client";
-import { menuItems, orderLines, orders } from "../schema";
-import { placedBy } from "./orders";
+import type { Db } from "@/server/platform/db/client";
+import { menuItems, orderLines, orders } from "@/server/platform/db/schema";
+import { placedBy } from "@/server/orders";
 
 export interface DaySummary {
   orders: number;

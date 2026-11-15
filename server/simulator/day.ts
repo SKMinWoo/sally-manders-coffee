@@ -6,7 +6,7 @@ import { publicIdFrom } from "@/lib/ids";
 import { taxCents } from "@/lib/money";
 import { hoursOf, weekdayOf, type ShopDate } from "@/lib/time";
 import { capacityAt, demandAt } from "./demand";
-import { daypartOf, MENU } from "./menu";
+import { daypartOf, MENU } from "@/server/menu";
 import { rngFrom, seedOf } from "./rng";
 
 export interface OrderLine {

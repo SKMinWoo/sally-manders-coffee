@@ -47,11 +47,11 @@ export const CLAIMS: Claim[] = [
     exhibit: 4,
     status: "running",
     code: [
-      { label: "The streaming zip", path: "server/export/zip.ts" },
-      { label: "The workbook", path: "server/export/xlsx.ts" },
-      { label: "Keyset paging", path: "server/db/repositories/sales.ts" },
-      { label: "The check", path: "server/export/check.ts" },
-      { label: "No-op detection", path: "server/export/nothing-new.ts" },
+      { label: "The streaming zip", path: "server/reporting/export/zip.ts" },
+      { label: "The workbook", path: "server/reporting/export/xlsx.ts" },
+      { label: "Keyset paging", path: "server/reporting/sales.ts" },
+      { label: "The check", path: "server/reporting/export/check.ts" },
+      { label: "No-op detection", path: "server/reporting/export/nothing-new.ts" },
     ],
   },
   {

@@ -2,12 +2,12 @@ import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { eq } from "drizzle-orm";
 import { PUBLIC_ID } from "@/lib/ids";
-import type { Db } from "@/server/db/client";
-import { findOrder } from "@/server/db/repositories/orders";
-import { orders } from "@/server/db/schema";
-import { testDb } from "@/server/db/test-db";
-import { ensureDays } from "@/server/sim/run";
-import { LIMITS, placeVisitorOrder, visitorTicket } from "./order";
+import type { Db } from "@/server/platform/db/client";
+import { findOrder } from "./repository";
+import { orders } from "@/server/platform/db/schema";
+import { testDb } from "@/server/platform/db/test-db";
+import { ensureDays } from "@/server/simulator";
+import { LIMITS, placeVisitorOrder, visitorTicket } from "./place";
 
 let db: Db, close: () => Promise<void>;
 before(async () => {

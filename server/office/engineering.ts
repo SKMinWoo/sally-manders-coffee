@@ -1,9 +1,9 @@
 // What the back office shows and /api/v1/engineering returns: each résumé claim with the figures
 // its twin has measured. One function feeds both, so the page and the API cannot disagree.
 
-import type { Db } from "@/server/db/client";
-import { latestFacts, ordersToDate, type StoredFact } from "@/server/db/repositories/facts";
-import { spanStats } from "@/server/db/repositories/sales";
+import type { Db } from "@/server/platform/db/client";
+import { latestFacts, ordersToDate, type StoredFact } from "./repository";
+import { spanStats } from "@/server/reporting";
 import { addDays, shopToday } from "@/lib/time";
 import { CLAIMS, codeUrl, type Claim } from "./claims";
 import type { FactValue } from "./facts";

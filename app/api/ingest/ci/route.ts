@@ -1,7 +1,7 @@
-import { handle, respond } from "@/server/api/respond";
+import { handle, respond } from "@/server/platform/http";
 import { problem } from "@/server/api/v1";
-import { shopDb } from "@/server/db/client";
-import { ingestCi, MAX_BODY_BYTES } from "@/server/office/ingest";
+import { shopDb } from "@/server/platform/db/client";
+import { ingestCi, MAX_BODY_BYTES } from "@/server/office";
 
 /** CI runs on main post what they measured here (see server/office/facts.ts and .github/workflows/ci.yml). */
 export async function POST(req: Request) {

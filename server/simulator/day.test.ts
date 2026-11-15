@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { taxCents } from "@/lib/money";
 import { hoursOf, shopClock } from "@/lib/time";
 import { simulateDay, waitSeconds } from "./day";
-import { MENU } from "./menu";
+import { MENU } from "@/server/menu";
 
 const day = simulateDay("2026-11-13");
 

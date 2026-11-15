@@ -1,8 +1,8 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
-import type { Db } from "@/server/db/client";
-import { testDb } from "@/server/db/test-db";
-import { ensureDays } from "@/server/sim/run";
+import type { Db } from "@/server/platform/db/client";
+import { testDb } from "@/server/platform/db/test-db";
+import { ensureDays } from "@/server/simulator";
 import { openApiDocument } from "@/server/api/openapi";
 import { Engineering, Problem } from "@/server/api/schemas";
 import { engineering } from "@/server/api/v1";

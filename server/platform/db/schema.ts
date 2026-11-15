@@ -31,7 +31,7 @@ export const menuItems = pgTable("menu_items", {
 /**
  * Every order, simulated or real. Simulated days are written ahead (docs/decisions/0002), so
  * this table holds orders that have not "happened" yet: read it through `placedBy()` in
- * repositories/orders.ts, never directly.
+ * server/orders, never directly.
  */
 export const orders = pgTable("orders", {
   id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),

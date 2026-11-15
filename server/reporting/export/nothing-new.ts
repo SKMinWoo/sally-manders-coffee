@@ -2,7 +2,7 @@
 // last time (If-None-Match); if nothing has changed since, it is answered 304 "Nothing changed
 // since your last export" and no workbook is built at all.
 
-import type { Span, SpanStats } from "@/server/db/repositories/sales";
+import type { Span, SpanStats } from "../sales";
 
 /** What a workbook's tag remembers about the span it was built from. */
 export type ExportMark = Span & Pick<SpanStats, "orders" | "lines" | "lastOrderId" | "lineTotalCents">;

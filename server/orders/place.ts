@@ -6,9 +6,9 @@ import { z } from "zod";
 import { randomPublicId } from "@/lib/ids";
 import { taxCents } from "@/lib/money";
 import { shopToday } from "@/lib/time";
-import type { Db } from "@/server/db/client";
-import { listMenu } from "@/server/db/repositories/menu";
-import { countFromVisitor, countVisitorOrders, insertOrder } from "@/server/db/repositories/orders";
+import type { Db } from "@/server/platform/db/client";
+import { listMenu } from "@/server/menu";
+import { countFromVisitor, countVisitorOrders, insertOrder } from "./repository";
 import { expectedWait, loadNow } from "./wait";
 
 export const MAX_LINES = 10;

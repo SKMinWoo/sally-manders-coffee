@@ -1,6 +1,5 @@
 import { formatPrice } from "@/lib/money";
-import type { MenuRow } from "@/server/db/repositories/menu";
-import { HOUSE_ID, MENU_GROUPS } from "@/server/sim/menu";
+import type { MenuGroup, MenuRow } from "@/server/menu";
 import s from "./MenuBoard.module.css";
 
 /**
@@ -9,11 +8,17 @@ import s from "./MenuBoard.module.css";
  */
 export function MenuBoard({
   menu,
+  groups,
+  houseId,
   title = "Today’s board",
   onAdd,
   counts = {},
 }: {
   menu: MenuRow[];
+  /** the board's sections in order, and the house drink: from the menu module, passed in by the
+   * server page so a client board never imports the module (and its database code) itself */
+  groups: { id: MenuGroup; title: string }[];
+  houseId: string;
   title?: string;
   onAdd?: (id: string) => void;
   counts?: Record<string, number>;
@@ -22,7 +27,7 @@ export function MenuBoard({
     <section className={s.row} id="board" aria-labelledby="board-title">
       <h2 id="board-title" className={`script ${s.title}`}>{title}</h2>
       <div className={`${s.board} ${onAdd ? s.orderable : ""}`}>
-        {MENU_GROUPS.map((g) => (
+        {groups.map((g) => (
           <div key={g.id} className={s[g.id]}>
             <h3 className="block">{g.title}</h3>
             <ul>
@@ -40,7 +45,7 @@ export function MenuBoard({
                   </>
                 );
                 return (
-                  <li key={m.id} className={m.id === HOUSE_ID ? s.house : undefined}>
+                  <li key={m.id} className={m.id === houseId ? s.house : undefined}>
                     {onAdd ? (
                       <button type="button" className={s.item} onClick={() => onAdd(m.id)} aria-label={`Add ${m.name}, $${formatPrice(m.priceCents)}${n ? `, ${n} on your check` : ""}`}>
                         {body}

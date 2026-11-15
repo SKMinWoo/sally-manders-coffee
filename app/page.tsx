@@ -4,7 +4,8 @@ import o from "./order/order.module.css";
 import { ExampleCheck } from "@/components/shop/GuestCheck";
 import { MenuBoard } from "@/components/shop/MenuBoard";
 import { WallSign } from "@/components/shop/WallSign";
-import { getMenu, getPulse } from "@/server/shop/storefront";
+import { HOUSE_ID, MENU_GROUPS } from "@/server/menu";
+import { getMenu, getPulse } from "@/server/orders";
 import s from "./page.module.css";
 
 export default async function Storefront() {
@@ -13,7 +14,7 @@ export default async function Storefront() {
   return (
     <main>
       <WallSign />
-      <MenuBoard menu={menu} />
+      <MenuBoard menu={menu} groups={MENU_GROUPS} houseId={HOUSE_ID} />
       <section className={s.checkrow} aria-labelledby="rail-title">
         <div>
           <p className="cond" style={{ color: "var(--teal)" }}>Your order</p>

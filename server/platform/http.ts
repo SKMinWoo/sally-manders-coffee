@@ -1,5 +1,20 @@
-import type { ApiResult } from "./v1";
-import { problem } from "./v1";
+// What a handler returns, and how it goes out: shared by every module that answers a request, so
+// none of them depends on the API's routes to say "400".
+
+import { z } from "zod";
+
+export type ApiResult = { status: number; body: unknown; cache: "public" | "none" };
+
+/** RFC 9457 problem details. */
+export const Problem = z
+  .object({ type: z.string(), title: z.string(), status: z.int(), detail: z.string().optional() })
+  .meta({ id: "Problem" });
+
+export const problem = (status: number, title: string, detail?: string): ApiResult => ({
+  status,
+  body: Problem.parse({ type: "about:blank", title, status, detail }),
+  cache: "none",
+});
 
 const CACHE = {
   // a minute fresh at Vercel's edge, then served stale for five more while one request refreshes it

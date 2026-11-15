@@ -3,9 +3,9 @@
 
 import { unstable_cache } from "next/cache";
 import { addDays, sameTimeDaysBefore, shopClock, type ShopDate } from "@/lib/time";
-import { shopDb } from "@/server/db/client";
-import { daySummary, itemsSold, ordersByHour, type DaySummary, type ItemSold } from "@/server/db/repositories/metrics";
-import { daypartOf, DAYPARTS, type Daypart } from "@/server/sim/menu";
+import { shopDb } from "@/server/platform/db/client";
+import { daySummary, itemsSold, ordersByHour, type DaySummary, type ItemSold } from "./metrics";
+import { daypartOf, DAYPARTS, type Daypart } from "@/server/menu";
 
 export interface Behind {
   date: ShopDate;

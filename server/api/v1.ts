@@ -3,26 +3,21 @@
 
 import type { z } from "zod";
 import { isShopDate, shopToday, type ShopDate } from "@/lib/time";
-import type { Db } from "@/server/db/client";
-import { listMenu } from "@/server/db/repositories/menu";
-import { daySummary, itemsSold, ordersByHour } from "@/server/db/repositories/metrics";
-import { writtenDays } from "@/server/db/repositories/orders";
-import { daysAhead } from "@/server/sim/run";
-import { engineering as engineeringReport } from "@/server/office/engineering";
-import { DayHours, DayItems, DaySummary, Engineering, Health, Menu, Problem } from "./schemas";
+import type { Db } from "@/server/platform/db/client";
+import { listMenu } from "@/server/menu";
+import { daySummary, itemsSold, ordersByHour } from "@/server/reporting";
+import { daysAhead, writtenDays } from "@/server/simulator";
+import { engineering as engineeringReport } from "@/server/office";
+import { problem, type ApiResult } from "@/server/platform/http";
+import { DayHours, DayItems, DaySummary, Engineering, Health, Menu } from "./schemas";
 
-export type ApiResult = { status: number; body: unknown; cache: "public" | "none" };
+// the routes and tests have always imported these from here
+export { problem, type ApiResult };
 
 const ok = <S extends z.ZodType>(schema: S, body: z.input<S>, cache: ApiResult["cache"] = "public"): ApiResult => ({
   status: 200,
   body: schema.parse(body), // a response that breaks the contract fails here, loudly, not in a client
   cache,
-});
-
-export const problem = (status: number, title: string, detail?: string): ApiResult => ({
-  status,
-  body: Problem.parse({ type: "about:blank", title, status, detail }),
-  cache: "none",
 });
 
 /** "today" or a date, checked: a malformed date is a 400, a day that hasn't come yet a 404. */

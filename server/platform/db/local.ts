@@ -7,7 +7,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { shopToday } from "@/lib/time";
-import { backfillDays, daysAhead, ensureDays } from "@/server/sim/run";
+import { backfillDays, daysAhead, ensureDays } from "@/server/simulator";
 import type { Db } from "./client";
 import * as schema from "./schema";
 

@@ -4,9 +4,9 @@
 
 import { unstable_cache } from "next/cache";
 import { shopToday, type ShopDate } from "@/lib/time";
-import { shopDb } from "@/server/db/client";
-import { listMenu } from "@/server/db/repositories/menu";
-import { countOrders } from "@/server/db/repositories/orders";
+import { shopDb } from "@/server/platform/db/client";
+import { listMenu } from "@/server/menu";
+import { countOrders } from "./repository";
 import { expectedWait, loadNow } from "./wait";
 
 export const getMenu = unstable_cache(async () => listMenu(await shopDb()), ["menu"], { revalidate: 300 });

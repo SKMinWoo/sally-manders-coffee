@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { addDays, formatCheckDate, weekdayOf } from "@/lib/time";
-import { getBehind } from "@/server/shop/behind";
+import { getBehind } from "@/server/reporting";
 import { ExportSales } from "./ExportSales";
 import { HourChart } from "./HourChart";
 import { LEAD_METRICS, METRICS, type MetricKey } from "./metrics";

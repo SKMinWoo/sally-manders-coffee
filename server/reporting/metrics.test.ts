@@ -1,10 +1,10 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { taxCents } from "@/lib/money";
-import type { Db } from "../client";
-import { testDb } from "../test-db";
-import { simulateDay } from "@/server/sim/day";
-import { ensureDays } from "@/server/sim/run";
+import type { Db } from "@/server/platform/db/client";
+import { testDb } from "@/server/platform/db/test-db";
+import { simulateDay } from "@/server/simulator";
+import { ensureDays } from "@/server/simulator";
 import { daySummary, itemsSold, ordersByHour } from "./metrics";
 
 let db: Db, close: () => Promise<void>;

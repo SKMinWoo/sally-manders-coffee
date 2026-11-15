@@ -14,7 +14,7 @@ describes: each claim gets a small working twin here that you can click, read or
 | `/` and `/order` | The storefront, and ordering ahead: a pretend checkout that puts your check on the rail with a countdown |
 | `/behind` | Behind the scenes: today so far against last week at the same time |
 | `/docs` and `/api/v1/*` | The read-only API (health, menu, a day's summary, hours and items), documented from its own schemas |
-| `server/sim/` | The simulator: a seeded day of orders, written a day ahead by a daily job |
+| `server/` | Five domain modules (menu, simulator, orders, reporting, office), each used only through its `index.ts`, on a shared `platform/` (database, HTTP results, auth); the simulator writes a seeded day of orders a day ahead, by a daily job. The boundaries are a lint rule: see [`docs/decisions/0004`](docs/decisions/0004-domain-modules.md) |
 | `design/mockups/` | The five theme mockups the look was picked from (the sign painter won), the logo sheet, and Sally's entrance animation |
 | `design/art/` | The Blender script that renders the to-go cup |
 | `design/sim/` | The first, aggregate-only simulator the mockups were filled from |

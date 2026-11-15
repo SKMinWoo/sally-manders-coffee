@@ -1,11 +1,11 @@
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
 import { eq, sql } from "drizzle-orm";
-import type { Db } from "@/server/db/client";
-import { saleLines, spanStats } from "@/server/db/repositories/sales";
-import { orders } from "@/server/db/schema";
-import { testDb } from "@/server/db/test-db";
-import { ensureDays } from "@/server/sim/run";
+import type { Db } from "@/server/platform/db/client";
+import { saleLines, spanStats } from "../sales";
+import { orders } from "@/server/platform/db/schema";
+import { testDb } from "@/server/platform/db/test-db";
+import { ensureDays } from "@/server/simulator";
 import { checkSalesWorkbook, readWorkbook, unzip } from "./check";
 import { marksIn, tagFor } from "./nothing-new";
 import { exportSales, MAX_DAYS } from "./sales";

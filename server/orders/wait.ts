@@ -1,8 +1,8 @@
 import { shopClock } from "@/lib/time";
-import type { Db } from "@/server/db/client";
-import { countPlacedBetween } from "@/server/db/repositories/orders";
-import { waitSeconds } from "@/server/sim/day";
-import { capacityAt } from "@/server/sim/demand";
+import type { Db } from "@/server/platform/db/client";
+import { countPlacedBetween } from "./repository";
+import { waitSeconds } from "@/server/simulator";
+import { capacityAt } from "@/server/simulator";
 
 const HOUR_MS = 3_600_000;
 

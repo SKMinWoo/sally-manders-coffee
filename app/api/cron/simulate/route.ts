@@ -1,6 +1,6 @@
-import { shopDb } from "@/server/db/client";
-import { cronAuthorised } from "@/server/shop/cron";
-import { daysAhead, ensureDays } from "@/server/sim/run";
+import { shopDb } from "@/server/platform/db/client";
+import { cronAuthorised } from "@/server/platform/auth";
+import { daysAhead, ensureDays } from "@/server/simulator";
 
 /**
  * The daily job (vercel.json, 09:00 UTC, which is 3 or 4 am in Austin): writes today and tomorrow

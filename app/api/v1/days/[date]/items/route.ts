@@ -1,5 +1,5 @@
-import { shopDb } from "@/server/db/client";
-import { handle } from "@/server/api/respond";
+import { shopDb } from "@/server/platform/db/client";
+import { handle } from "@/server/platform/http";
 import { dayItems } from "@/server/api/v1";
 
 export const GET = (_req: Request, ctx: { params: Promise<{ date: string }> }) =>

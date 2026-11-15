@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { shopDb } from "@/server/db/client";
-import type { Role } from "@/server/office/claims";
-import { engineering, type ClaimReport, type Figure } from "@/server/office/engineering";
+import { shopDb } from "@/server/platform/db/client";
+import type { Role } from "@/server/office";
+import { engineering, type ClaimReport, type Figure } from "@/server/office";
 import s from "./office.module.css";
 
 export const metadata: Metadata = { title: "The back office" };
