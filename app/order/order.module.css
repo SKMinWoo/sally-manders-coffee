@@ -1,0 +1,26 @@
+.form { display: grid; justify-items: center; gap: 18px; padding: 0 var(--gutter) 64px; }
+.go {
+  font: 800 26px/1 var(--font-block), sans-serif;
+  font-variation-settings: "opsz" 72;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  background: var(--red);
+  color: var(--cream);
+  padding: 16px 30px 14px;
+  border-radius: 8px;
+  box-shadow: 0 4px 0 var(--black);
+  transition: translate .1s ease-out, box-shadow .1s ease-out, opacity .15s ease-out;
+}
+.go:hover:not(:disabled) { translate: 0 -1px; box-shadow: 0 5px 0 var(--black); }
+.go:active:not(:disabled) { translate: 0 3px; box-shadow: 0 1px 0 var(--black); }
+.go:disabled { opacity: .45; cursor: not-allowed; }
+.alert { font: 700 18px/1.3 var(--font-cond), sans-serif; color: var(--red); text-align: center; }
+.note { text-align: center; padding: 0; }
+
+/* the status page */
+.status { display: grid; justify-items: center; gap: 22px; padding: 56px var(--gutter) 72px; text-align: center; }
+.rail { width: min(520px, 100%); height: 14px; border-radius: 7px; background: linear-gradient(#C9C2B4, #8E8678); box-shadow: inset 0 -2px 0 #0003; margin-bottom: -26px; position: relative; z-index: 1; }
+.clock { font: 800 clamp(48px, 9vw, 88px)/1 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; color: var(--red); font-variant-numeric: tabular-nums; }
+.up { font: 400 clamp(44px, 8vw, 76px)/1 var(--font-script), cursive; color: var(--teal); }
+.label { font: 700 15px/1 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+.again { font: 700 18px/1 var(--font-cond), sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 4px; }

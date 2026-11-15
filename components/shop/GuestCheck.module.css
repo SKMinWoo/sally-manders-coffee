@@ -1,0 +1,41 @@
+.check {
+  width: min(360px, 100%);
+  background: var(--check);
+  color: var(--check-ink);
+  border-radius: 3px;
+  padding: 18px 20px 22px;
+  rotate: 2deg;
+  box-shadow: 0 18px 28px -14px #1A161366;
+  font-family: var(--font-cond), sans-serif;
+}
+.top { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--rule); padding-bottom: 8px; }
+.top b { font: 900 26px/1 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; color: var(--red); letter-spacing: .04em; text-transform: uppercase; }
+.no { font-size: 20px; font-weight: 700; color: var(--red); }
+.meta { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 2px solid var(--rule); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+.meta span { padding: 6px 4px; border-right: 1px solid var(--rule); }
+.meta span:last-child { border-right: 0; }
+.meta em { display: block; font: 400 21px/1.1 var(--font-script), cursive; letter-spacing: 0; text-transform: none; color: var(--pen); white-space: nowrap; }
+
+.check dl { font-size: 18px; background: repeating-linear-gradient(transparent 0 33px, #6E9A7A88 33px 34px); }
+.line { display: grid; grid-template-columns: 1fr auto; gap: 12px; }
+.line dt, .line dd { font: 400 24px/34px var(--font-script), cursive; color: var(--pen); }
+.line dd { text-align: right; }
+.total dt, .total dd { color: var(--red); }
+.empty dt { color: #2B3A8A88; }
+
+/* the order page: a small − and + before each line, inside the paper */
+.steps { display: inline-flex; gap: 3px; margin-right: 8px; vertical-align: 3px; }
+.steps button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--check-ink);
+  color: var(--check);
+  font: 700 17px/24px var(--font-cond), sans-serif;
+  text-align: center;
+  cursor: pointer;
+}
+.steps button:hover { background: var(--red); }
+.steps button { position: relative; }
+.steps button::before { content: ""; position: absolute; inset: -8px -2px; } /* a 40px-tall target for a thumb */
+.thanks { margin-top: 10px; text-align: center; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }

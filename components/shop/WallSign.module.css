@@ -1,0 +1,53 @@
+.wall {
+  background: var(--teal);
+  padding: clamp(26px, 4vw, 56px) var(--gutter);
+  display: grid;
+  grid-template-columns: 1.35fr .65fr;
+  gap: 28px;
+  align-items: center;
+}
+.sign {
+  position: relative;
+  background: var(--black);
+  color: var(--cream);
+  border-radius: 14px;
+  padding: clamp(28px, 4vw, 56px) clamp(24px, 4vw, 60px) clamp(30px, 4vw, 52px);
+  box-shadow: 0 0 0 6px var(--cream), 0 0 0 9px var(--black);
+  text-align: center;
+}
+.sign::before { content: ""; position: absolute; inset: 12px; border: 2px solid var(--mustard); border-radius: 8px; pointer-events: none; }
+.est { color: var(--mustard); font-size: 15px; }
+.name { font-size: clamp(76px, 10vw, 150px); line-height: 1.02; margin: 6px 0 14px; color: var(--cream); }
+.ribbon {
+  display: inline-block;
+  background: var(--red);
+  color: var(--cream);
+  padding: 10px 26px 8px;
+  font-size: clamp(22px, 2.4vw, 34px);
+  clip-path: polygon(0 0, 100% 0, 96% 50%, 100% 100%, 0 100%, 4% 50%);
+}
+.line { margin-top: 20px; font-size: 19px; color: var(--pink); }
+.cta { position: relative; display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.cta a {
+  padding: 13px 22px 11px;
+  border-radius: 6px;
+  text-decoration: none;
+  font: 700 17px/1 var(--font-cond), sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  border: 2px solid var(--cream);
+}
+.cta a:first-child { background: var(--mustard); border-color: var(--mustard); color: var(--black); }
+.cta a:hover { translate: 0 -1px; }
+
+.cupside { position: relative; display: grid; place-items: center; }
+.disc { position: absolute; width: 92%; aspect-ratio: 1; border-radius: 50%; background: var(--mustard); box-shadow: 0 0 0 6px var(--cream); }
+.arc { position: absolute; width: 92%; aspect-ratio: 1; color: var(--black); }
+.arcText { font-family: var(--font-cond), sans-serif; font-weight: 700; }
+.cupside img { position: relative; width: 62%; rotate: 5deg; filter: drop-shadow(-12px 12px 0 #1A161340); }
+
+@media (max-width: 860px) {
+  .wall { grid-template-columns: minmax(0, 1fr); }
+  .name { font-size: 21vw; }
+  .cupside { width: min(320px, 86%); margin: 0 auto; aspect-ratio: 1; }
+}

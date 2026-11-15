@@ -1,0 +1,15 @@
+.checkrow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 56px;
+  align-items: center;
+  max-width: calc(1120px + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter) 80px;
+}
+.title { font-size: clamp(56px, 6vw, 88px); line-height: 1; color: var(--red); margin: 8px 0 12px; }
+.copy { max-width: 44ch; font-size: 17px; }
+
+@media (max-width: 860px) {
+  .checkrow { grid-template-columns: minmax(0, 1fr); }
+}

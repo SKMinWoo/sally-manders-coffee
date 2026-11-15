@@ -1,4 +1,53 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #F5EAD0; color: #1A1613; font: 500 16px/1.5 system-ui, sans-serif; }
-.fitting-out { min-height: 100svh; display: grid; place-content: center; gap: 12px; padding: 24px; text-align: center; }
-.fitting-out h1 { font-size: clamp(40px, 8vw, 96px); line-height: 1; }
+/* Sally Mander's, sign painter and ticket rail (design/mockups/03-sign-painter.html).
+   Tokens and the four lettering styles live here; every piece of the shop has its own CSS module. */
+
+:root {
+  --cream: #F5EAD0;
+  --black: #1A1613;
+  --red: #C9321F;
+  --teal: #1F9E98;
+  --mustard: #EDB230;
+  --pink: #EE9E9B;
+  --check: #EEF1DE; /* guest-check paper, shared by the storefront and the rail */
+  --rule: #6E9A7A; /* the check's green rules */
+  --check-ink: #26412F;
+  --pen: #1F3B8A; /* the server's ballpoint */
+  --frame: #6B4A2E; /* the menu board's wooden frame */
+  --gutter: clamp(18px, 4vw, 56px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--black);
+  font: 500 16px/1.5 var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+h1, h2, h3, p, ul, ol, figure, dl, dd { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+img, svg { display: block; max-width: 100%; }
+img { height: auto; }
+a { color: inherit; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--mustard); outline-offset: 3px; }
+
+/* the four lettering styles */
+.block {
+  font-family: var(--font-block), sans-serif;
+  font-variation-settings: "opsz" 72; /* the display cut, as the sign painter would letter it */
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: .92;
+  letter-spacing: .01em;
+}
+.cond { font-family: var(--font-cond), sans-serif; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+.script { font-family: var(--font-script), cursive; font-weight: 400; }
+/* a sign painter's drop shade: a solid offset in a second enamel, then a hairline keyline */
+.shade { text-shadow: .04em .045em 0 var(--red), .065em .07em 0 var(--black); }
+
+.sim-note { padding: 18px var(--gutter) 28px; font-size: 12.5px; line-height: 1.5; opacity: .7; }
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
