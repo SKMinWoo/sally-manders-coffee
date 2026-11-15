@@ -3,7 +3,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import { shopDb } from "@/server/platform/db/client";
 import type { Role } from "@/server/office";
-import { engineering, type ClaimReport, type Figure } from "@/server/office";
+import { engineering, SITE, type ClaimReport, type Figure } from "@/server/office";
 import s from "./office.module.css";
 
 export const metadata: Metadata = { title: "The back office" };
@@ -62,7 +62,12 @@ function Card({ c }: { c: ClaimReport }) {
       {oneRun && <p className={s.measured}><Measured f={c.figures[0]!} lead="All measured" /></p>}
       {c.code.length > 0 && (
         <ul className={s.code}>
-          {c.code.map((x) => <li key={x.url}><a href={x.url}>{x.label}</a></li>)}
+          {c.code.map((x) => (
+            <li key={x.url}>
+              {/* a page of this site opens here, wherever the site is running */}
+              {x.url.startsWith(`${SITE}/`) ? <Link href={x.url.slice(SITE.length)}>{x.label}</Link> : <a href={x.url}>{x.label}</a>}
+            </li>
+          ))}
         </ul>
       )}
     </li>

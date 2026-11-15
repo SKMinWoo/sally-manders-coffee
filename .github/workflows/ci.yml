@@ -61,6 +61,9 @@ jobs:
       # failing figure is posted as honestly as a passing one.
       - name: Export benchmark (90 days streamed, reopened and checked)
         run: node --expose-gc --import tsx scripts/ci/export-facts.ts
+      - name: Boundary figures (the lint rule's check, over every import)
+        if: ${{ !cancelled() }}
+        run: node scripts/ci/boundary-facts.mjs
       - name: Security figures
         if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: node scripts/ci/security-facts.mjs

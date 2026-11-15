@@ -38,6 +38,19 @@ export const FACT_KINDS = {
     heapPeakMb: z.number().nonnegative().max(4096),
     baseline: z.strictObject({ days: Count, rows: Count, heapPeakMb: z.number().nonnegative().max(4096) }),
   }),
+  /** The domain boundaries (eslint-rules/boundaries.mjs) applied to every import in the repository. */
+  boundaries: z.strictObject({
+    modules: Count,
+    publicEntries: Count,
+    files: Count,
+    imports: Count,
+    /** imports that land in a module from outside it */
+    crossings: Count,
+    violations: Count,
+    /** each module-to-module dependency in use, "orders→menu" */
+    uses: z.array(z.string().regex(/^[a-z]+→[a-z]+$/)).max(64),
+    decisions: Count,
+  }),
 } as const;
 
 export type FactKind = keyof typeof FACT_KINDS;

@@ -76,10 +76,15 @@ export const CLAIMS: Claim[] = [
     id: "re-architecture",
     role: FS,
     gm: "Co-led the ground-up re-architecture of a legacy **Workflow Process System** into 12-factor, cloud-native microservices, with standardized domain boundaries and faster feature delivery.",
-    twin: "Orders, menu, reporting and the simulator as modules with one public entry each, the boundaries enforced by a lint rule, and each of the twelve factors pointed at its evidence.",
+    twin: "The server as five domain modules (menu, simulator, orders, reporting and this back office), each used only through its one public entry, with their dependencies running one way so none can form a cycle. A lint rule fails the build on any import that reaches inside a module or against the direction, and CI counts every import it checked. Each of the twelve factors is pointed at its evidence, gaps included, and the choices are written down as decision records. It’s one Next.js app, not a fleet of microservices: the boundaries carry over from GM, the network between services doesn’t.",
     exhibit: 10,
-    status: "coming",
-    code: [],
+    status: "running",
+    code: [
+      { label: "The boundary rule", path: "eslint-rules/boundaries.mjs" },
+      { label: "A public entry", path: "server/orders/index.ts" },
+      { label: "Why five modules", path: "docs/decisions/0004-domain-modules.md" },
+      { label: "The twelve factors", path: "/office/twelve-factor" },
+    ],
   },
   {
     id: "devsecops",
@@ -143,4 +148,8 @@ export const CLAIMS: Claim[] = [
 ];
 
 /** A link to a file on main. */
-export const codeUrl = (path: string) => `https://github.com/${REPO}/blob/main/${path}`;
+/** Where the shop is served. Public; also in CI, which posts its figures here. */
+export const SITE = "https://sally-manders-coffee.vercel.app";
+
+/** A repository path as its file on GitHub; a path starting with "/" is a page of this site. */
+export const codeUrl = (path: string) => (path.startsWith("/") ? `${SITE}${path}` : `https://github.com/${REPO}/blob/main/${path}`);
