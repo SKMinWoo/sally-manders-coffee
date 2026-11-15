@@ -38,17 +38,32 @@ export default async function Behind() {
   return (
     <main>
       {/* the same turquoise wall as the storefront, so the back office reads as the same shop */}
-      <div className={s.band}>
+      <div className="wall-band">
         <p className="cond">Behind the scenes · {formatCheckDate(b.date)} · as of {clock(b.hour, b.minute)}</p>
       </div>
       <section className={s.kitchen} aria-labelledby="kitchen-title">
-        <h1 id="kitchen-title" className={`script ${s.title}`}>The rail, so far</h1>
-        <p className={s.sub}>
-          Today&rsquo;s numbers, pinned up where the checks hang, from midnight to now. Each is set against last{" "}
-          {weekday} at the same time, so a slow morning isn&rsquo;t compared with a whole day.
-        </p>
+        <div className={s.head}>
+          <div>
+            <h1 id="kitchen-title" className={`script ${s.title}`}>The rail, so far</h1>
+            <p className={s.sub}>
+              Today&rsquo;s numbers, pinned up where the checks hang, from midnight to now. Each is set against last{" "}
+              {weekday} at the same time, so a slow morning isn&rsquo;t compared with a whole day.
+            </p>
+          </div>
+          <dl className={s.rest}>
+            {rest.map((k) => {
+              const v = METRICS[k].value(b.today);
+              return (
+                <div key={k}>
+                  <dt>{METRICS[k].label}</dt>
+                  <dd>{v === null ? "—" : METRICS[k].format(v)}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </div>
 
-        <div className={s.rail} aria-hidden="true" />
+        <div className={`steel-rail ${s.rail}`} aria-hidden="true" />
         <ul className={s.lead}>
           {LEAD_METRICS.map((k) => {
             const m = METRICS[k];
@@ -62,18 +77,6 @@ export default async function Behind() {
             );
           })}
         </ul>
-
-        <dl className={s.rest}>
-          {rest.map((k) => {
-            const v = METRICS[k].value(b.today);
-            return (
-              <div key={k}>
-                <dt>{METRICS[k].label}</dt>
-                <dd>{v === null ? "—" : METRICS[k].format(v)}</dd>
-              </div>
-            );
-          })}
-        </dl>
       </section>
 
       <section className={s.floor}>

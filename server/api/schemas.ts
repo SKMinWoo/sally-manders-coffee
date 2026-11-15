@@ -47,19 +47,17 @@ export const DaySummary = z
   })
   .meta({ id: "DaySummary" });
 
-export const DayHours = z
-  .object({
-    ...SoFar,
-    hours: z.array(z.object({ hour: z.int().min(0).max(23), orders: z.int().nonnegative(), salesCents: Cents })),
-  })
-  .meta({ id: "DayHours" });
+export const HourCount = z
+  .object({ hour: z.int().min(0).max(23), orders: z.int().nonnegative(), salesCents: Cents })
+  .meta({ id: "HourCount" });
 
-export const DayItems = z
-  .object({
-    ...SoFar,
-    items: z.array(z.object({ itemId: z.string(), name: z.string(), qty: z.int().positive(), salesCents: Cents })),
-  })
-  .meta({ id: "DayItems" });
+export const DayHours = z.object({ ...SoFar, hours: z.array(HourCount) }).meta({ id: "DayHours" });
+
+export const ItemSold = z
+  .object({ itemId: z.string(), name: z.string(), qty: z.int().positive(), salesCents: Cents })
+  .meta({ id: "ItemSold" });
+
+export const DayItems = z.object({ ...SoFar, items: z.array(ItemSold) }).meta({ id: "DayItems" });
 
 /** RFC 9457 problem details. */
 export const Problem = z

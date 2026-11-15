@@ -2,9 +2,9 @@
 // responses through. OpenAPI 3.1's schema dialect is JSON Schema 2020-12, zod 4's default.
 
 import { z } from "zod";
-import { DayHours, DayItems, DaySummary, Health, Menu, MenuItem, Problem } from "./schemas";
+import { DayHours, DayItems, DaySummary, Health, HourCount, ItemSold, Menu, MenuItem, Problem } from "./schemas";
 
-const SCHEMAS = { Health, MenuItem, Menu, DaySummary, DayHours, DayItems, Problem };
+const SCHEMAS = { Health, MenuItem, Menu, DaySummary, HourCount, DayHours, ItemSold, DayItems, Problem };
 
 function components() {
   const registry = z.registry<{ id: string }>();

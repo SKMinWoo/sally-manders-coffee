@@ -77,6 +77,7 @@ export function OrderForm({ menu, date, waits }: { menu: MenuRow[]; date: string
     <div>
       <MenuBoard menu={menu} title="Pick from the board" onAdd={(id) => step(id, 1)} counts={cart} />
       <form action={action} className={s.form}>
+        <div className={`steel-rail ${s.rail}`} aria-hidden="true" />
         <GuestCheck ticket="A-··" date={date} ready={ready} lines={lines} onStep={step} empty="Tap the board to add" />
         <input type="hidden" name="lines" value={payload} />
         <button className={s.go} type="submit" disabled={!items || pending}>

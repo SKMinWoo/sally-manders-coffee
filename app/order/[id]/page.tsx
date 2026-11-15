@@ -23,7 +23,8 @@ export default async function OrderStatus({ params }: { params: Promise<{ id: st
   const wait = Math.round((order.readyAt.getTime() - order.placedAt.getTime()) / 1000);
   return (
     <main className={s.status}>
-      <div className={s.rail} aria-hidden="true" />
+      <p className={`cond ${s.band}`}>Order {order.ticket} · on the rail</p>
+      <div className={`steel-rail ${s.rail}`} aria-hidden="true" />
       <GuestCheck
         ticket={order.ticket}
         date={formatCheckDate(order.day)}

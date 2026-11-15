@@ -2,8 +2,7 @@
   background: var(--teal);
   padding: clamp(26px, 4vw, 56px) var(--gutter);
   display: grid;
-  grid-template-columns: 1.35fr .65fr;
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, .5fr);
   align-items: center;
 }
 .sign {
@@ -40,7 +39,8 @@
 .cta a:first-child { background: var(--mustard); border-color: var(--mustard); color: var(--black); }
 .cta a:hover { translate: 0 -1px; }
 
-.cupside { position: relative; display: grid; place-items: center; }
+/* the cup's roundel is tacked over the sign's right edge, so sign and cup read as one piece */
+.cupside { position: relative; z-index: 1; display: grid; place-items: center; margin-left: -14%; rotate: 4deg; }
 .disc { position: absolute; width: 92%; aspect-ratio: 1; border-radius: 50%; background: var(--mustard); box-shadow: 0 0 0 6px var(--cream); }
 .arc { position: absolute; width: 92%; aspect-ratio: 1; color: var(--black); }
 .arcText { font-family: var(--font-cond), sans-serif; font-weight: 700; }
@@ -49,5 +49,6 @@
 @media (max-width: 860px) {
   .wall { grid-template-columns: minmax(0, 1fr); }
   .name { font-size: 21vw; }
-  .cupside { width: min(320px, 86%); margin: 0 auto; aspect-ratio: 1; }
+  /* tacked over the sign's bottom-right corner, clear of the buttons, not centred under them */
+  .cupside { width: min(250px, 66%); margin: -26px 2% 0 auto; aspect-ratio: 1; rotate: 7deg; }
 }
