@@ -1,0 +1,20 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { localDbDir } from "./client";
+
+const env = (e: Record<string, string>) => e as unknown as NodeJS.ProcessEnv;
+const NEON = "postgres://someone@somewhere.neon.tech/neondb";
+
+test("a folder asked for by name wins over DATABASE_URL, so the browser tests never reach Neon", () => {
+  assert.equal(localDbDir(env({ LOCAL_DB: ".pglite-e2e", DATABASE_URL: NEON, NODE_ENV: "production" })), ".pglite-e2e");
+});
+
+test("Vercel always gets Neon, even if LOCAL_DB is set there by mistake", () => {
+  assert.equal(localDbDir(env({ VERCEL: "1", LOCAL_DB: ".pglite-e2e", DATABASE_URL: NEON })), null);
+});
+
+test("otherwise DATABASE_URL means Neon, and development without one gets .pglite/", () => {
+  assert.equal(localDbDir(env({ DATABASE_URL: NEON, NODE_ENV: "development" })), null);
+  assert.equal(localDbDir(env({ NODE_ENV: "development" })), "./.pglite");
+  assert.equal(localDbDir(env({ NODE_ENV: "production" })), null, "a production build with no database is an error, not a quiet PGlite");
+});

@@ -13,13 +13,28 @@ export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
 let cached: Db | undefined;
 
 /**
- * The database the app reads: Neon when DATABASE_URL is set, and in development without it, a
- * local PGlite seeded with a week of simulated days (./local.ts).
+ * Where a local PGlite keeps its files, or null for Neon. Vercel never gets a local database,
+ * whatever its environment says. LOCAL_DB names a folder and beats DATABASE_URL: the browser tests
+ * start `next start` with one, and `next start` also reads .env.local, which may well hold the
+ * production URL. (It did, and the first runs of the browser tests put their orders on the live
+ * rail.) Development without either gets .pglite/.
+ */
+export function localDbDir(env: NodeJS.ProcessEnv = process.env): string | null {
+  if (env.VERCEL) return null;
+  if (env.LOCAL_DB) return env.LOCAL_DB;
+  if (env.DATABASE_URL) return null;
+  return env.NODE_ENV === "production" ? null : "./.pglite";
+}
+
+/**
+ * The database the app reads: Neon when DATABASE_URL is set, otherwise (see localDbDir) a local
+ * PGlite seeded with a week of simulated days (./local.ts).
  */
 export async function shopDb(): Promise<Db> {
-  if (process.env.DATABASE_URL || process.env.NODE_ENV === "production") return db();
+  const dir = localDbDir();
+  if (!dir) return db();
   const { localDb } = await import("./local");
-  return localDb();
+  return localDb(dir);
 }
 
 /** The shop's database, from DATABASE_URL. Created on first use, so builds don't need it. */
