@@ -8,10 +8,26 @@ import { z } from "zod";
 export const REPO = "SKMinWoo/sally-manders-coffee";
 
 const Count = z.int().nonnegative();
+const Percent = z.number().min(0).max(100);
+const Severities = z.strictObject({ critical: Count, high: Count, moderate: Count, low: Count });
 
 export const FACT_KINDS = {
   /** `npm test` on main: the unit, repository and API contract tests (node:test). */
   "unit-tests": z.strictObject({ passed: Count, failed: Count, skipped: Count, durationMs: Count }),
+  /** Node's coverage of every module in lib/ and server/, and the gate's verdict (null: no bar set yet). */
+  coverage: z.strictObject({
+    lines: Percent,
+    branches: Percent,
+    functions: Percent,
+    files: Count,
+    gate: z.strictObject({ rule: z.string().min(1).max(120), passed: z.boolean() }).nullable(),
+  }),
+  /** What the security tools say about main. null: that tool hasn't analysed this repository yet. */
+  security: z.strictObject({
+    codeScanningOpen: Count.nullable(),
+    audit: z.strictObject({ production: Severities, all: Severities }),
+    sonarGate: z.enum(["OK", "WARN", "ERROR"]).nullable(),
+  }),
 } as const;
 
 export type FactKind = keyof typeof FACT_KINDS;

@@ -16,8 +16,14 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      # read-only: lets the security figures count open CodeQL alerts
+      security-events: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # SonarCloud reads history to tell new code from old
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
@@ -25,15 +31,40 @@ jobs:
       # --ignore-scripts is also set in .npmrc: no dependency runs code at install time
       - run: npm ci --ignore-scripts
       - run: npm audit signatures
+      # Gate: a high or critical hole in anything that ships fails the build. Dev tooling is
+      # counted on /office but doesn't block, since it never reaches a visitor.
+      - name: No high-severity holes in shipped packages
+        run: npm audit --omit=dev --audit-level=high
       - run: npm run typecheck
       - run: npm run lint
-      # the same tests, also counted into .ci/unit-tests.json for the back office
+      # the tests, counted into .ci/ (results, coverage and lcov) for the gate, SonarCloud and /office
       - run: npm run test:ci
+      # Gate: coverage against the bar in scripts/ci/coverage-bar.mjs
+      - name: Coverage gate
+        run: node scripts/ci/coverage-gate.mjs
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
-      # Report what this run measured to /office. Main only; it runs even when a test failed, so a
-      # failing count is posted as honestly as a passing one. Skips with a notice if the secret is unset.
+
+      # SonarCloud runs once SONAR_TOKEN is set; until then (and on forks, which get no secrets) it skips.
+      - name: Is SonarCloud set up?
+        id: sonar
+        run: echo "enabled=${{ secrets.SONAR_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      # Gate: sonar.qualitygate.wait in sonar-project.properties fails this step on a failed gate
+      - name: SonarCloud scan
+        if: steps.sonar.outputs.enabled == 'true'
+        uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # Report what this run measured to /office. Main only; these run even when a gate failed, so a
+      # failing figure is posted as honestly as a passing one.
+      - name: Security figures
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: node scripts/ci/security-facts.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SONAR_PROJECT_KEY: SKMinWoo_sally-manders-coffee
       - name: Post figures to the back office
         if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles('.ci/unit-tests.json') != '' }}
         run: node scripts/ci/post-facts.mjs
