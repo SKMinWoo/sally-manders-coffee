@@ -41,7 +41,10 @@ export function shopToday(now: Date = new Date()): ShopDate {
 }
 
 export function isShopDate(s: string): s is ShopDate {
-  return /^\d{4}-\d{2}-\d{2}$/.test(s) && new Date(`${s}T00:00:00Z`).toISOString().startsWith(s);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  // a month 13 or a 31st of November is an invalid Date, whose toISOString() would throw
+  const t = Date.parse(`${s}T00:00:00Z`);
+  return !Number.isNaN(t) && new Date(t).toISOString().startsWith(s);
 }
 
 /** The date `n` days after `date` (calendar days, so daylight saving does not matter). */
