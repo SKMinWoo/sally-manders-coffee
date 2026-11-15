@@ -15,6 +15,13 @@
       "when": 1794694005150,
       "tag": "0001_visitor_hash",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794725953624,
+      "tag": "0002_engineering_facts",
+      "breakpoints": true
     }
   ]
 }

@@ -6,6 +6,7 @@ import {
   date,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   primaryKey,
@@ -75,3 +76,24 @@ export const simDays = pgTable("sim_days", {
   orders: integer().notNull(),
   writtenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Figures measured by CI runs on main (test counts, coverage, gate results, P95s): one row per
+ * kind per run, posted to /api/ingest/ci. Every figure the back office shows from here links to
+ * the run that measured it, so nothing on that page is typed in by hand.
+ */
+export const engineeringFacts = pgTable("engineering_facts", {
+  id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+  kind: text().notNull(),
+  /** the measured figures, in the shape server/office/facts.ts gives this kind */
+  value: jsonb().notNull(),
+  /** the GitHub Actions run, so a retried post of the same run is stored once */
+  runId: bigint({ mode: "number" }).notNull(),
+  runUrl: text().notNull(),
+  sha: text().notNull(),
+  recordedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  unique("facts_kind_run").on(t.kind, t.runId),
+  index("facts_kind_recorded").on(t.kind, t.recordedAt),
+  check("facts_sha_hex", sql`${t.sha} ~ '^[0-9a-f]{40}$'`),
+]);

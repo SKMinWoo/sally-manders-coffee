@@ -8,7 +8,8 @@ import { listMenu } from "@/server/db/repositories/menu";
 import { daySummary, itemsSold, ordersByHour } from "@/server/db/repositories/metrics";
 import { writtenDays } from "@/server/db/repositories/orders";
 import { daysAhead } from "@/server/sim/run";
-import { DayHours, DayItems, DaySummary, Health, Menu, Problem } from "./schemas";
+import { engineering as engineeringReport } from "@/server/office/engineering";
+import { DayHours, DayItems, DaySummary, Engineering, Health, Menu, Problem } from "./schemas";
 
 export type ApiResult = { status: number; body: unknown; cache: "public" | "none" };
 
@@ -72,4 +73,9 @@ export async function dayItems(db: Db, param: string, now: Date): Promise<ApiRes
   const date = resolveDay(param, now);
   if (typeof date !== "string") return date;
   return ok(DayItems, { date, asOf: now.toISOString(), items: await itemsSold(db, date, now) });
+}
+
+/** Each résumé claim, its twin here, and the figures the twin has measured (the back office, as data). */
+export async function engineering(db: Db, now: Date): Promise<ApiResult> {
+  return ok(Engineering, await engineeringReport(db, now));
 }

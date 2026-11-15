@@ -18,7 +18,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <p className="sim-note">
           Sally Mander&rsquo;s is a simulated coffee shop, built to show how its developer works. The orders,
           the takings and the waits come from a simulator; nothing here is for sale. The figures are open:{" "}
-          <Link href="/docs">read the API</Link>.
+          <Link href="/docs">read the API</Link>, or see <Link href="/office">the back office</Link>, where each line of
+          the developer&rsquo;s résumé sits beside the version of it running here.
         </p>
       </body>
     </html>

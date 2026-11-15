@@ -2,9 +2,9 @@
 // responses through. OpenAPI 3.1's schema dialect is JSON Schema 2020-12, zod 4's default.
 
 import { z } from "zod";
-import { DayHours, DayItems, DaySummary, Health, HourCount, ItemSold, Menu, MenuItem, Problem } from "./schemas";
+import { Claim, DayHours, DayItems, DaySummary, Engineering, Figure, Health, HourCount, ItemSold, Menu, MenuItem, Problem } from "./schemas";
 
-const SCHEMAS = { Health, MenuItem, Menu, DaySummary, HourCount, DayHours, ItemSold, DayItems, Problem };
+const SCHEMAS = { Health, MenuItem, Menu, DaySummary, HourCount, DayHours, ItemSold, DayItems, Figure, Claim, Engineering, Problem };
 
 function components() {
   const registry = z.registry<{ id: string }>();
@@ -54,6 +54,13 @@ export function openApiDocument() {
       },
       "/days/{date}/items": {
         get: { summary: "Items sold, most first, so far", description: SO_FAR, parameters: [dateParam], responses: { "200": json("DayItems", "Items"), ...dayErrors } },
+      },
+      "/engineering": {
+        get: {
+          summary: "Each résumé claim, its twin here, and what the twin has measured",
+          description: "The back office (/office) as data. Live figures are counted at request time; the rest were posted by a GitHub Actions run on main, which each figure links to.",
+          responses: { "200": json("Engineering", "The claims, in résumé order") },
+        },
       },
     },
     components: { schemas: components() },

@@ -27,7 +27,16 @@ jobs:
       - run: npm audit signatures
       - run: npm run typecheck
       - run: npm run lint
-      - run: npm test
+      # the same tests, also counted into .ci/unit-tests.json for the back office
+      - run: npm run test:ci
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+      # Report what this run measured to /office. Main only; it runs even when a test failed, so a
+      # failing count is posted as honestly as a passing one. Skips with a notice if the secret is unset.
+      - name: Post figures to the back office
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles('.ci/unit-tests.json') != '' }}
+        run: node scripts/ci/post-facts.mjs
+        env:
+          INGEST_URL: https://sally-manders-coffee.vercel.app/api/ingest/ci
+          CI_INGEST_SECRET: ${{ secrets.CI_INGEST_SECRET }}

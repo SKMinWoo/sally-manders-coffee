@@ -59,6 +59,35 @@ export const ItemSold = z
 
 export const DayItems = z.object({ ...SoFar, items: z.array(ItemSold) }).meta({ id: "DayItems" });
 
+export const Figure = z
+  .object({
+    label: z.string(),
+    display: z.string().describe("The figure as the back office prints it"),
+    value: z.number(),
+    source: z.enum(["live", "ci"]).describe("live: counted at request time; ci: measured by the linked GitHub Actions run"),
+    measuredAt: z.iso.datetime({ offset: true }),
+    runUrl: z.url().nullable(),
+    sha: z.string().regex(/^[0-9a-f]{40}$/).nullable(),
+  })
+  .meta({ id: "Figure" });
+
+export const Claim = z
+  .object({
+    id: z.string(),
+    role: z.enum(["Full-Stack Software Engineer", "Software Development Engineer in Test"]),
+    gm: z.string().describe("The General Motors résumé bullet, word for word; **bold** marks its headline figure"),
+    twin: z.string().describe("What Sally Mander's runs in its place"),
+    exhibit: z.int().positive(),
+    status: z.enum(["running", "coming"]),
+    code: z.array(z.object({ label: z.string(), url: z.url() })),
+    figures: z.array(Figure).describe("Empty until the twin has measured something"),
+  })
+  .meta({ id: "Claim" });
+
+export const Engineering = z
+  .object({ asOf: z.iso.datetime({ offset: true }), claims: z.array(Claim) })
+  .meta({ id: "Engineering" });
+
 /** RFC 9457 problem details. */
 export const Problem = z
   .object({ type: z.string(), title: z.string(), status: z.int(), detail: z.string().optional() })

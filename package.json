@@ -16,7 +16,8 @@
     "check": "npm run typecheck && npm run lint && npm test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "sim:backfill": "tsx scripts/backfill.ts"
+    "sim:backfill": "tsx scripts/backfill.ts",
+    "test:ci": "node --import tsx --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./scripts/ci/test-facts.mjs --test-reporter-destination=.ci/unit-tests.json \"lib/**/*.test.ts\" \"server/**/*.test.ts\" \"app/**/*.test.ts\""
   },
   "dependencies": {
     "@neondatabase/serverless": "1.2.0",
