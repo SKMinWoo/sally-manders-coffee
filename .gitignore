@@ -12,6 +12,9 @@ next-env.d.ts
 # the development database (server/db/local.ts)
 .pglite/
 
+# what a CI run measured (scripts/ci/), posted to /office
+.ci/
+
 # Vercel's local link
 .vercel/
 

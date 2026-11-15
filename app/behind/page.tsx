@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { connection } from "next/server";
 import { formatCheckDate, weekdayOf } from "@/lib/time";
 import { getBehind } from "@/server/shop/behind";
@@ -115,6 +116,10 @@ export default async function Behind() {
           {b.today.visitorOrders === 1 ? "was" : "were"} placed by
           visitors on this site and {sim.toLocaleString("en-US")} by the simulator, which writes each day ahead of time;
           nothing here counts an order before its moment comes.
+        </p>
+        <p className={s.source}>
+          How the shop is built and tested, claim by claim against the résumé, is in{" "}
+          <Link href="/office">the back office</Link>.
         </p>
       </section>
     </main>
