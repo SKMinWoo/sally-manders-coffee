@@ -24,9 +24,12 @@
   gap: 22px;
   padding: 56px var(--gutter) 72px;
   text-align: center;
+  position: relative;
   /* the rail is fixed to the turquoise wall from out front; the check hangs down past it */
   background: linear-gradient(var(--teal) 0 64px, var(--cream) 64px 70px, transparent 70px);
 }
+/* lettered on the wall above the rail, like the wall band on the other pages */
+.band { position: absolute; top: 18px; left: 0; right: 0; font-size: 14px; color: var(--black); }
 /* the check hangs from the rail; on the order page the rail is wider, with the check held under it */
 .rail { width: min(520px, 100%); margin-bottom: -26px; position: relative; z-index: 1; }
 .form .rail { width: min(620px, 100%); margin-top: 8px; }

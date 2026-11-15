@@ -49,5 +49,6 @@
 @media (max-width: 860px) {
   .wall { grid-template-columns: minmax(0, 1fr); }
   .name { font-size: 21vw; }
-  .cupside { width: min(320px, 86%); margin: -36px auto 0; aspect-ratio: 1; }
+  /* tacked over the sign's bottom-right corner, clear of the buttons, not centred under them */
+  .cupside { width: min(250px, 66%); margin: -26px 2% 0 auto; aspect-ratio: 1; rotate: 7deg; }
 }

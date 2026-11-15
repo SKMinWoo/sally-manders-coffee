@@ -74,9 +74,14 @@ test("responses carry the cache policy, and errors are problem+json", async () =
 test("the OpenAPI document covers every endpoint, and every $ref resolves", () => {
   const doc = openApiDocument();
   assert.deepEqual(Object.keys(doc.paths).sort(), ["/days/{date}", "/days/{date}/hours", "/days/{date}/items", "/health", "/menu"]);
-  const refs = [...JSON.stringify(doc).matchAll(/"\$ref":"#\/components\/schemas\/(\w+)"/g)].map((m) => m[1]!);
+  // collect every $ref, not only the well-formed ones, so a malformed ref fails instead of being skipped
+  const refs = [...JSON.stringify(doc).matchAll(/"\$ref":"([^"]*)"/g)].map((m) => m[1]!);
   assert.ok(refs.length > 0);
-  for (const r of refs) assert.ok(r in doc.components.schemas, `unresolved $ref ${r}`);
+  for (const r of refs) {
+    const name = /^#\/components\/schemas\/(\w+)$/.exec(r)?.[1];
+    assert.ok(name && name in doc.components.schemas, `unresolved $ref ${r}`);
+  }
+  assert.ok(!("__shared" in doc.components.schemas), "a schema with an id is missing from SCHEMAS");
   for (const s of Object.values(doc.components.schemas)) assert.ok(!("$schema" in s) && !("$id" in s));
   const summary = doc.components.schemas.DaySummary as { required: string[] };
   assert.ok(summary.required.includes("waitP95Seconds"));
