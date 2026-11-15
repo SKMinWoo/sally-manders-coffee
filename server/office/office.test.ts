@@ -94,6 +94,52 @@ test("the engineering report: every claim, figures only where something was meas
   for (const c of e.claims.filter((c) => c.status === "coming")) assert.deepEqual(c.figures, [], `${c.id} shows nothing it hasn't measured`);
 });
 
+const SEV = (moderate = 0, high = 0) => ({ critical: 0, high, moderate, low: 0 });
+const devsecopsRun = (id: number, over: { gate?: unknown; codeScanningOpen?: number | null; all?: ReturnType<typeof SEV> } = {}) => ({
+  run: run(id),
+  facts: [
+    { kind: "unit-tests", value: { passed: 48, failed: 0, skipped: 0, durationMs: 5_500 } },
+    { kind: "coverage", value: { lines: 94.81, branches: 86.72, functions: 82.84, files: 29, gate: over.gate ?? null } },
+    {
+      kind: "security",
+      value: { codeScanningOpen: over.codeScanningOpen ?? null, audit: { production: SEV(), all: over.all ?? SEV(11) }, sonarGate: null },
+    },
+  ],
+});
+const figuresOf = async (at: number) => {
+  const e = Engineering.parse((await engineering(db, new Date(NOON.getTime() + at))).body);
+  return new Map(e.claims.find((c) => c.id === "devsecops")!.figures.map((f) => [f.label, f.display]));
+};
+
+test("devsecops: coverage and security figures, with nothing shown for a tool that hasn't run", async () => {
+  assert.equal((await ingestCi(db, req(devsecopsRun(201)), new Date(NOON.getTime() + 180_000), SECRET)).status, 201);
+  const f = await figuresOf(240_000);
+  assert.equal(f.get("Line coverage, 29 modules"), "94.8%");
+  assert.equal(f.get("Branch coverage"), "86.7%");
+  assert.equal(f.get("Coverage gate"), "No bar set yet", "no bar is said plainly, never shown as a pass");
+  assert.equal(f.get("Known holes in shipped packages"), "0");
+  assert.equal(f.get("In dev tooling only"), "11 moderate", "the dev tools' holes are shown beside the zero");
+  assert.ok(!f.has("Open CodeQL alerts") && !f.has("SonarCloud quality gate"), "a tool that hasn't analysed main shows nothing");
+});
+
+test("devsecops: a gate states its own rule and verdict; mixed severities name the worst", async () => {
+  const gate = { rule: "lines ≥ 95%", passed: false };
+  await ingestCi(db, req(devsecopsRun(202, { gate, codeScanningOpen: 2, all: SEV(11, 1) })), new Date(NOON.getTime() + 300_000), SECRET);
+  const f = await figuresOf(360_000);
+  assert.equal(f.get("Gate: lines ≥ 95%"), "Failed");
+  assert.equal(f.get("Open CodeQL alerts"), "2");
+  assert.equal(f.get("In dev tooling only"), "12, worst high");
+});
+
+test("ingest refuses a coverage over 100% or a gate with no rule", async () => {
+  const body = devsecopsRun(203);
+  const cov = body.facts[1]!.value as Record<string, unknown>;
+  for (const value of [{ ...cov, lines: 101 }, { ...cov, gate: { rule: "", passed: true } }]) {
+    const bad = { ...body, facts: [body.facts[0], { kind: "coverage", value }] };
+    assert.equal((await ingestCi(db, req(bad), NOON, SECRET)).status, 422);
+  }
+});
+
 test("the claims: eleven, one exhibit each, and the API documents them", () => {
   assert.deepEqual(CLAIMS.map((c) => c.exhibit).sort((a, b) => a - b), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   assert.equal(new Set(CLAIMS.map((c) => c.id)).size, CLAIMS.length);

@@ -21,11 +21,11 @@ function Bullet({ text }: { text: string }) {
 const when = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
 
-function Measured({ f }: { f: Figure }) {
+function Measured({ f, lead = "Measured" }: { f: Figure; lead?: string }) {
   if (f.source === "live") return <>Counted just now</>;
   return (
     <>
-      Measured {when(f.measuredAt)} by <a href={f.runUrl!}>this run</a> at{" "}
+      {lead} {when(f.measuredAt)} by <a href={f.runUrl!}>this run</a> at{" "}
       <a href={`${f.runUrl!.replace(/\/actions\/runs\/\d+$/, "")}/commit/${f.sha}`}><code>{f.sha!.slice(0, 7)}</code></a>
     </>
   );
@@ -33,6 +33,8 @@ function Measured({ f }: { f: Figure }) {
 
 function Card({ c }: { c: ClaimReport }) {
   const running = c.status === "running";
+  // when one run measured every figure on the card, say so once, under them all
+  const oneRun = c.figures.length > 1 && c.figures.every((f) => f.source === "ci" && f.runUrl === c.figures[0]!.runUrl);
   return (
     <li className={running ? s.running : s.coming}>
       <p className={s.no}>
@@ -50,12 +52,14 @@ function Card({ c }: { c: ClaimReport }) {
           {c.figures.map((f) => (
             <div key={f.label}>
               <dt>{f.label}</dt>
-              <dd className={s.figure}>{f.display}</dd>
-              <dd className={s.measured}><Measured f={f} /></dd>
+              {/* a verdict in words ("Passed", "No bar set yet") is set smaller than a number */}
+              <dd className={/\d/.test(f.display) ? s.figure : `${s.figure} ${s.verdict}`}>{f.display}</dd>
+              {!oneRun && <dd className={s.measured}><Measured f={f} /></dd>}
             </div>
           ))}
         </dl>
       )}
+      {oneRun && <p className={s.measured}><Measured f={c.figures[0]!} lead="All measured" /></p>}
       {c.code.length > 0 && (
         <ul className={s.code}>
           {c.code.map((x) => <li key={x.url}><a href={x.url}>{x.label}</a></li>)}

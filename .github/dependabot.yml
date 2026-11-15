@@ -1,0 +1,27 @@
+# Weekly update pull requests for npm packages and the pinned GitHub Actions. Each must pass CI
+# (tests, audit, coverage, CodeQL) like any other change. The cooldown waits a week after a
+# release before proposing it, so a compromised publish is usually caught and pulled first.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    groups:
+      actions:
+        patterns: ["*"]

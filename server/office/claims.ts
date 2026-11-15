@@ -79,10 +79,15 @@ export const CLAIMS: Claim[] = [
     id: "devsecops",
     role: FS,
     gm: "Built DevSecOps pipelines across GitHub Actions and Azure DevOps with SonarQube, CodeQL, Dependabot and Wiz — gating on vulnerabilities and holding **80%+ test coverage**.",
-    twin: "CodeQL, Dependabot and a SonarCloud scan on every pull request, and a coverage gate that fails the build below its threshold.",
+    twin: "CodeQL on every pull request and weekly, Dependabot updates with a week’s cooldown, npm audit failing the build on any high-severity hole in what ships, a SonarCloud scan wired in (it switches on once its account is connected), and a coverage gate that counts every module in lib/ and server/, tested or not (the UI’s tests are exhibit 3). No Wiz: it’s a paid product.",
     exhibit: 2,
-    status: "coming",
-    code: [],
+    status: "running",
+    code: [
+      { label: "CodeQL workflow", path: ".github/workflows/codeql.yml" },
+      { label: "Dependabot", path: ".github/dependabot.yml" },
+      { label: "The coverage bar", path: "scripts/ci/coverage-bar.mjs" },
+      { label: "The CI gates", path: ".github/workflows/ci.yml" },
+    ],
   },
   {
     id: "ai-adoption",
