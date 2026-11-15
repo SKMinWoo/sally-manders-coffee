@@ -25,6 +25,9 @@ export const OrderInput = z
   .refine((o) => new Set(o.lines.map((l) => l.itemId)).size === o.lines.length, "Each item goes on the check once, with its quantity.");
 export type OrderInput = z.infer<typeof OrderInput>;
 
+/** Visitors one burst can seat; past this many at the same moment, the last gets an error. */
+const TICKET_TRIES = 10;
+
 export const LIMITS = {
   /** orders one visitor can place in `windowMs` */
   perVisitor: 5,
@@ -62,7 +65,7 @@ export async function placeVisitorOrder(
   const day = shopToday(now);
   const [mine, today] = await Promise.all([
     countFromVisitor(db, visitorHash, new Date(+now - limits.windowMs), now),
-    countVisitorOrders(db, day, now),
+    countVisitorOrders(db, day),
   ]);
   if (mine >= limits.perVisitor) return { ok: false, reason: "slow-down", message: "That's a lot of coffee. Give the bar ten minutes to catch up." };
   if (today >= limits.perDay) return { ok: false, reason: "rail-full", message: "The order-ahead rail is full for today. It clears at midnight, Austin time." };
@@ -72,16 +75,17 @@ export async function placeVisitorOrder(
   const readyAt = new Date(+now + 1000 * expectedWait(items, await loadNow(db, now)));
   const rows = lines.map((l) => ({ itemId: l.itemId, qty: l.qty, priceCents: l.item!.priceCents }));
 
-  // Two visitors ordering in the same instant can both count the same number of tickets; the
-  // unique (day, ticket) constraint turns that into an error, and the later one takes the next number.
+  // Visitors ordering at once can count the same number of tickets; the unique (day, ticket)
+  // constraint refuses all but one, and the rest count again. Each round seats exactly one of them,
+  // so TICKET_TRIES is how big a burst can be before someone gets an error.
   for (let attempt = 1; ; attempt++) {
     const publicId = randomPublicId();
-    const ticket = visitorTicket((await countVisitorOrders(db, day, now)) + 1);
+    const ticket = visitorTicket((await countVisitorOrders(db, day)) + 1);
     try {
       await insertOrder(db, { publicId, day, ticket, source: "visitor", placedAt: now, readyAt, subtotalCents: subtotal, taxCents: taxCents(subtotal), visitorHash }, rows);
       return { ok: true, publicId, ticket };
     } catch (err) {
-      if (!isUniqueViolation(err) || attempt === 3) throw err;
+      if (!isUniqueViolation(err) || attempt === TICKET_TRIES) throw err;
     }
   }
 }

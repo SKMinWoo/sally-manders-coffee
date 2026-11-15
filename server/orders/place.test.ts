@@ -86,6 +86,23 @@ test("two visitors at the same instant both get on the rail, with different tick
   assert.notEqual(a.ticket, b.ticket);
 });
 
+// Found by the browser tests: the visitor who started a moment later was stored first, and the
+// earlier one, counting only orders placed before its own start, took the same ticket three times.
+test("a visitor whose order is stored after a later one's still gets the next ticket", async () => {
+  const later = await placeVisitorOrder(db, order([{ itemId: "chai", qty: 1 }]), { visitorHash: fresh(), now: at(41) });
+  const earlier = await placeVisitorOrder(db, order([{ itemId: "chai", qty: 1 }]), { visitorHash: fresh(), now: at(40) });
+  assert.ok(later.ok && earlier.ok, JSON.stringify(earlier));
+  assert.equal(Number(earlier.ticket.slice(2)), Number(later.ticket.slice(2)) + 1);
+});
+
+test("a burst of eight visitors at once all get on the rail, each with their own ticket", async () => {
+  const burst = await Promise.all(
+    Array.from({ length: 8 }, (_, i) => placeVisitorOrder(db, order([{ itemId: "drip", qty: 1 }]), { visitorHash: fresh(), now: at(50 + i / 100) })),
+  );
+  assert.ok(burst.every((r) => r.ok), JSON.stringify(burst.filter((r) => !r.ok)));
+  assert.equal(new Set(burst.map((r) => r.ok && r.ticket)).size, 8);
+});
+
 test("when the day's rail is full, nobody else gets on it", async () => {
   const full = { ...LIMITS, perDay: 3 }; // the day already has more than 3 visitor orders from the tests above
   const r = await placeVisitorOrder(db, order([{ itemId: "drip", qty: 1 }]), { visitorHash: fresh(), now: at(30), limits: full });
