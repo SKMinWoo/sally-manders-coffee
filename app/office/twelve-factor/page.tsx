@@ -12,7 +12,7 @@ export default function TwelveFactor() {
     <main>
       <div className="wall-band">
         <p className="cond">
-          <Link href="/office">The back office</Link> · Exhibit 10 · {FACTORS.length - short} met, {short} with a gap
+          <Link href="/office">The back office</Link> · The twelve factors · {FACTORS.length - short} met, {short} with a gap
         </p>
       </div>
       <section className={office.head}>
@@ -36,7 +36,7 @@ export default function TwelveFactor() {
               <p>{f.here}</p>
               {f.gap && (
                 <p className={s.gap}>
-                  <span className={`cond ${s.gapLabel}`}>Short of it</span> {f.gap}
+                  <span className={s.gapLabel}>Short of it:</span> {f.gap}
                 </p>
               )}
               <ul className={s.evidence}>

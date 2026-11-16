@@ -15,28 +15,36 @@
 .what { font-size: 15px; margin-top: 6px; max-width: 52ch; }
 .export label { display: grid; gap: 6px; font: 700 12px/1 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; }
 .export input {
-  font: 600 16px/1 var(--font-cond), sans-serif;
-  letter-spacing: .02em;
-  padding: 9px 10px;
-  border: 1.5px solid #26412F66;
-  border-radius: 3px;
-  background: #FFFFFF99;
-  color: inherit;
+  font: 600 17px/1 var(--font-cond), sans-serif;
+  letter-spacing: .04em;
+  font-variant-numeric: tabular-nums;
+  padding: 9px 10px 8px;
+  border: 0;
+  border-bottom: 2px solid var(--check-ink); /* a line on the check to write on, not a web form box */
+  border-radius: 0;
+  background: transparent;
+  color: var(--pen);
   min-height: 44px;
 }
+.export input::-webkit-calendar-picker-indicator { opacity: .7; cursor: pointer; }
+/* the order page's button, a size down: red, lettered, standing on a black edge */
 .export button {
-  font: 700 15px/1 var(--font-cond), sans-serif;
-  letter-spacing: .12em;
+  font: 800 18px/1 var(--font-block), sans-serif;
+  font-variation-settings: "opsz" 72;
+  letter-spacing: .05em;
   text-transform: uppercase;
-  padding: 0 20px;
+  padding: 0 22px;
   min-height: 44px;
   border: 0;
-  border-radius: 3px;
-  background: var(--black);
+  border-radius: 8px;
+  background: var(--red);
   color: var(--cream);
+  box-shadow: 0 4px 0 var(--black);
   cursor: pointer;
+  transition: translate .1s ease-out, box-shadow .1s ease-out, opacity .15s ease-out;
 }
-.export button:hover { background: var(--red); }
+.export button:hover:not(:disabled) { translate: 0 -1px; box-shadow: 0 5px 0 var(--black); }
+.export button:active:not(:disabled) { translate: 0 3px; box-shadow: 0 1px 0 var(--black); }
 .export button:disabled { opacity: .6; cursor: progress; }
 .export input:focus-visible, .export button:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
 .said { grid-column: 1 / -1; min-height: 1.4em; font: 400 20px/1.2 var(--font-script), cursive; color: var(--pen); }

@@ -30,7 +30,7 @@ export type Chart = {
   measuredAt: string;
 };
 
-export type ClaimReport = Omit<Claim, "code"> & { code: { label: string; url: string }[]; figures: Figure[]; chart: Chart | null };
+export type ClaimReport = Omit<Claim, "code" | "headline"> & { headline: string | null; code: { label: string; url: string }[]; figures: Figure[]; chart: Chart | null };
 
 const n = (x: number) => x.toLocaleString("en-US");
 
@@ -282,6 +282,7 @@ export async function engineering(db: Db, now: Date): Promise<{ asOf: string; cl
     asOf: now.toISOString(),
     claims: CLAIMS.map((c) => ({
       ...c,
+      headline: c.headline ?? null,
       code: c.code.map((x) => ({ label: x.label, url: codeUrl(x.path) })),
       figures: figures[c.id] ?? [],
       chart: charts[c.id] ?? null,
