@@ -4,6 +4,7 @@
 import type { Db } from "@/server/platform/db/client";
 import { latestFacts, ordersToDate, type StoredFact } from "./repository";
 import { spanStats } from "@/server/reporting";
+import { briefCounts, type BriefCounts } from "@/server/brief";
 import { addDays, shopToday } from "@/lib/time";
 import { CLAIMS, codeUrl, type Claim } from "./claims";
 import type { FactValue } from "./facts";
@@ -133,6 +134,20 @@ function gateFigures(f: StoredFact | undefined): Figure[] {
   ];
 }
 
+/** The briefs, counted live from their table, and the test gap of the last push to main. */
+function aiFigures(b: BriefCounts, gap: StoredFact | undefined, now: Date): Figure[] {
+  const out = [
+    live("Morning briefs written", b.written, n(b.written), now),
+    live("Kept as the model wrote them, every number checked", b.byModel, `${n(b.byModel)} of ${n(b.written)}`, now),
+    live("Drafts the guard turned back for a number of their own", b.guarded, n(b.guarded), now),
+  ];
+  if (gap) {
+    const g = gap.value as FactValue<"test-gap">;
+    out.push(fromCi("Changed lines no test runs, last push to main", g.uncovered, `${n(g.uncovered)} of ${n(g.changed)}`, gap));
+  }
+  return out;
+}
+
 function boundaryFigures(f: StoredFact | undefined): Figure[] {
   if (!f) return [];
   const b = f.value as FactValue<"boundaries">;
@@ -147,10 +162,11 @@ function boundaryFigures(f: StoredFact | undefined): Figure[] {
 /** Each running claim's figures. A claim whose figure hasn't been measured yet shows none, never a guess. */
 async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> {
   const today = shopToday(now);
-  const [facts, shop, recent] = await Promise.all([
+  const [facts, shop, recent, briefs] = await Promise.all([
     latestFacts(db),
     ordersToDate(db, now),
     spanStats(db, { from: addDays(today, -27), to: today }, now),
+    briefCounts(db),
   ]);
   const tests = facts.get("unit-tests");
   const t = tests?.value as FactValue<"unit-tests"> | undefined;
@@ -159,6 +175,7 @@ async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> 
     "ui-tests": testFigures(facts.get("ui-tests"), tests),
     barcode: barcodeFigures(facts.get("barcodes")),
     "quality-gates": gateFigures(facts.get("quality-gates")),
+    "ai-adoption": aiFigures(briefs, facts.get("test-gap"), now),
     "excel-export": exportFigures(facts.get("export"), recent.lines, now),
     devsecops: [...coverageFigures(facts.get("coverage")), ...securityFigures(facts.get("security"))],
     "full-stack": [

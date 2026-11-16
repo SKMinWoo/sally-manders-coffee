@@ -9,6 +9,7 @@ import { migrate } from "drizzle-orm/pglite/migrator";
 import { shopToday } from "@/lib/time";
 import { now } from "../clock";
 import { backfillDays, daysAhead, ensureDays } from "@/server/simulator";
+import { writeBrief } from "@/server/brief";
 import type { Db } from "./client";
 import * as schema from "./schema";
 
@@ -19,7 +20,9 @@ async function open(dir: string): Promise<Db> {
   const pg = drizzle({ client: new PGlite(dir), schema, casing: "snake_case" });
   await migrate(pg, { migrationsFolder: "./drizzle" });
   const db = pg as unknown as Db;
-  await ensureDays(db, backfillDays(7, now())); // a week back, so week-over-week has something to compare
+  // a week back, so week-over-week has something to compare, and a day more for yesterday's brief
+  await ensureDays(db, backfillDays(8, now()));
+  await writeBrief(db, now()); // yesterday's, from the template: a local database never calls the model
   return db;
 }
 
@@ -30,6 +33,7 @@ export async function localDb(dir: string): Promise<Db> {
   const today = shopToday(now());
   if (g.__sallySeeded !== today) {
     await ensureDays(db, daysAhead(now()));
+    await writeBrief(db, now());
     g.__sallySeeded = today;
   }
   return db;

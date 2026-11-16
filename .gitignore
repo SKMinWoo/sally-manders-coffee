@@ -32,3 +32,6 @@ playwright-report/
 design/art/out/
 *.blend1
 __pycache__/
+
+# the test-gap comment scripts/ci/test-gap.mjs writes
+/test-gap/

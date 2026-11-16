@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { addDays, formatCheckDate, weekdayOf } from "@/lib/time";
+import { getLatestBrief } from "@/server/brief";
 import { getBehind } from "@/server/reporting";
+import { BriefNote } from "./BriefNote";
 import { ExportSales } from "./ExportSales";
 import { HourChart } from "./HourChart";
 import { LEAD_METRICS, METRICS, type MetricKey } from "./metrics";
@@ -30,7 +32,7 @@ function versus(key: MetricKey, today: number | null, last: number | null, weekd
 
 export default async function Behind() {
   await connection();
-  const b = await getBehind();
+  const [b, brief] = await Promise.all([getBehind(), getLatestBrief()]);
   const weekday = WEEKDAYS[weekdayOf(b.date)]!;
   const rest = (Object.keys(METRICS) as MetricKey[]).filter((k) => !LEAD_METRICS.includes(k));
   const dayMax = Math.max(1, ...b.dayparts.map((d) => d.orders));
@@ -82,6 +84,8 @@ export default async function Behind() {
       </section>
 
       <section className={s.floor}>
+        <BriefNote brief={brief} />
+
         <HourChart hours={b.hours} peakHour={b.peakHour} />
 
         <div className={s.pair}>

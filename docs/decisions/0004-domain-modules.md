@@ -1,6 +1,6 @@
 # 4. The server is five domain modules, each used through one public entry
 
-Date: 2026-11-15 · Status: accepted
+Date: 2026-11-15 · Status: accepted, amended by [0005](0005-the-brief-and-its-guard.md) (a sixth module, `brief`)
 
 ## Context
 
