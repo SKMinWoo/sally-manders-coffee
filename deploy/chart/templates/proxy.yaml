@@ -1,0 +1,61 @@
+# Wave 1: Neon's proxy in front of Postgres, as in the load test (ADR 0006). Its start script makes
+# a table in Postgres, so it waits for Postgres first. Pooling is switched on for every client, as
+# Neon's own proxy does; this build otherwise pools only clients that ask, and the driver never does.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neon-proxy
+  labels:
+    {{- include "shop.labels" . | nindent 4 }}
+    app.kubernetes.io/name: neon-proxy
+    app.kubernetes.io/component: database-proxy
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: neon-proxy
+  template:
+    metadata:
+      labels:
+        {{- include "shop.labels" . | nindent 8 }}
+        app.kubernetes.io/name: neon-proxy
+        app.kubernetes.io/component: database-proxy
+    spec:
+      containers:
+        - name: neon-proxy
+          image: {{ .Values.proxy.image }}
+          command: ["bash", "-c"]
+          args:
+            - >-
+              until pg_isready -h postgres -U postgres -d main; do sleep 1; done &&
+              sed -i 's/--auth-backend=postgres/--sql-over-http-pool-opt-in=false --auth-backend=postgres/' start.sh &&
+              grep -q pool-opt-in=false start.sh &&
+              exec ./start.sh
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: shop-database, key: POSTGRES_PASSWORD } }
+            - name: PG_CONNECTION_STRING
+              value: postgres://postgres:$(POSTGRES_PASSWORD)@postgres:5432/main
+          ports:
+            - { name: http, containerPort: 4444 }
+          readinessProbe:
+            tcpSocket: { port: http }
+            periodSeconds: 2
+          resources:
+            requests: { cpu: 100m, memory: 64Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: neon-proxy
+  labels:
+    {{- include "shop.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  selector:
+    app.kubernetes.io/name: neon-proxy
+  ports:
+    - { name: http, port: 4444, targetPort: http }

@@ -1,0 +1,61 @@
+# Wave 0: Postgres. Its data lives on an emptyDir, so it lasts as long as the pod: the seed Job
+# writes it again on every sync.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    {{- include "shop.labels" . | nindent 4 }}
+    app.kubernetes.io/name: postgres
+    app.kubernetes.io/component: database
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "shop.labels" . | nindent 8 }}
+        app.kubernetes.io/name: postgres
+        app.kubernetes.io/component: database
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          env:
+            - { name: POSTGRES_USER, value: postgres }
+            - { name: POSTGRES_DB, value: main }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: shop-database, key: POSTGRES_PASSWORD } }
+          ports:
+            - { name: postgres, containerPort: 5432 }
+          readinessProbe:
+            # over TCP: while the image first sets up the database it runs a server on the socket alone,
+            # and then restarts it, so a socket check can pass too soon
+            exec: { command: ["pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "main"] }
+            periodSeconds: 2
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/postgresql/data }
+      volumes:
+        - { name: data, emptyDir: {} }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    {{- include "shop.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  selector:
+    app.kubernetes.io/name: postgres
+  ports:
+    - { name: postgres, port: 5432, targetPort: postgres }

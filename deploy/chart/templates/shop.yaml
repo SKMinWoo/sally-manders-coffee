@@ -1,0 +1,77 @@
+# Wave 3: the shop, Next's standalone server (Dockerfile, target runner). A pod is ready once health
+# answers; a rollout adds one pod at a time and never drops below the replicas asked for.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop
+  labels:
+    {{- include "shop.labels" . | nindent 4 }}
+    app.kubernetes.io/name: shop
+    app.kubernetes.io/component: service
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  replicas: {{ .Values.shop.replicas }}
+  strategy:
+    rollingUpdate: { maxUnavailable: 0, maxSurge: 1 }
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: shop
+  template:
+    metadata:
+      labels:
+        {{- include "shop.labels" . | nindent 8 }}
+        app.kubernetes.io/name: shop
+        app.kubernetes.io/component: service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000 # node, in the node image
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: shop
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: shop-database, key: DATABASE_URL } }
+            - { name: LOCAL_NEON_ENDPOINT, value: {{ .Values.database.proxyEndpoint | quote }} }
+            # Kubernetes sets HOSTNAME to the pod's name, and Next's server listens on HOSTNAME
+            - { name: HOSTNAME, value: "0.0.0.0" }
+          ports:
+            - { name: http, containerPort: 3000 }
+          readinessProbe:
+            httpGet: { path: /api/v1/health, port: http }
+            periodSeconds: 3
+            failureThreshold: 2
+          livenessProbe:
+            httpGet: { path: /api/v1/health, port: http }
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+          securityContext:
+            {{- include "shop.restricted" . | nindent 12 }}
+          resources:
+            requests: { cpu: 100m, memory: 192Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: next-cache, mountPath: /app/.next/cache }
+            - { name: tmp, mountPath: /tmp }
+      volumes:
+        - { name: next-cache, emptyDir: {} }
+        - { name: tmp, emptyDir: {} }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shop
+  labels:
+    {{- include "shop.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: shop
+  ports:
+    - { name: http, port: 80, targetPort: http, nodePort: {{ .Values.shop.nodePort }} }

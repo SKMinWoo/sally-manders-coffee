@@ -44,10 +44,15 @@ export async function shopDb(): Promise<Db> {
  */
 export const LOCAL_NEON_HOST = "db.localtest.me";
 
-/** Where the driver sends a query over HTTP for this database, or null for the driver's default. */
+/**
+ * Where the driver sends a query over HTTP for this database, or null for the driver's default.
+ * Off a single machine, as in the cluster (deploy/chart), 127.0.0.1 is the pod itself, so
+ * LOCAL_NEON_ENDPOINT names the proxy's own address. It counts only for the local host name, so
+ * it can never send a real Neon URL, password and all, somewhere else.
+ */
 export function localNeonEndpoint(url: string, env: NodeJS.ProcessEnv = process.env): string | null {
-  if (env.VERCEL) return null;
-  return new URL(url).hostname === LOCAL_NEON_HOST ? `http://${LOCAL_NEON_HOST}:4444/sql` : null;
+  if (env.VERCEL || new URL(url).hostname !== LOCAL_NEON_HOST) return null;
+  return env.LOCAL_NEON_ENDPOINT || `http://${LOCAL_NEON_HOST}:4444/sql`;
 }
 
 /** The shop's database, from DATABASE_URL. Created on first use, so builds don't need it. */

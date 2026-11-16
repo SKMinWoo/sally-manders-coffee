@@ -1,0 +1,47 @@
+# Wave 2: migrations and the shop's last week, today and tomorrow (scripts/cluster/seed.ts). A Sync
+# hook, so Argo CD runs it on each sync, waits for it to finish before wave 3, and replaces the last
+# one rather than editing a Job, which Kubernetes doesn't allow.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed
+  labels:
+    {{- include "shop.labels" . | nindent 4 }}
+    app.kubernetes.io/name: seed
+    app.kubernetes.io/component: seed
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  backoffLimit: 2
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        {{- include "shop.labels" . | nindent 8 }}
+        app.kubernetes.io/name: seed
+        app.kubernetes.io/component: seed
+    spec:
+      restartPolicy: Never
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000 # node, in the node image
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: seed
+          image: "{{ .Values.tools.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          command: ["node", "--import", "tsx", "scripts/cluster/seed.ts"]
+          env:
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: shop-database, key: DATABASE_URL } }
+            - { name: LOCAL_NEON_ENDPOINT, value: {{ .Values.database.proxyEndpoint | quote }} }
+          securityContext:
+            {{- include "shop.restricted" . | nindent 12 }}
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp } # tsx's compile cache
+      volumes:
+        - { name: tmp, emptyDir: {} }

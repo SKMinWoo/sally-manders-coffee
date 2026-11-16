@@ -1,0 +1,7 @@
+# Exhibit 11: the shop on Kubernetes, synced by Argo CD (deploy/argocd/application.yaml, ADR 0008).
+apiVersion: v2
+name: sally-manders
+description: Sally Mander's, a simulated coffee shop, with its own Postgres behind Neon's proxy
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

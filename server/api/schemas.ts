@@ -18,7 +18,7 @@ export const Health = z
       .string()
       .regex(/^[0-9a-f]{40}$/)
       .nullable()
-      .describe("The commit this deployment was built from, so a deploy can tell when it has gone live; null off Vercel"),
+      .describe("The commit this deployment was built from, so a deploy can tell when it has gone live; null when the build was given none"),
   })
   .meta({ id: "Health" });
 

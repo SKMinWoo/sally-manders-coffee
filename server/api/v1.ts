@@ -30,8 +30,18 @@ function resolveDay(param: string, now: Date): ShopDate | ApiResult {
   return date;
 }
 
-/** `commit` is the build's own commit on Vercel, which the deploy watches for (scripts/deploy/ship.mjs). */
-export async function health(db: Db, now: Date, commit: string | null = process.env.VERCEL_GIT_COMMIT_SHA || null): Promise<ApiResult> {
+/**
+ * The commit this build came from: Vercel's own, or GIT_COMMIT_SHA, which the container image is
+ * built with (Dockerfile), so the cluster's CI can check the pods it synced run this commit. Anything
+ * but a full sha counts as none.
+ */
+export function buildCommit(env: NodeJS.ProcessEnv = process.env): string | null {
+  const sha = env.VERCEL_GIT_COMMIT_SHA || env.GIT_COMMIT_SHA || "";
+  return /^[0-9a-f]{40}$/.test(sha) ? sha : null;
+}
+
+/** `commit` is the build's own (buildCommit), which a deploy watches for (scripts/deploy/ship.mjs). */
+export async function health(db: Db, now: Date, commit: string | null = buildCommit()): Promise<ApiResult> {
   const ahead = daysAhead(now);
   const have = await writtenDays(db, ahead);
   const simulatorAhead = ahead.every((d) => have.has(d));

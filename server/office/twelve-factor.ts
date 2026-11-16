@@ -85,17 +85,23 @@ export const FACTORS: Factor[] = [
     n: 7,
     name: "Port binding",
     asks: "Export services by binding to a port.",
-    here: "The app is self-contained: next start serves it on a port of its own, with no web server in front. In production Vercel's runtime does the binding.",
-    evidence: [{ label: "The start script", path: "package.json" }],
-    gap: "On Vercel the port belongs to the platform, not the app. Exhibit 11's container runs next start itself.",
+    here: "The app is self-contained: its server binds a port of its own, with no web server in front. The container image runs Next's standalone server on PORT, and the cluster reaches it through a Kubernetes Service on that port. In production Vercel's runtime does the binding.",
+    evidence: [
+      { label: "The container image", path: "Dockerfile" },
+      { label: "The Service in front of it", path: "deploy/chart/templates/shop.yaml" },
+    ],
+    gap: "On Vercel the port belongs to the platform, not the app; only the cluster in CI runs the app's own server in a container.",
   },
   {
     n: 8,
     name: "Concurrency",
     asks: "Scale out by running more processes.",
     here: "Vercel runs as many function instances as traffic needs. Because nothing is kept in a process, a second instance needs no coordination with the first.",
-    evidence: [{ label: "The handlers: plain functions", path: "server/api/v1.ts" }],
-    gap: "The shop's traffic has never needed more than one instance, so this is by design, not measured. Exhibit 7's load test is where it gets measured.",
+    evidence: [
+      { label: "The handlers: plain functions", path: "server/api/v1.ts" },
+      { label: "Two pods behind one Service", path: "deploy/chart/templates/shop.yaml" },
+    ],
+    gap: "In the cluster two pods serve the shop side by side, but the load test runs against one process, so what a second one adds is not measured.",
   },
   {
     n: 9,

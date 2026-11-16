@@ -130,6 +130,21 @@ export const FACT_KINDS = {
    * many probes ran over how many days, and how many found the site down.
    */
   uptime: z.strictObject({ days: Count.max(31), probes: Count.min(1), failed: Count }),
+  /**
+   * The shop on Kubernetes (deploy/chart, scripts/ci/cluster-facts.mjs): kind's throwaway cluster,
+   * once Argo CD synced the Helm chart at this commit. The services that run the shop's own code,
+   * every pod still running and how many are ready, the objects Argo CD synced, the Application
+   * applied to synced and healthy in ms, and what health said through the shop's Service.
+   */
+  cluster: z.strictObject({
+    services: Count,
+    pods: z.strictObject({ ready: Count, total: Count.min(1) }),
+    resources: Count,
+    syncMs: Count,
+    health: z.enum(["ok", "degraded"]),
+    /** health named the commit CI built */
+    commitMatched: z.boolean(),
+  }),
   /** The domain boundaries (eslint-rules/boundaries.mjs) applied to every import in the repository. */
   boundaries: z.strictObject({
     modules: Count,
