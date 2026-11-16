@@ -68,6 +68,17 @@ Grafana, which would need an account.
   new connections five times (`sorry, too many clients already`, code 53300), and the proxy failed
   twice (`Control plane request failed`). So requests queue for database connections, not for a
   slow query. `/office` runs the most queries at once of any page, so it is the first refused.
-  Next to check: how many connections the proxy opens per query, against Postgres's limit.
+- Why, from the proxy's source and the image's: at release-proxy-8853 the proxy pools HTTP
+  connections only for a client that sends `Neon-Pool-Opt-In` (`sql_over_http_pool_opt_in`
+  defaults to true), and `@neondatabase/serverless` 1.2.0 never sends it. So every query opened
+  and closed its own Postgres connection, and each new connection also looked up its role in the
+  same Postgres, which is this image's control plane (`--auth-backend=postgres`). Those lookups
+  are the `Control plane request failed` lines. The image also builds the proxy without
+  `--release`, so CI runs a debug build. The runs measured the test rig's connection churn, not
+  the shop.
+- So the job now starts the proxy with `--sql-over-http-pool-opt-in=false`, pooling for every
+  client, as a pooling Neon does, and counts Postgres's client connections once a second (the
+  peak is in the step summary). The debug build stays: building the proxy for release in CI would
+  take longer than the load test. Its figures are therefore an upper bound on the proxy's share.
 - The slowest endpoint it finds is fixed in its own pull request, so the card can show the P95 before
   and after.
