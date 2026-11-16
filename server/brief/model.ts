@@ -5,7 +5,9 @@
 
 import { z } from "zod";
 
-export const DEFAULT_MODEL = "gemini-flash-latest";
+// the lite model: timed 2026-11-15 on the free tier, it wrote a brief in about a second, while
+// gemini-flash-latest (a thinking model) hadn't answered after 90 s and was often "busy" (503)
+export const DEFAULT_MODEL = "gemini-flash-lite-latest";
 const MODEL_NAME = /^[a-z0-9][a-z0-9.-]{0,63}$/; // it goes into the URL's path, so nothing else gets in
 
 export type ModelConfig = {
