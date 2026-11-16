@@ -6,27 +6,40 @@
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
-/** One CSV line into fields, honouring JMeter's quoting ("a, b" and "" for a quote). */
-export function csvFields(line) {
-  const out = [];
-  let cur = "", quoted = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
+/**
+ * A CSV file into records of fields, honouring JMeter's quoting ("a, b" and "" for a quote). A
+ * quoted field may run over several lines, as a failed assertion's message does, so the file is
+ * read as one stream rather than split into lines first.
+ */
+export function csvRecords(text) {
+  const records = [];
+  let row = [], cur = "", quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
     if (quoted) {
-      if (ch === '"' && line[i + 1] === '"') {
+      if (ch === '"' && text[i + 1] === '"') {
         cur += '"';
         i++;
       } else if (ch === '"') quoted = false;
       else cur += ch;
     } else if (ch === '"') quoted = true;
     else if (ch === ",") {
-      out.push(cur);
+      row.push(cur);
+      cur = "";
+    } else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      row.push(cur);
+      records.push(row);
+      row = [];
       cur = "";
     } else cur += ch;
   }
-  out.push(cur);
-  return out;
+  if (cur || row.length) records.push([...row, cur]);
+  return records.filter((r) => r.length > 1 || r[0] !== "");
 }
+
+/** One CSV line into fields. */
+export const csvFields = (line) => csvRecords(line)[0] ?? [""];
 
 /** The p-th percentile by nearest rank: the smallest value that p% of the samples are at or under. */
 export function percentile(sorted, p) {
@@ -36,16 +49,16 @@ export function percentile(sorted, p) {
 
 /** The rows of a JMeter CSV results file, as { at, ms, label, ok }. */
 export function readSamples(text) {
-  const lines = text.split(/\r?\n/).filter(Boolean);
-  const head = csvFields(lines[0] ?? "");
+  const [head = [], ...rows] = csvRecords(text);
   const col = (name) => {
     const i = head.indexOf(name);
     if (i < 0) throw new Error(`The results have no "${name}" column (found: ${head.join(", ")})`);
     return i;
   };
   const [at, ms, label, ok] = [col("timeStamp"), col("elapsed"), col("label"), col("success")];
-  return lines.slice(1).map((l) => {
-    const f = csvFields(l);
+  return rows.map((f, n) => {
+    // a short row would be read as an unnamed endpoint; say which one instead
+    if (f.length !== head.length) throw new Error(`Result ${n + 1} has ${f.length} fields, the header ${head.length}: ${f.join(",").slice(0, 120)}`);
     return { at: Number(f[at]), ms: Number(f[ms]), label: f[label], ok: f[ok] === "true" };
   });
 }

@@ -283,6 +283,10 @@ jobs:
           name: load-facts
           path: .ci/load-test.json
           retention-days: 3
+      # off the service network before the runner takes it down, or the teardown can't remove it
+      - name: Stop Neon's proxy
+        if: ${{ always() }}
+        run: docker rm -f neon-proxy || true
 
   # Posts the load test's figure from main. Its own job so the secret never shares a runner with the
   # proxy image; it runs only the repository's own post script.

@@ -36,6 +36,14 @@ test("JMeter's results become the figure: per endpoint, slowest first, errors co
   assert.equal(f.p95Ms, 400);
 });
 
+test("a failed assertion's message runs over several lines and stays one result (CI run 43814199719)", () => {
+  // the shape JMeter wrote when /office answered 500: the quoted failure message holds newlines
+  const failed = `1794809179307,5436,GET /office,500,Internal Server Error,Visitors 1-13,text,false,"Test failed: code expected to equal /\n\n****** received  : [[[5]]]00\n\n****** comparison: [[[2]]]00\n\n/",6079`;
+  const s = readSamples([HEAD, row(1000, 10, "GET /"), failed, row(1020, 5, "GET /api/v1/health")].join("\n") + "\n");
+  assert.deepEqual(s.map((x) => [x.label, x.ok]), [["GET /", true], ["GET /office", false], ["GET /api/v1/health", true]]);
+  assert.throws(() => readSamples(`${HEAD}\n1,2,GET /`), /Result 1 has 3 fields, the header 10/);
+});
+
 test("a results file without the columns it needs is refused, not read as zeros", () => {
   assert.throws(() => readSamples("timeStamp,label\n1,GET /"), /no "elapsed" column/);
   assert.throws(() => summarise([], { users: 1, perMinute: 1, seed: { days: 0, orders: 0 } }), /no requests/);

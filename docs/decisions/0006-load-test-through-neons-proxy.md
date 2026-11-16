@@ -63,5 +63,11 @@ Grafana, which would need an account.
   included, while the cached pages stayed under 30 ms. So the queue is on the database path: the
   app's one Node process, the proxy, or Postgres, all sharing the runner. Which one is found before
   any endpoint is "fixed".
+- The second run (CI run 43814199719) narrowed it: the same 11.4 a second, and 4 errors, all
+  `/office` answering 500 within 4 s of each other. The server's log says why. Postgres refused
+  new connections five times (`sorry, too many clients already`, code 53300), and the proxy failed
+  twice (`Control plane request failed`). So requests queue for database connections, not for a
+  slow query. `/office` runs the most queries at once of any page, so it is the first refused.
+  Next to check: how many connections the proxy opens per query, against Postgres's limit.
 - The slowest endpoint it finds is fixed in its own pull request, so the card can show the P95 before
   and after.
