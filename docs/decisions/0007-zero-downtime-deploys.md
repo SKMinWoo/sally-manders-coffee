@@ -57,9 +57,9 @@ it awake around the clock.
 
 ## Consequences
 
-- Production needs three secrets in a GitHub environment named `production`, which only main may
-  deploy from: `DATABASE_URL`, `VERCEL_DEPLOY_HOOK` and `CI_INGEST_SECRET`. Without them the deploy
-  job fails, and with main's Git deploys off, nothing reaches production.
+- Production needs two secrets in a GitHub environment named `production`, which only main may
+  deploy from: `DATABASE_URL` and `VERCEL_DEPLOY_HOOK`. Without them the deploy job fails, and with
+  main's Git deploys off, nothing reaches production.
 - A failed smoke test fails the job and is posted, but nothing rolls back on its own. Vercel's
   instant rollback in the dashboard stays the way back. Automating it would need a Vercel token in
   CI, for a case that hasn't happened yet.
