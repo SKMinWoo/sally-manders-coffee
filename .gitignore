@@ -12,6 +12,11 @@ next-env.d.ts
 # the development database (server/platform/db/local.ts), and the browser tests' own
 .pglite/
 .pglite-e2e/
+.pglite-visual/
+
+# screenshot baselines drawn on a laptop (PW_VISUAL=1); only CI's Linux ones are committed
+e2e/**/*-win32.png
+e2e/**/*-darwin.png
 
 # the browser tests' failures: screenshots, traces and the HTML report
 test-results/

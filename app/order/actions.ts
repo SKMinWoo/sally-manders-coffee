@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { shopDb } from "@/server/platform/db/client";
 import { placeVisitorOrder } from "@/server/orders";
 import { clientIp, visitorHashOf } from "@/server/orders";
+import { now } from "@/server/platform/clock";
 
 export type OrderState = { message: string } | null;
 
@@ -19,7 +20,7 @@ export async function putOnRail(_prev: OrderState, form: FormData): Promise<Orde
     return { message: "That check couldn't be read." };
   }
 
-  const result = await placeVisitorOrder(await shopDb(), { lines }, { visitorHash: visitorHashOf(clientIp(await headers())) });
+  const result = await placeVisitorOrder(await shopDb(), { lines }, { visitorHash: visitorHashOf(clientIp(await headers())), now: now() });
   if (!result.ok) return { message: result.message };
   redirect(`/order/${result.publicId}`);
 }

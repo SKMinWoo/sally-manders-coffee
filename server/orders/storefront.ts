@@ -8,6 +8,7 @@ import { shopDb } from "@/server/platform/db/client";
 import { listMenu } from "@/server/menu";
 import { countOrders } from "./repository";
 import { expectedWait, loadNow } from "./wait";
+import { now, stoppedAt } from "@/server/platform/clock";
 
 export const getMenu = unstable_cache(async () => listMenu(await shopDb()), ["menu"], { revalidate: 300 });
 
@@ -24,11 +25,11 @@ export interface Pulse {
 export const getPulse = unstable_cache(
   async (): Promise<Pulse> => {
     const db = await shopDb();
-    const now = new Date();
-    const date = shopToday(now);
-    const [placed, load] = await Promise.all([countOrders(db, date, now), loadNow(db, now)]);
+    const at = now();
+    const date = shopToday(at);
+    const [placed, load] = await Promise.all([countOrders(db, date, at), loadNow(db, at)]);
     return { date, nextTicket: String(placed + 1).padStart(4, "0"), waitForTwo: expectedWait(2, load), load };
   },
-  ["pulse"],
+  ["pulse", stoppedAt()],
   { revalidate: 60 },
 );

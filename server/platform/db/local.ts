@@ -7,6 +7,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 import { shopToday } from "@/lib/time";
+import { now } from "../clock";
 import { backfillDays, daysAhead, ensureDays } from "@/server/simulator";
 import type { Db } from "./client";
 import * as schema from "./schema";
@@ -18,7 +19,7 @@ async function open(dir: string): Promise<Db> {
   const pg = drizzle({ client: new PGlite(dir), schema, casing: "snake_case" });
   await migrate(pg, { migrationsFolder: "./drizzle" });
   const db = pg as unknown as Db;
-  await ensureDays(db, backfillDays(7)); // a week back, so week-over-week has something to compare
+  await ensureDays(db, backfillDays(7, now())); // a week back, so week-over-week has something to compare
   return db;
 }
 
@@ -26,9 +27,9 @@ export async function localDb(dir: string): Promise<Db> {
   g.__sallyLocal ??= open(dir);
   const db = await g.__sallyLocal;
   // a dev server left running past midnight in Austin: write the new day and the one after
-  const today = shopToday();
+  const today = shopToday(now());
   if (g.__sallySeeded !== today) {
-    await ensureDays(db, daysAhead());
+    await ensureDays(db, daysAhead(now()));
     g.__sallySeeded = today;
   }
   return db;

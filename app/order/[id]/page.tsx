@@ -8,6 +8,7 @@ import { shopDb } from "@/server/platform/db/client";
 import { findOrder } from "@/server/orders";
 import s from "../order.module.css";
 import { Countdown } from "./Countdown";
+import { now } from "@/server/platform/clock";
 
 export const metadata = { title: "Your order", robots: { index: false } };
 
@@ -16,8 +17,8 @@ export default async function OrderStatus({ params }: { params: Promise<{ id: st
   await connection();
   const { id } = await params;
   if (!PUBLIC_ID.test(id)) notFound();
-  const now = new Date();
-  const order = await findOrder(await shopDb(), id, now);
+  const at = now();
+  const order = await findOrder(await shopDb(), id, at);
   if (!order) notFound();
 
   const wait = Math.round((order.readyAt.getTime() - order.placedAt.getTime()) / 1000);
@@ -32,7 +33,7 @@ export default async function OrderStatus({ params }: { params: Promise<{ id: st
         lines={order.lines.map((l) => ({ id: l.itemId, qty: l.qty, name: l.name, cents: l.priceCents }))}
         barcode={order.publicId}
       />
-      <Countdown readyAt={order.readyAt.getTime()} serverNow={now.getTime()} />
+      <Countdown readyAt={order.readyAt.getTime()} serverNow={at.getTime()} />
       <Link href="/order" className={s.again}>Order something else</Link>
       <p className={`sim-note ${s.note}`}>A simulated shop: no drink is coming, but the wait is the one a real order would get right now.</p>
     </main>

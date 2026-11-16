@@ -21,6 +21,9 @@ jobs:
       # read-only: lets the security figures count open CodeQL alerts
       security-events: read
     steps:
+      # the release gate reports how long verification took, from here to its verdict
+      - name: Start the clock
+        run: echo "GATE_STARTED_MS=$(date +%s%3N)" >> "$GITHUB_ENV"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # SonarCloud reads history to tell new code from old
@@ -30,19 +33,26 @@ jobs:
           cache: npm
       # --ignore-scripts is also set in .npmrc: no dependency runs code at install time
       - run: npm ci --ignore-scripts
-      - run: npm audit signatures
+      - id: signatures
+        run: npm audit signatures
       # Gate: a high or critical hole in anything that ships fails the build. Dev tooling is
       # counted on /office but doesn't block, since it never reaches a visitor.
       - name: No high-severity holes in shipped packages
+        id: audit
         run: npm audit --omit=dev --audit-level=high
-      - run: npm run typecheck
-      - run: npm run lint
+      - id: types
+        run: npm run typecheck
+      - id: lint
+        run: npm run lint
       # the tests, counted into .ci/ (results, coverage and lcov) for the gate, SonarCloud and /office
-      - run: npm run test:ci
+      - id: tests
+        run: npm run test:ci
       # Gate: coverage against the bar in scripts/ci/coverage-bar.mjs
       - name: Coverage gate
+        id: coverage
         run: node scripts/ci/coverage-gate.mjs
-      - run: npm run build
+      - id: build
+        run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
       # The browser tests run the build above with `next start`, on a fresh PGlite (LOCAL_DB in
@@ -50,10 +60,23 @@ jobs:
       # runner, from Playwright's own CDN; nothing is downloaded on a laptop.
       - name: Browser for the UI tests
         run: npx playwright install --with-deps --only-shell chromium
-      # Gate: every browser test passes on desktop and phone, the barcode tests among them. The
-      # counts land in .ci/ui-tests.json, and what the barcode tests read in .ci/barcodes.json.
+      # Gate: every browser test passes on desktop and phone, the barcode tests and the screenshot
+      # baselines among them. The counts land in .ci/ui-tests.json, what the barcode tests read in
+      # .ci/barcodes.json, and the baselines compared in .ci/baselines.json.
       - name: UI tests (Playwright, desktop and phone)
+        id: ui
         run: npx playwright test
+      # What a failed run saw: screenshots, traces, and each changed page's -actual.png and diff,
+      # which is also how a meant change gets its new baseline (e2e/visual.spec.ts says how).
+      - name: Keep the browser tests' evidence
+        if: ${{ failure() && steps.ui.outcome == 'failure' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: browser-tests
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 14
 
       # SonarCloud runs once SONAR_TOKEN is set; until then (and on forks, which get no secrets) it skips.
       - name: Is SonarCloud set up?
@@ -61,10 +84,28 @@ jobs:
         run: echo "enabled=${{ secrets.SONAR_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
       # Gate: sonar.qualitygate.wait in sonar-project.properties fails this step on a failed gate
       - name: SonarCloud scan
+        id: sonarcloud
         if: steps.sonar.outputs.enabled == 'true'
         uses: SonarSource/sonarqube-scan-action@59202af334b4ba7b5db01b701b8e79f8b3bef0f4 # v8.5.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # The verdict over every gate above, written to .ci/quality-gates.json and the run's summary.
+      # Fails if any gate failed; the release-gate job below is the one name a merge waits for.
+      - name: Release gate verdict
+        if: ${{ !cancelled() }}
+        run: node scripts/ci/release-gate.mjs
+        env:
+          GATES: >-
+            [["package signatures", "${{ steps.signatures.outcome }}"],
+            ["shipped-package audit", "${{ steps.audit.outcome }}"],
+            ["types", "${{ steps.types.outcome }}"],
+            ["lint", "${{ steps.lint.outcome }}"],
+            ["unit and API tests", "${{ steps.tests.outcome }}"],
+            ["coverage", "${{ steps.coverage.outcome }}"],
+            ["build", "${{ steps.build.outcome }}"],
+            ["browser tests and baselines", "${{ steps.ui.outcome }}"],
+            ["SonarCloud", "${{ steps.sonarcloud.outcome }}"]]
 
       # Report what this run measured to /office. Main only; these run even when a gate failed, so a
       # failing figure is posted as honestly as a passing one.
@@ -85,3 +126,17 @@ jobs:
         env:
           INGEST_URL: https://sally-manders-coffee.vercel.app/api/ingest/ci
           CI_INGEST_SECRET: ${{ secrets.CI_INGEST_SECRET }}
+
+  # The release gate: green only when every gate in check passed. It's the one check a pull request
+  # needs before it can merge, and so before main, which is what production deploys from.
+  release-gate:
+    name: Release gate
+    needs: check
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Every gate in check passed
+        run: test "$CHECK" = success
+        env:
+          CHECK: ${{ needs.check.result }}

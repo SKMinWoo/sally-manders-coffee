@@ -2,6 +2,7 @@ import { respond } from "@/server/platform/http";
 import { problem } from "@/server/api/v1";
 import { shopDb } from "@/server/platform/db/client";
 import { exportSales, XLSX, type ExportResult } from "@/server/reporting";
+import { now } from "@/server/platform/clock";
 
 // never cached: each request is checked against what the visitor already has
 const COMMON = { "Cache-Control": "private, no-cache", "Access-Control-Expose-Headers": "ETag, X-Export-Rows" };
@@ -13,7 +14,7 @@ async function decide(req: Request): Promise<ExportResult | Response> {
       from: url.searchParams.get("from"),
       to: url.searchParams.get("to"),
       ifNoneMatch: req.headers.get("if-none-match"),
-    }, new Date());
+    }, now());
   } catch (err) {
     console.error("export error", err);
     return respond(problem(500, "Something went wrong at the counter"));

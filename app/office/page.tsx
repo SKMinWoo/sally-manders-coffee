@@ -5,6 +5,7 @@ import { shopDb } from "@/server/platform/db/client";
 import type { Role } from "@/server/office";
 import { engineering, SITE, type ClaimReport, type Figure } from "@/server/office";
 import s from "./office.module.css";
+import { now } from "@/server/platform/clock";
 
 export const metadata: Metadata = { title: "The back office" };
 
@@ -76,7 +77,7 @@ function Card({ c }: { c: ClaimReport }) {
 
 export default async function Office() {
   await connection();
-  const e = await engineering(await shopDb(), new Date());
+  const e = await engineering(await shopDb(), now());
   const running = e.claims.filter((c) => c.status === "running").length;
   return (
     <main>

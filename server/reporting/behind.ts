@@ -6,6 +6,7 @@ import { addDays, sameTimeDaysBefore, shopClock, type ShopDate } from "@/lib/tim
 import { shopDb } from "@/server/platform/db/client";
 import { daySummary, itemsSold, ordersByHour, type DaySummary, type ItemSold } from "./metrics";
 import { daypartOf, DAYPARTS, type Daypart } from "@/server/menu";
+import { now, stoppedAt } from "@/server/platform/clock";
 
 export interface Behind {
   date: ShopDate;
@@ -43,4 +44,4 @@ export async function readBehind(now: Date): Promise<Behind> {
   return { date, hour, minute, today, lastWeek, lastWeekDate, hours, peakHour: peak?.hour ?? null, dayparts, top: items.slice(0, 5) };
 }
 
-export const getBehind = unstable_cache(() => readBehind(new Date()), ["behind"], { revalidate: 60 });
+export const getBehind = unstable_cache(() => readBehind(now()), ["behind", stoppedAt()], { revalidate: 60 });

@@ -224,6 +224,37 @@ test("barcode: read back from the pixels, damaged ones refused, none read wrong"
   }
 });
 
+test("quality gates: the verdict, what held it, the baselines and the time", async () => {
+  const at = NOON.getTime() + 700_000;
+  const gates = [
+    { name: "types", outcome: "success" },
+    { name: "browser tests and baselines", outcome: "success" },
+    { name: "SonarCloud", outcome: "skipped" },
+  ];
+  const value = { passed: true, gates, baselines: { compared: 12, matched: 12 }, durationMs: 412_400 };
+  assert.equal((await ingestCi(db, req({ run: run(701), facts: [{ kind: "quality-gates", value }] }), new Date(at), SECRET)).status, 201);
+  let e = Engineering.parse((await engineering(db, new Date(at + 60_000))).body);
+  let c = e.claims.find((x) => x.id === "quality-gates")!;
+  assert.equal(c.status, "running");
+  let f = new Map(c.figures.map((x) => [x.label, x.display]));
+  assert.equal(f.get("The release gate, last main"), "open: 2 of 2 gates passed", "a gate that wasn't set up isn't counted");
+  assert.equal(f.get("Screenshot baselines matched, every page on a desktop and a phone"), "12 of 12");
+  assert.equal(f.get("Checkout to verdict (the 35% is GM's; the shop has no before to measure against)"), "6 min 52 s");
+
+  const held = { ...value, passed: false, gates: [gates[0], { ...gates[1]!, outcome: "failure" }], baselines: { compared: 12, matched: 10 } };
+  assert.equal((await ingestCi(db, req({ run: run(702), facts: [{ kind: "quality-gates", value: held }] }), new Date(at + 1000), SECRET)).status, 201);
+  e = Engineering.parse((await engineering(db, new Date(at + 60_000))).body);
+  c = e.claims.find((x) => x.id === "quality-gates")!;
+  f = new Map(c.figures.map((x) => [x.label, x.display]));
+  assert.equal(f.get("The release gate, last main"), "held by browser tests and baselines");
+  assert.equal(f.get("Screenshot baselines matched, every page on a desktop and a phone"), "10 of 12");
+
+  for (const bad of [{ ...value, gates: [] }, { ...value, gates: [{ name: "types", outcome: "neutral" }] }, { ...value, passed: "yes" }]) {
+    const b = { run: run(703), facts: [{ kind: "quality-gates", value: bad }] };
+    assert.equal((await ingestCi(db, req(b), new Date(at), SECRET)).status, 422, JSON.stringify(bad));
+  }
+});
+
 test("every file a claim or a factor points at is in the repository", () => {
   const paths = [
     ...CLAIMS.flatMap((c) => c.code.map((x) => x.path)),
