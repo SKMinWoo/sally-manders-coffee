@@ -1,6 +1,7 @@
 import { shopDb } from "@/server/platform/db/client";
 import { cronAuthorised } from "@/server/platform/auth";
 import { daysAhead, ensureDays } from "@/server/simulator";
+import { now } from "@/server/platform/clock";
 
 /**
  * The daily job (vercel.json, 09:00 UTC, which is 3 or 4 am in Austin): writes today and tomorrow
@@ -15,7 +16,7 @@ export async function GET(req: Request) {
     return Response.json({ error: "unauthorised" }, { status: 401 });
   }
   try {
-    const report = await ensureDays(await shopDb(), daysAhead(new Date()));
+    const report = await ensureDays(await shopDb(), daysAhead(now()));
     return Response.json(report);
   } catch (e) {
     console.error("[simulate] failed:", e);

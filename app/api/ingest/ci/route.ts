@@ -2,6 +2,7 @@ import { handle, respond } from "@/server/platform/http";
 import { problem } from "@/server/api/v1";
 import { shopDb } from "@/server/platform/db/client";
 import { ingestCi, MAX_BODY_BYTES } from "@/server/office";
+import { now } from "@/server/platform/clock";
 
 /** CI runs on main post what they measured here (see server/office/facts.ts and .github/workflows/ci.yml). */
 export async function POST(req: Request) {
@@ -9,6 +10,6 @@ export async function POST(req: Request) {
   if (Number(req.headers.get("content-length") ?? 0) > MAX_BODY_BYTES) return respond(problem(413, "Too large for a run's report"));
   const body = await req.text();
   return handle(async () =>
-    ingestCi(await shopDb(), { authorization: req.headers.get("authorization"), contentType: req.headers.get("content-type"), body }, new Date()),
+    ingestCi(await shopDb(), { authorization: req.headers.get("authorization"), contentType: req.headers.get("content-type"), body }, now()),
   );
 }

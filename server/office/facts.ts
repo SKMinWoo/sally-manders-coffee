@@ -42,6 +42,19 @@ export const FACT_KINDS = {
     refused: Count,
     durationMs: Count,
   }),
+  /**
+   * The release gate on main (scripts/ci/release-gate.mjs): each gate's outcome, the verdict, the
+   * screenshot baselines compared (null: they didn't run), and checkout to verdict in ms.
+   */
+  "quality-gates": z.strictObject({
+    passed: z.boolean(),
+    gates: z
+      .array(z.strictObject({ name: z.string().regex(/^[A-Za-z0-9 -]{1,40}$/), outcome: z.enum(["success", "failure", "skipped", "cancelled"]) }))
+      .min(1)
+      .max(16),
+    baselines: z.strictObject({ compared: Count, matched: Count }).nullable(),
+    durationMs: Count,
+  }),
   /** Node's coverage of every module in lib/ and server/, and the gate's verdict (null: no bar set yet). */
   coverage: z.strictObject({
     lines: Percent,

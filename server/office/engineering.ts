@@ -113,6 +113,26 @@ function barcodeFigures(f: StoredFact | undefined): Figure[] {
   ];
 }
 
+function gateFigures(f: StoredFact | undefined): Figure[] {
+  if (!f) return [];
+  const g = f.value as FactValue<"quality-gates">;
+  const ran = g.gates.filter((x) => x.outcome !== "skipped");
+  const held = ran.filter((x) => x.outcome !== "success").map((x) => x.name);
+  const took = Math.round(g.durationMs / 1000), minutes = Math.floor(took / 60), seconds = took % 60; // 59.6 s is 1 min 0 s, not 0 min 60 s
+  return [
+    fromCi(
+      "The release gate, last main",
+      ran.length - held.length,
+      g.passed ? `open: ${n(ran.length)} of ${n(ran.length)} gates passed` : `held by ${held.join(", ")}`,
+      f,
+    ),
+    ...(g.baselines
+      ? [fromCi("Screenshot baselines matched, every page on a desktop and a phone", g.baselines.matched, `${n(g.baselines.matched)} of ${n(g.baselines.compared)}`, f)]
+      : []),
+    fromCi("Checkout to verdict (the 35% is GM's; the shop has no before to measure against)", g.durationMs, `${minutes} min ${seconds} s`, f),
+  ];
+}
+
 function boundaryFigures(f: StoredFact | undefined): Figure[] {
   if (!f) return [];
   const b = f.value as FactValue<"boundaries">;
@@ -138,6 +158,7 @@ async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> 
     "re-architecture": boundaryFigures(facts.get("boundaries")),
     "ui-tests": testFigures(facts.get("ui-tests"), tests),
     barcode: barcodeFigures(facts.get("barcodes")),
+    "quality-gates": gateFigures(facts.get("quality-gates")),
     "excel-export": exportFigures(facts.get("export"), recent.lines, now),
     devsecops: [...coverageFigures(facts.get("coverage")), ...securityFigures(facts.get("security"))],
     "full-stack": [
