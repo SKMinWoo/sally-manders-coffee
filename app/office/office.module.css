@@ -43,3 +43,20 @@
 
 .code { display: flex; flex-wrap: wrap; gap: 6px 18px; font: 600 14px/1.3 var(--font-cond), sans-serif; letter-spacing: .06em; text-transform: uppercase; margin-top: 4px; }
 .code li::before { content: "→ "; }
+
+/* A chart on a check: one ranked bar per endpoint, thin, anchored left, its value at the end. The
+   bars are the check's own green rule; the slowest is in the red the card's GM quote is ruled in. */
+.chart { margin: 6px 0 0; padding-top: 14px; border-top: 1px solid #26412F33; }
+.chartTitle { font: 700 12px/1.2 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 10px; }
+.bars { display: grid; grid-template-columns: minmax(0, max-content) minmax(80px, 1fr) max-content; gap: 7px 14px; align-items: center; }
+.bars li { display: contents; }
+.barLabel { font: 500 13.5px/1.3 ui-monospace, "Cascadia Mono", Consolas, monospace; overflow-wrap: anywhere; }
+.bar { display: block; height: 10px; width: max(2px, var(--w)); background: var(--rule); border-radius: 0 4px 4px 0; }
+.barValue { font: 700 15px/1 var(--font-cond), sans-serif; font-variant-numeric: tabular-nums; text-align: right; }
+.worst .bar { background: var(--red); }
+.worst .barValue { color: var(--red); }
+@media (max-width: 560px) {
+  /* a phone: the endpoint on its own line, its bar and value under it */
+  .bars { grid-template-columns: minmax(0, 1fr) max-content; gap: 3px 12px; }
+  .barLabel { grid-column: 1 / -1; margin-top: 6px; }
+}

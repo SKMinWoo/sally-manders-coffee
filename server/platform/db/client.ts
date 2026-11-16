@@ -1,4 +1,4 @@
-import { neon } from "@neondatabase/serverless";
+import { neon, neonConfig } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 import * as schema from "./schema";
@@ -37,11 +37,26 @@ export async function shopDb(): Promise<Db> {
   return localDb(dir);
 }
 
+/**
+ * The host name of a Postgres behind Neon's own proxy, run locally: the load test's (see
+ * docs/decisions/0006). *.localtest.me is public DNS for 127.0.0.1, so the driver can be pointed at
+ * plain HTTP on the proxy's port. Any other host is Neon, and keeps the driver's own endpoint.
+ */
+export const LOCAL_NEON_HOST = "db.localtest.me";
+
+/** Where the driver sends a query over HTTP for this database, or null for the driver's default. */
+export function localNeonEndpoint(url: string, env: NodeJS.ProcessEnv = process.env): string | null {
+  if (env.VERCEL) return null;
+  return new URL(url).hostname === LOCAL_NEON_HOST ? `http://${LOCAL_NEON_HOST}:4444/sql` : null;
+}
+
 /** The shop's database, from DATABASE_URL. Created on first use, so builds don't need it. */
 export function db(): Db {
   if (cached) return cached;
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error("DATABASE_URL is not set (see .env.example)");
+  const local = localNeonEndpoint(url);
+  if (local) neonConfig.fetchEndpoint = local; // global in the driver; set only for the local host
   cached = drizzle({ client: neon(url), schema, casing: "snake_case" }) as unknown as Db;
   return cached;
 }

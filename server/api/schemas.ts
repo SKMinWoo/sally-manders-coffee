@@ -71,6 +71,16 @@ export const Figure = z
   })
   .meta({ id: "Figure" });
 
+export const Chart = z
+  .object({
+    title: z.string(),
+    bars: z.array(z.object({ label: z.string(), value: z.number(), display: z.string() })),
+    runUrl: z.url().describe("The GitHub Actions run that measured every bar"),
+    sha: z.string().regex(/^[0-9a-f]{40}$/),
+    measuredAt: z.iso.datetime({ offset: true }),
+  })
+  .meta({ id: "Chart" });
+
 export const Claim = z
   .object({
     id: z.string(),
@@ -81,6 +91,7 @@ export const Claim = z
     status: z.enum(["running", "coming"]),
     code: z.array(z.object({ label: z.string(), url: z.url() })),
     figures: z.array(Figure).describe("Empty until the twin has measured something"),
+    chart: Chart.nullable().describe("One measure across several things, as the card charts it; null for most claims"),
   })
   .meta({ id: "Claim" });
 
