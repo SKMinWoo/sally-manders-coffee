@@ -291,6 +291,48 @@ test("ai-adoption: briefs counted live, the guard's refusals apart, and CI's tes
   }
 });
 
+test("the load test: the run, the slowest endpoint, and every endpoint charted slowest first", async () => {
+  const at = NOON.getTime() + 900_000;
+  const ep = (name: string, p95Ms: number) => ({ name, requests: 1400, errors: 0, p50Ms: 40, p95Ms, p99Ms: p95Ms + 30, maxMs: p95Ms + 200 });
+  const value = {
+    requests: 18_000,
+    errors: 0,
+    durationMs: 180_400,
+    users: 20,
+    perMinute: 6000,
+    p95Ms: 212,
+    p99Ms: 640,
+    seed: { days: 30, orders: 9123 },
+    endpoints: [ep("GET /api/v1/exports/sales (a week)", 1840), ep("GET /api/v1/days/{date}/items", 310), ep("GET /", 95)],
+  };
+  assert.equal((await ingestCi(db, req({ run: run(901), facts: [{ kind: "load-test", value }] }), new Date(at), SECRET)).status, 201);
+  const e = Engineering.parse((await engineering(db, new Date(at + 60_000))).body);
+  const c = e.claims.find((x) => x.id === "performance")!;
+  assert.equal(c.status, "running");
+  const f = new Map(c.figures.map((x) => [x.label, x.display]));
+  assert.equal(f.get("Requests in the last run, 20 visitors over 180 s (24,700+ a run at GM)"), "18,000");
+  assert.equal(f.get("Read against 9,123 orders, 30 days of the shop"), "No errors");
+  assert.equal(f.get("P95, every request"), "212 ms");
+  assert.equal(f.get("Slowest at P95: GET /api/v1/exports/sales (a week)"), "1.84 s");
+  assert.deepEqual(
+    c.chart?.bars.map((b) => [b.label, b.display]),
+    [["GET /api/v1/exports/sales (a week)", "1.84 s"], ["GET /api/v1/days/{date}/items", "310 ms"], ["GET /", "95 ms"]],
+  );
+  assert.equal(c.chart?.runUrl, `https://github.com/${REPO}/actions/runs/901`);
+  assert.equal(e.claims.find((x) => x.id === "full-stack")!.chart, null, "only the load test draws a chart");
+
+  for (const bad of [
+    { ...value, endpoints: [] },
+    { ...value, p95Ms: 21.5 },
+    { ...value, endpoints: [{ ...ep("POST /order", 10) }] },
+    { ...value, endpoints: [{ ...ep("GET /<script>", 10) }] },
+    { ...value, seed: { days: 30 } },
+  ]) {
+    const b = { run: run(902), facts: [{ kind: "load-test", value: bad }] };
+    assert.equal((await ingestCi(db, req(b), new Date(at), SECRET)).status, 422, JSON.stringify(bad));
+  }
+});
+
 test("every file a claim or a factor points at is in the repository", () => {
   const paths = [
     ...CLAIMS.flatMap((c) => c.code.map((x) => x.path)),

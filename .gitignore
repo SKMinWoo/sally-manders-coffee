@@ -35,3 +35,4 @@ __pycache__/
 
 # the test-gap comment scripts/ci/test-gap.mjs writes
 /test-gap/
+/load-results/

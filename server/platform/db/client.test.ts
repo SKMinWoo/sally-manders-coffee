@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { localDbDir } from "./client";
+import { localDbDir, localNeonEndpoint } from "./client";
 
 const env = (e: Record<string, string>) => e as unknown as NodeJS.ProcessEnv;
 const NEON = "postgres://someone@somewhere.neon.tech/neondb";
@@ -17,4 +17,11 @@ test("otherwise DATABASE_URL means Neon, and development without one gets .pglit
   assert.equal(localDbDir(env({ DATABASE_URL: NEON, NODE_ENV: "development" })), null);
   assert.equal(localDbDir(env({ NODE_ENV: "development" })), "./.pglite");
   assert.equal(localDbDir(env({ NODE_ENV: "production" })), null, "a production build with no database is an error, not a quiet PGlite");
+});
+
+test("only the load test's local host is sent to the proxy over plain HTTP; Neon keeps the driver's endpoint", () => {
+  assert.equal(localNeonEndpoint("postgres://postgres:postgres@db.localtest.me:5432/main", env({})), "http://db.localtest.me:4444/sql");
+  assert.equal(localNeonEndpoint(NEON, env({})), null);
+  assert.equal(localNeonEndpoint("postgres://u:p@db.localtest.me.evil.example/x", env({})), null, "the whole host name, not a prefix");
+  assert.equal(localNeonEndpoint("postgres://postgres:postgres@db.localtest.me:5432/main", env({ VERCEL: "1" })), null, "never on Vercel");
 });

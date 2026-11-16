@@ -84,6 +84,35 @@ export const FACT_KINDS = {
     heapPeakMb: z.number().nonnegative().max(4096),
     baseline: z.strictObject({ days: Count, rows: Count, heapPeakMb: z.number().nonnegative().max(4096) }),
   }),
+  /**
+   * The load test on main (load/shop.jmx, scripts/ci/load-facts.mjs): JMeter's visitors against the
+   * built app and a seeded Postgres reached through Neon's proxy. Each endpoint slowest at P95 first.
+   */
+  "load-test": z.strictObject({
+    requests: Count,
+    errors: Count,
+    durationMs: Count,
+    users: Count,
+    /** the pace JMeter was held to, in requests a minute */
+    perMinute: Count,
+    p95Ms: Count,
+    p99Ms: Count,
+    seed: z.strictObject({ days: Count, orders: Count }),
+    endpoints: z
+      .array(
+        z.strictObject({
+          name: z.string().regex(/^GET \/[A-Za-z0-9/{}._-]*( \([a-z ]{1,24}\))?$/),
+          requests: Count,
+          errors: Count,
+          p50Ms: Count,
+          p95Ms: Count,
+          p99Ms: Count,
+          maxMs: Count,
+        }),
+      )
+      .min(1)
+      .max(24),
+  }),
   /** The domain boundaries (eslint-rules/boundaries.mjs) applied to every import in the repository. */
   boundaries: z.strictObject({
     modules: Count,

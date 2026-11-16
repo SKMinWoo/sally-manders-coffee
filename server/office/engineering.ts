@@ -21,7 +21,16 @@ export type Figure = {
   sha: string | null;
 };
 
-export type ClaimReport = Omit<Claim, "code"> & { code: { label: string; url: string }[]; figures: Figure[] };
+/** One measure across several things, charted on the card: the load test's P95 by endpoint. */
+export type Chart = {
+  title: string;
+  bars: { label: string; value: number; display: string }[];
+  runUrl: string;
+  sha: string;
+  measuredAt: string;
+};
+
+export type ClaimReport = Omit<Claim, "code"> & { code: { label: string; url: string }[]; figures: Figure[]; chart: Chart | null };
 
 const n = (x: number) => x.toLocaleString("en-US");
 
@@ -148,6 +157,34 @@ function aiFigures(b: BriefCounts, gap: StoredFact | undefined, now: Date): Figu
   return out;
 }
 
+/** 0.55 s at GM is a P95 in seconds; under a second the shop's read better in ms. */
+const latency = (ms: number) => (ms < 1000 ? `${n(ms)} ms` : `${(ms / 1000).toFixed(2)} s`);
+
+/** The load test's run, and its slowest endpoint. The rest of the endpoints are in the chart. */
+function loadFigures(f: StoredFact | undefined): Figure[] {
+  if (!f) return [];
+  const l = f.value as FactValue<"load-test">;
+  const slowest = l.endpoints[0]!;
+  return [
+    fromCi(`Requests in the last run, ${n(l.users)} visitors over ${Math.round(l.durationMs / 1000)} s (24,700+ a run at GM)`, l.requests, n(l.requests), f),
+    fromCi(`Read against ${n(l.seed.orders)} orders, ${n(l.seed.days)} days of the shop`, l.errors, l.errors ? `${n(l.errors)} errors` : "No errors", f),
+    fromCi("P95, every request", l.p95Ms, latency(l.p95Ms), f),
+    fromCi(`Slowest at P95: ${slowest.name}`, slowest.p95Ms, latency(slowest.p95Ms), f),
+  ];
+}
+
+function loadChart(f: StoredFact | undefined): Chart | null {
+  if (!f) return null;
+  const l = f.value as FactValue<"load-test">;
+  return {
+    title: "P95 by endpoint, slowest first",
+    bars: l.endpoints.map((e) => ({ label: e.name, value: e.p95Ms, display: latency(e.p95Ms) })),
+    runUrl: f.runUrl,
+    sha: f.sha,
+    measuredAt: f.recordedAt.toISOString(),
+  };
+}
+
 function boundaryFigures(f: StoredFact | undefined): Figure[] {
   if (!f) return [];
   const b = f.value as FactValue<"boundaries">;
@@ -160,7 +197,7 @@ function boundaryFigures(f: StoredFact | undefined): Figure[] {
 }
 
 /** Each running claim's figures. A claim whose figure hasn't been measured yet shows none, never a guess. */
-async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> {
+async function figuresFor(db: Db, now: Date): Promise<{ figures: Record<string, Figure[]>; charts: Record<string, Chart | null> }> {
   const today = shopToday(now);
   const [facts, shop, recent, briefs] = await Promise.all([
     latestFacts(db),
@@ -170,12 +207,13 @@ async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> 
   ]);
   const tests = facts.get("unit-tests");
   const t = tests?.value as FactValue<"unit-tests"> | undefined;
-  return {
+  const figures = {
     "re-architecture": boundaryFigures(facts.get("boundaries")),
     "ui-tests": testFigures(facts.get("ui-tests"), tests),
     barcode: barcodeFigures(facts.get("barcodes")),
     "quality-gates": gateFigures(facts.get("quality-gates")),
     "ai-adoption": aiFigures(briefs, facts.get("test-gap"), now),
+    performance: loadFigures(facts.get("load-test")),
     "excel-export": exportFigures(facts.get("export"), recent.lines, now),
     devsecops: [...coverageFigures(facts.get("coverage")), ...securityFigures(facts.get("security"))],
     "full-stack": [
@@ -186,16 +224,18 @@ async function figuresFor(db: Db, now: Date): Promise<Record<string, Figure[]>> 
         : []),
     ],
   };
+  return { figures, charts: { performance: loadChart(facts.get("load-test")) } };
 }
 
 export async function engineering(db: Db, now: Date): Promise<{ asOf: string; claims: ClaimReport[] }> {
-  const figures = await figuresFor(db, now);
+  const { figures, charts } = await figuresFor(db, now);
   return {
     asOf: now.toISOString(),
     claims: CLAIMS.map((c) => ({
       ...c,
       code: c.code.map((x) => ({ label: x.label, url: codeUrl(x.path) })),
       figures: figures[c.id] ?? [],
+      chart: charts[c.id] ?? null,
     })),
   };
 }
