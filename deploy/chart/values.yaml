@@ -1,0 +1,28 @@
+# The images CI builds from this commit (Dockerfile) and loads into kind. Argo CD sets the tag to
+# the commit it syncs, so the pods and the chart always come from the same one.
+image:
+  repository: sally-manders
+  tag: dev
+tools:
+  repository: sally-manders-tools
+
+shop:
+  replicas: 2
+  # reached on the runner through kind's port mapping (deploy/kind.yaml), not an Ingress
+  nodePort: 30080
+
+# The shop reaches Postgres the way production reaches Neon: over HTTP, through Neon's own proxy.
+# db.localtest.me is the only host the app sends to the proxy (server/platform/db/client.ts).
+database:
+  url: postgres://postgres:postgres@db.localtest.me:5432/main
+  proxyEndpoint: http://neon-proxy:4444/sql
+
+postgres:
+  # 17-alpine, linux/amd64
+  image: postgres@sha256:005c5c37db96c1e6652a79ea31f9886402fba81ac95dc2db897739121dd7f8f2
+  # a throwaway database inside a throwaway cluster, not a secret
+  password: postgres
+
+proxy:
+  # Neon's proxy (release-proxy-8853) with Caddy in front, a community image: ADR 0006
+  image: ghcr.io/timowilhelm/local-neon-http-proxy@sha256:5730d368cd26f29fc77309fc7ea8e31d1b3bdc6648afc445136e900700384918

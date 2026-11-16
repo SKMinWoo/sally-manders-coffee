@@ -386,3 +386,143 @@ jobs:
         env:
           INGEST_URL: https://sally-manders-coffee.vercel.app/api/ingest/ci
           CI_INGEST_SECRET: ${{ secrets.CI_INGEST_SECRET }}
+
+  # Exhibit 11 (ADR 0008): the shop on Kubernetes. A throwaway kind cluster, Argo CD installed in it,
+  # and the Helm chart in deploy/chart synced from GitHub at this commit, with the images built here.
+  # Then health, asked through the shop's Service, must be ok and name this commit. Not a release
+  # gate: the cluster isn't production. It runs community and upstream images, so it holds no
+  # secrets; the job after it posts the figure.
+  cluster:
+    name: Kubernetes (kind, Argo CD, Helm)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      # the commit under test: a pull request's own head, which Argo CD can fetch from GitHub
+      SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      KIND_VERSION: v0.33.0
+      # from the release's kind-linux-amd64.sha256sum
+      KIND_SHA256: aee6151561422756b764a4ae28e7f44cda5af5a9eead3cc9985112b1de8d8e0d
+      KIND_NODE: kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5
+      ARGOCD_VERSION: v3.5.7
+      # sha256 of manifests/install.yaml at the v3.5.7 tag, taken when this job was written
+      ARGOCD_SHA256: 09bfbb9041b4a8503c6e4fa22cf41c403fa62be17526de353648a4551f5beb77
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.SHA }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: kind, checked against its SHA-256
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/kind" "https://github.com/kubernetes-sigs/kind/releases/download/$KIND_VERSION/kind-linux-amd64"
+          echo "$KIND_SHA256  $RUNNER_TEMP/kind" | sha256sum -c -
+          sudo install -m 0755 "$RUNNER_TEMP/kind" /usr/local/bin/kind
+      - name: A throwaway cluster
+        run: kind create cluster --name shop --image "$KIND_NODE" --config deploy/kind.yaml --wait 120s
+      - name: Argo CD, checked against its SHA-256
+        run: |
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/argocd.yaml" "https://raw.githubusercontent.com/argoproj/argo-cd/$ARGOCD_VERSION/manifests/install.yaml"
+          echo "$ARGOCD_SHA256  $RUNNER_TEMP/argocd.yaml" | sha256sum -c -
+          kubectl create namespace argocd
+          # server-side: Argo CD's CRDs are too large for the annotation a client-side apply writes
+          kubectl apply -n argocd --server-side --force-conflicts -f "$RUNNER_TEMP/argocd.yaml"
+      # built while Argo CD's pods start; kind's node gets them straight from the runner's Docker
+      - name: The shop's images, from this commit
+        run: |
+          docker build --target runner --build-arg GIT_COMMIT_SHA="$SHA" -t "sally-manders:$SHA" .
+          docker build --target tools -t "sally-manders-tools:$SHA" .
+          kind load docker-image --name shop "sally-manders:$SHA" "sally-manders-tools:$SHA"
+      - name: Wait for Argo CD
+        run: |
+          kubectl -n argocd rollout status deploy/argocd-redis --timeout=300s
+          kubectl -n argocd rollout status deploy/argocd-repo-server --timeout=300s
+          kubectl -n argocd rollout status statefulset/argocd-application-controller --timeout=300s
+      - name: Sync the chart at this commit, timed to Synced and Healthy
+        run: |
+          mkdir -p cluster-results
+          yq '.spec.source.targetRevision = strenv(SHA) | .spec.source.helm.parameters[0].value = strenv(SHA)' \
+            deploy/argocd/application.yaml > cluster-results/application.yaml
+          start=$(date +%s%3N)
+          kubectl apply -f cluster-results/application.yaml
+          last=""
+          for i in $(seq 300); do
+            state=$(kubectl -n argocd get application sally-manders \
+              -o jsonpath='{.status.sync.status} {.status.health.status} {.status.operationState.phase} {.status.sync.revision}')
+            if [ "$state" != "$last" ]; then echo "$(( ($(date +%s%3N) - start) / 1000 )) s: $state"; last=$state; fi
+            if [ "$state" = "Synced Healthy Succeeded $SHA" ]; then
+              echo "SYNC_MS=$(( $(date +%s%3N) - start ))" >> "$GITHUB_ENV"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::Argo CD didn't get the chart to Synced and Healthy in 10 minutes"
+          exit 1
+      - name: Ask the shop's health through its Service
+        run: |
+          for i in $(seq 30); do curl -fsS -o cluster-results/health.json http://127.0.0.1:8080/api/v1/health && break; sleep 2; done
+          cat cluster-results/health.json; echo
+          kubectl -n argocd get application sally-manders -o json > cluster-results/app.json
+          kubectl -n shop get pods -o json > cluster-results/pods.json
+          kubectl -n shop get pods -o wide
+      - name: The cluster's figure
+        run: node scripts/ci/cluster-facts.mjs
+      - name: What the cluster said
+        if: ${{ failure() }}
+        run: |
+          kubectl -n argocd get application sally-manders -o yaml || true
+          kubectl get pods -A -o wide || true
+          kubectl -n shop describe pods || true
+          kubectl -n shop get events --sort-by=.lastTimestamp || true
+          for d in postgres neon-proxy shop; do echo "== $d"; kubectl -n shop logs "deploy/$d" --all-containers --tail=100 || true; done
+          echo "== seed"; kubectl -n shop logs job/seed --tail=200 || true
+          kubectl -n argocd logs deploy/argocd-repo-server --tail=100 || true
+          kubectl -n argocd logs statefulset/argocd-application-controller --tail=100 || true
+      - name: Keep what the cluster said
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cluster-results
+          path: cluster-results/
+          if-no-files-found: ignore
+          retention-days: 14
+      # a failing figure is posted as honestly as a passing one
+      - name: Keep the figure for the back office
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles('.ci/cluster.json') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: cluster-facts
+          path: .ci/cluster.json
+          retention-days: 3
+
+  # Posts the cluster's figure from main, once the deploy is done. Its own job so the secret never
+  # shares a runner with the cluster's images; it runs only the repository's own post script.
+  cluster-post:
+    name: Post the cluster
+    needs: [cluster, deploy]
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' && (needs.cluster.result == 'success' || needs.cluster.result == 'failure') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts/ci
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - id: get
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true # none when the cluster failed before it had a figure
+        with:
+          name: cluster-facts
+          path: .ci
+      - name: Post figures to the back office
+        if: ${{ steps.get.outcome == 'success' }}
+        run: node scripts/ci/post-facts.mjs
+        env:
+          INGEST_URL: https://sally-manders-coffee.vercel.app/api/ingest/ci
+          CI_INGEST_SECRET: ${{ secrets.CI_INGEST_SECRET }}

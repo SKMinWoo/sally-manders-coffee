@@ -1,0 +1,26 @@
+# Never in an image: .env.local can hold production's database URL.
+.env*
+!.env.example
+
+# rebuilt inside the image
+node_modules
+.next
+*.tsbuildinfo
+
+# local databases, test output and what CI measured
+.pglite*
+test-results
+playwright-report
+load-results
+test-gap
+.ci
+
+# not the app
+.git
+.github
+.vercel
+design
+e2e
+load
+docs
+deploy

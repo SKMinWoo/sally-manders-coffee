@@ -9,7 +9,7 @@ import { openApiDocument } from "./openapi";
 import { respond } from "../platform/http";
 import { writeBrief } from "@/server/brief";
 import { Brief, DayHours, DayItems, DaySummary, Health, Menu, Problem } from "./schemas";
-import { brief, day, dayHours, dayItems, health, menu } from "./v1";
+import { brief, buildCommit, day, dayHours, dayItems, health, menu } from "./v1";
 
 let db: Db, close: () => Promise<void>;
 before(async () => ({ db, close } = await testDb()));
@@ -27,6 +27,15 @@ test("health is degraded until the simulator has written today and tomorrow, the
   const sha = "0123456789abcdef0123456789abcdef01234567";
   assert.equal(Health.parse((await health(db, NOON, sha)).body).commit, sha, "a deployment names its commit");
   assert.equal(r.cache, "none", "health is never cached");
+});
+
+test("the build's commit is Vercel's, else the container's GIT_COMMIT_SHA, and only ever a full sha", () => {
+  const a = "0123456789abcdef0123456789abcdef01234567", b = "fedcba9876543210fedcba9876543210fedcba98";
+  const env = (e: Record<string, string>) => e as unknown as NodeJS.ProcessEnv;
+  assert.equal(buildCommit(env({ VERCEL_GIT_COMMIT_SHA: a, GIT_COMMIT_SHA: b })), a);
+  assert.equal(buildCommit(env({ GIT_COMMIT_SHA: b })), b, "the cluster's image");
+  assert.equal(buildCommit(env({ GIT_COMMIT_SHA: "main" })), null, "a branch name is not a commit");
+  assert.equal(buildCommit(env({})), null);
 });
 
 test("the menu matches its contract, in board order", async () => {

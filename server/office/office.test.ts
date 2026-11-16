@@ -374,6 +374,34 @@ test("deploys: every one counted, the last switch and smoke test shown, and upti
   }
 });
 
+test("the cluster: its pods, Argo CD's sync, and a health check that has to name this commit", async () => {
+  const at = NOON.getTime() + 1_500_000;
+  const cluster = { services: 1, pods: { ready: 4, total: 4 }, resources: 8, syncMs: 71_420, health: "ok", commitMatched: true };
+  assert.equal((await ingestCi(db, req({ run: run(921), facts: [{ kind: "cluster", value: cluster }] }), new Date(at), SECRET)).status, 201);
+  const figures = async () => {
+    const e = Engineering.parse((await engineering(db, new Date(at + 60_000))).body);
+    const c = e.claims.find((x) => x.id === "aks")!;
+    assert.equal(c.status, "running");
+    return c.figures.map((x) => [x.label, x.display]);
+  };
+  assert.deepEqual(await figures(), [
+    ["Services on Kubernetes here (15+ on AKS at GM)", "1"],
+    ["Pods ready once Argo CD synced the Helm chart, last main", "4 of 4"],
+    ["Applied to synced and healthy, 8 objects from the chart", "1 min 11 s"],
+    ["Health, through the shop’s Kubernetes Service", "OK, on this commit"],
+  ]);
+
+  // a healthy answer from another commit is not a pass
+  const stale = { ...cluster, commitMatched: false };
+  assert.equal((await ingestCi(db, req({ run: run(922), facts: [{ kind: "cluster", value: stale }] }), new Date(at + 1), SECRET)).status, 201);
+  assert.equal((await figures())[3]![1], "Another commit answered");
+
+  for (const bad of [{ ...cluster, pods: { ready: 0, total: 0 } }, { ...cluster, health: "up" }, { ...cluster, syncMs: 1.5 }]) {
+    const b = { run: run(923), facts: [{ kind: "cluster", value: bad }] };
+    assert.equal((await ingestCi(db, req(b), new Date(at), SECRET)).status, 422, JSON.stringify(bad));
+  }
+});
+
 test("every file a claim or a factor points at is in the repository", () => {
   const paths = [
     ...CLAIMS.flatMap((c) => c.code.map((x) => x.path)),
