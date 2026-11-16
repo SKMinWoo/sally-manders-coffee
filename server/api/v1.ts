@@ -30,11 +30,12 @@ function resolveDay(param: string, now: Date): ShopDate | ApiResult {
   return date;
 }
 
-export async function health(db: Db, now: Date): Promise<ApiResult> {
+/** `commit` is the build's own commit on Vercel, which the deploy watches for (scripts/deploy/ship.mjs). */
+export async function health(db: Db, now: Date, commit: string | null = process.env.VERCEL_GIT_COMMIT_SHA || null): Promise<ApiResult> {
   const ahead = daysAhead(now);
   const have = await writtenDays(db, ahead);
   const simulatorAhead = ahead.every((d) => have.has(d));
-  return ok(Health, { status: simulatorAhead ? "ok" : "degraded", time: now.toISOString(), today: ahead[0]!, simulatorAhead }, "none");
+  return ok(Health, { status: simulatorAhead ? "ok" : "degraded", time: now.toISOString(), today: ahead[0]!, simulatorAhead, commit }, "none");
 }
 
 export async function menu(db: Db): Promise<ApiResult> {

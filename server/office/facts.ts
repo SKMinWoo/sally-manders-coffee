@@ -113,6 +113,23 @@ export const FACT_KINDS = {
       .min(1)
       .max(24),
   }),
+  /**
+   * One production deploy from main (scripts/deploy/): the migrations it applied of those in the
+   * repository, push of the deploy hook to the live site answering with this commit, the health
+   * probe kept up through the switch (requests, those that failed, the longest wait between two
+   * good answers), and the smoke checks on the live site after.
+   */
+  deploy: z.strictObject({
+    migrations: z.strictObject({ applied: Count, total: Count }),
+    liveMs: Count,
+    probe: z.strictObject({ requests: Count.min(1), failed: Count, longestGapMs: Count }),
+    smoke: z.strictObject({ checks: Count.min(1), passed: Count }),
+  }),
+  /**
+   * The uptime probe (.github/workflows/uptime.yml), every half hour from GitHub's runners: how
+   * many probes ran over how many days, and how many found the site down.
+   */
+  uptime: z.strictObject({ days: Count.max(31), probes: Count.min(1), failed: Count }),
   /** The domain boundaries (eslint-rules/boundaries.mjs) applied to every import in the repository. */
   boundaries: z.strictObject({
     modules: Count,
