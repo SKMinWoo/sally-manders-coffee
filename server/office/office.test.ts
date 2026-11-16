@@ -310,7 +310,7 @@ test("the load test: the run, the slowest endpoint, and every endpoint charted s
   const c = e.claims.find((x) => x.id === "performance")!;
   assert.equal(c.status, "running");
   const f = new Map(c.figures.map((x) => [x.label, x.display]));
-  assert.equal(f.get("Requests in the last run, 20 visitors over 180 s (24,700+ a run at GM)"), "18,000");
+  assert.equal(f.get("Requests in the last run, 20 visitors over 180 s, 99.8 a second (24,700+ a run at GM)"), "18,000");
   assert.equal(f.get("Read against 9,123 orders, 30 days of the shop"), "No errors");
   assert.equal(f.get("P95, every request"), "212 ms");
   assert.equal(f.get("Slowest at P95: GET /api/v1/exports/sales (a week)"), "1.84 s");

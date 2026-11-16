@@ -166,7 +166,7 @@ function loadFigures(f: StoredFact | undefined): Figure[] {
   const l = f.value as FactValue<"load-test">;
   const slowest = l.endpoints[0]!;
   return [
-    fromCi(`Requests in the last run, ${n(l.users)} visitors over ${Math.round(l.durationMs / 1000)} s (24,700+ a run at GM)`, l.requests, n(l.requests), f),
+    fromCi(`Requests in the last run, ${n(l.users)} visitors over ${Math.round(l.durationMs / 1000)} s, ${(l.requests / (l.durationMs / 1000)).toFixed(1)} a second (24,700+ a run at GM)`, l.requests, n(l.requests), f),
     fromCi(`Read against ${n(l.seed.orders)} orders, ${n(l.seed.days)} days of the shop`, l.errors, l.errors ? `${n(l.errors)} errors` : "No errors", f),
     fromCi("P95, every request", l.p95Ms, latency(l.p95Ms), f),
     fromCi(`Slowest at P95: ${slowest.name}`, slowest.p95Ms, latency(slowest.p95Ms), f),

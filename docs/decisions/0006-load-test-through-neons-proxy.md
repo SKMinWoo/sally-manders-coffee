@@ -41,8 +41,9 @@ endpoint. `scripts/load/prepare.ts` refuses to seed any other host.
 
 JMeter 5.6.3 comes from Apache's archive, checked against its SHA-512. The plan (`load/shop.jmx`)
 reads every page and API endpoint the shop serves to a visitor, with a week's sales export in one
-visit of twenty. Twenty visitors are held to 100 requests a second for three minutes, below what the
-runner can serve, so the P95 measures the endpoints rather than a saturated machine.
+visit of twenty. Twenty visitors each ask for the next page as soon as the last one answers, for
+three minutes, held to at most 100 requests a second between them. The card shows the rate actually
+reached, so a saturated run reads as one.
 
 The figure is posted to `/office` from main, by its own job, with the per-endpoint P95s charted on
 the card. JMeter's HTML report is kept with each run as the artifact `load-report`, in place of
@@ -57,5 +58,10 @@ Grafana, which would need an account.
   reaches the database. The pages' own `unstable_cache` (a minute) does apply.
 - The plan only reads. Ordering is a server action, which JMeter can't call without the build's
   action IDs.
+- The first run (CI run 43810056969) did not reach the pace: 2,091 requests in 181 s, 11.5 a second,
+  no errors. Every endpoint that reads the database had a P95 between 2.7 s and 9.3 s, health check
+  included, while the cached pages stayed under 30 ms. So the queue is on the database path: the
+  app's one Node process, the proxy, or Postgres, all sharing the runner. Which one is found before
+  any endpoint is "fixed".
 - The slowest endpoint it finds is fixed in its own pull request, so the card can show the P95 before
   and after.

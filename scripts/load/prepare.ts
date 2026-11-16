@@ -40,7 +40,7 @@ async function main() {
   const count = await shop.$count(orders);
   // what the load test reads against, for its figure (scripts/ci/load-facts.mjs)
   mkdirSync("load-results", { recursive: true });
-  writeFileSync("load-results/seed.json", JSON.stringify({ days: DAYS, orders: count }));
+  writeFileSync("load-results/seed.json", JSON.stringify({ days: days.length, orders: count }));
   console.log(`Seeded ${days[0]} to ${days.at(-1)}: ${report.written.length} days, ${count} orders, in ${((performance.now() - t) / 1000).toFixed(1)} s`);
 }
 
