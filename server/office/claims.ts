@@ -13,8 +13,10 @@ export type Claim = {
   role: Role;
   /** the résumé bullet, verbatim */
   gm: string;
-  /** what the shop runs in its place, in a sentence */
+  /** what the shop runs in its place, in full: how it works, and where it's smaller than GM's */
   twin: string;
+  /** the twin in one line, for a reader skimming; left out when the twin is already that short */
+  headline?: string;
   /** build order: exhibit 1 ships first */
   exhibit: number;
   status: "running" | "coming";
@@ -41,6 +43,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "excel-export",
+    headline: "“Export sales”: an .xlsx of every order line over up to 92 days, written by hand and streamed, so memory stays flat.",
     role: FS,
     gm: "Built server-side Excel export and template-generation microservices that handle **20,000+-row workbooks**, with automated validation and no-op detection — ending client memory crashes and data-integrity defects.",
     twin: "“Export sales” on Behind the scenes: an .xlsx of every order line over up to 92 days, written by hand (no spreadsheet library) and streamed from the database a page at a time, so memory stays flat however long the span. Every check is validated before a byte is sent, the workbook is reopened and checked against its own Totals sheet in CI, and each workbook carries a tag so a repeat request can be answered “Nothing changed” (the rule for “nothing new” is still to be set, so until then every request gets a fresh workbook). The shop’s own month is about 12,000 rows, under GM’s 20,000; the 90-day figure is a simulated history streamed in CI.",
@@ -56,6 +59,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "performance",
+    headline: "A JMeter plan in CI on every push, against the built app and a month of the shop in Postgres behind Neon’s proxy.",
     role: FS,
     gm: "Built JMeter and Grafana performance suites (**24,700+ requests per run**) that exposed database and API bottlenecks; the fixes cut P95 latency on key endpoints from **2.97s to 0.55s — 81% faster**.",
     twin: "A JMeter plan run in CI on every push: 20 visitors for three minutes, paced to 100 requests a second, read the shop’s pages and its API, served by the built app on next start. Its database is Postgres with a month of the shop in it, reached over HTTP through Neon’s own proxy, the way production reaches Neon, so a query too many costs a round trip here as it does there. No CDN sits in front, so every API request reaches the database, and ordering is a server action, so the plan only reads. GM’s suites fed Grafana; here JMeter’s own report is kept with each run, and the P95 of every endpoint is charted below. The before and after comes when the slowest of them is fixed.",
@@ -71,6 +75,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "aks",
+    headline: "CI makes a throwaway Kubernetes cluster, and Argo CD syncs the shop’s Helm chart into it at the commit under test.",
     role: FS,
     gm: "Led the migration of **15+ microservices to Azure (AKS)** with Argo CD and Helm, enabling single-origin routing without CORS workarounds.",
     twin: "On every pull request and push to main, CI builds the shop as a container image and makes a throwaway Kubernetes cluster (kind). It installs Argo CD, which reads the Helm chart from GitHub at that commit and syncs it, in order: Postgres, Neon’s proxy in front of it as production has, a Job that migrates and seeds it, then the shop in two pods, each run as an unprivileged user on a read-only file system. CI then asks the shop’s health through its Kubernetes Service, and checks it answers with the commit CI built. One service here, 15+ at GM, and no AKS or Azure: kind runs the same Kubernetes on the runner. GM’s point was one origin with no CORS; the shop already serves its pages and its API from one, so there is nothing for an ingress to unify.",
@@ -86,6 +91,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "re-architecture",
+    headline: "The server as six domain modules, each used only through its one entry, with a lint rule that fails the build on a crossing.",
     role: FS,
     gm: "Co-led the ground-up re-architecture of a legacy **Workflow Process System** into 12-factor, cloud-native microservices, with standardized domain boundaries and faster feature delivery.",
     twin: "The server as six domain modules (menu, simulator, orders, reporting, the manager’s brief and this back office), each used only through its one public entry, with their dependencies running one way so none can form a cycle. A lint rule fails the build on any import that reaches inside a module or against the direction, and CI counts every import it checked. Each of the twelve factors is pointed at its evidence, gaps included, and the choices are written down as decision records. It’s one Next.js app, not a fleet of microservices: the boundaries carry over from GM, the network between services doesn’t.",
@@ -100,6 +106,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "devsecops",
+    headline: "CodeQL, Dependabot, npm audit and a coverage gate, on every pull request.",
     role: FS,
     gm: "Built DevSecOps pipelines across GitHub Actions and Azure DevOps with SonarQube, CodeQL, Dependabot and Wiz — gating on vulnerabilities and holding **80%+ test coverage**.",
     twin: "CodeQL on every pull request and weekly, Dependabot updates with a week’s cooldown, npm audit failing the build on any high-severity hole in what ships, a SonarCloud scan wired in (it switches on once its account is connected), and a coverage gate that counts every module in lib/ and server/, tested or not (the UI’s tests are exhibit 3). No Wiz: it’s a paid product.",
@@ -114,6 +121,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "ai-adoption",
+    headline: "A model writes the manager’s morning note without ever writing a number, and an Action names untested lines on each pull request.",
     role: FS,
     gm: "Led cross-functional **AI developer adoption**: custom Glean agents, GitHub Actions and an Azure-hosted AI agent API that cut developer toil, streamlined sprint updates and automated test-gap remediation.",
     twin: "Each morning a model (Gemini’s free tier) writes the manager a short note on yesterday. It never writes a figure: it puts {orders} where one goes, the database fills it in, and a guard turns back any draft with a number of its own, spelled out or in digits, for a template that keeps the same rule. On every pull request, an Action reads the coverage against the diff and names the changed lines no test runs.",
@@ -130,6 +138,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "barcode",
+    headline: "Every guest check prints a hand-encoded Code 128 barcode, and the browser suite reads each one back from its pixels.",
     role: SDET,
     gm: "Led the architecture and rollout of an automated barcode verification framework, saving **2+ days of manual testing every regression cycle**.",
     twin: "Every order's guest check prints its id as a Code 128 barcode, encoded by hand with no library. The browser suite screenshots real checks, and a sheet of barcodes at three sizes and three angles, on a desktop and a phone, and reads each one back from the pixels; damaged ones have to be refused, never read as something else.",
@@ -159,6 +168,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "quality-gates",
+    headline: "Every page screenshotted on a desktop and a phone against a committed picture, and a release gate that holds main until all checks pass.",
     role: SDET,
     gm: "Set up automated quality gates and regression baselines that made release verification **35% faster** across core manufacturing platforms.",
     twin: "Every page is screenshotted whole, on a desktop and a phone, from a server whose clock is stopped so the shop renders the same each run, and compared with the committed picture. A release gate then reads every check, baselines included, and holds the merge to main, which production deploys from, until all of them pass.",
@@ -174,6 +184,7 @@ export const CLAIMS: Claim[] = [
   },
   {
     id: "zero-downtime",
+    headline: "Deploys only through a pipeline on main: expand-only migrations, a probe every second through the switch, then a smoke test.",
     role: SDET,
     gm: "Partnered with backend engineers through release freezes — isolating root causes and running monthly patch validation for **zero-downtime production deploys**.",
     twin: "Production deploys only through a pipeline on main. Every migration must only expand the schema, so the live code keeps working while the new build goes out. A probe hits the live site every second through the switch, and a smoke test checks every page after. An uptime probe runs every half hour.",

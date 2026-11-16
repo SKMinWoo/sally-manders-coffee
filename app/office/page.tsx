@@ -52,29 +52,97 @@ function Bars({ chart }: { chart: Chart }) {
   );
 }
 
-function Card({ c }: { c: ClaimReport }) {
+/** The bullet's headline figure, the first **bold** in it, for the tally. */
+const gmLead = (gm: string) => /\*\*(.+?)\*\*/.exec(gm)?.[1] ?? gm.split(/[,—]/)[0]!;
+
+/** A figure's label without its asides, so the tally keeps to one line: the bracket goes, and a
+ *  long label stops at its first comma. */
+function shortLabel(label: string) {
+  const plain = label.split(/\s*\(/)[0]!;
+  return plain.length > 40 ? plain.split(/,\s*/)[0]! : plain;
+}
+
+const pad = (n: number) => String(n).padStart(2, "0");
+
+/** Every claim on one check: GM's figure against the one measured here, each line a link to its card. */
+function Tally({ claims }: { claims: ClaimReport[] }) {
+  return (
+    <section className={s.tally} aria-labelledby="tally-title">
+      <h2 id="tally-title" className={s.tallyTitle}>At a glance</h2>
+      <p className={s.tallyHead} aria-hidden>
+        <span>At General Motors</span>
+        <span>Here, measured</span>
+      </p>
+      <ol>
+        {claims.map((c, i) => {
+          const f = c.figures[0];
+          return (
+            <li key={c.id}>
+              <a href={`#${c.id}`}>
+                <span className={s.tn}>{pad(i + 1)}</span>
+                <span className={s.tgm}>{gmLead(c.gm)}</span>
+                <span className={s.leader} aria-hidden />
+                {f ? (
+                  <span className={s.there}>
+                    <b>{f.display}</b> <span>{shortLabel(f.label).toLowerCase()}</span>
+                  </span>
+                ) : (
+                  <span className={`${s.there} ${s.waiting}`}>{c.status === "running" ? "First run pending" : "Coming"}</span>
+                )}
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+/** Running, but its first run on main hasn't posted a figure yet. */
+const isPending = (c: ClaimReport) => c.status === "running" && c.figures.length === 0 && !c.chart;
+
+/** A figure as set: the number full size and a one-word unit after it small ("11 moderate",
+ *  "212 ms"), so five to a row never wrap. A verdict in words ("No bar set yet") is set smaller. */
+function Value({ display }: { display: string }) {
+  const m = /^([\d.,]+%?)\s+([A-Za-z]+)$/.exec(display);
+  if (m) return <dd className={s.figure}>{m[1]}<span className={s.unit}>{m[2]}</span></dd>;
+  return <dd className={/\d/.test(display) ? s.figure : `${s.figure} ${s.verdict}`}>{display}</dd>;
+}
+
+function Card({ c, n }: { c: ClaimReport; n: number }) {
   const running = c.status === "running";
+  const pending = isPending(c);
   // when one run measured every figure on the card, say so once, under them all
   const oneRun = c.figures.length > 1 && c.figures.every((f) => f.source === "ci" && f.runUrl === c.figures[0]!.runUrl);
   return (
-    <li className={running ? s.running : s.coming}>
+    <li id={c.id} className={running ? s.running : s.coming}>
       <p className={s.no}>
-        <span>Exhibit {String(c.exhibit).padStart(2, "0")}</span>
-        <span className={s.status}>{running ? "Running" : "Coming"}</span>
+        <span>No. {pad(n)}</span>
+        <span className={pending ? `${s.status} ${s.pending}` : s.status}>{pending ? "First run pending" : running ? "Running" : "Coming"}</span>
       </p>
-      <blockquote className={s.gm}>
-        <p className={s.where}>At General Motors</p>
-        <p><Bullet text={c.gm} /></p>
-      </blockquote>
-      <p className={s.here}>{running ? "Here, running:" : "Here, next:"}</p>
-      <p className={s.twin}>{c.twin}</p>
+      {/* GM's line and the shop's side by side, the way the page sets them out */}
+      <div className={s.pair}>
+        <blockquote className={s.gm}>
+          <p className={s.where}>At General Motors</p>
+          <p><Bullet text={c.gm} /></p>
+        </blockquote>
+        <div>
+          <p className={s.here}>{running ? "Here, running:" : "Here, next:"}</p>
+          <p className={s.twin}>{c.headline ?? c.twin}</p>
+          {c.headline && (
+            <details className={s.more}>
+              <summary>How it runs</summary>
+              <p>{c.twin}</p>
+            </details>
+          )}
+        </div>
+      </div>
       {c.figures.length > 0 && (
-        <dl className={s.figures}>
+        <dl className={s.figures} style={{ "--n": Math.min(c.figures.length, 5) } as CSSProperties}>
           {c.figures.map((f) => (
             <div key={f.label}>
               <dt>{f.label}</dt>
-              {/* a verdict in words ("Passed", "No bar set yet") is set smaller than a number */}
-              <dd className={/\d/.test(f.display) ? s.figure : `${s.figure} ${s.verdict}`}>{f.display}</dd>
+              <Value display={f.display} />
               {!oneRun && <dd className={s.measured}><Measured f={f} /></dd>}
             </div>
           ))}
@@ -99,11 +167,20 @@ function Card({ c }: { c: ClaimReport }) {
 export default async function Office() {
   await connection();
   const e = await engineering(await shopDb(), now());
-  const running = e.claims.filter((c) => c.status === "running").length;
+  // the band counts what the cards say: measured, waiting on a first run, still to come
+  const pending = e.claims.filter(isPending).length;
+  const measured = e.claims.filter((c) => c.status === "running").length - pending;
+  const coming = e.claims.length - measured - pending;
+  // numbered in the order they're read: by role, then as the résumé lists them
+  const ordered = ROLES.flatMap((r) => e.claims.filter((c) => c.role === r.role));
   return (
     <main>
       <div className="wall-band">
-        <p className="cond">The back office · {running} of {e.claims.length} running</p>
+        <p className="cond">
+          The back office · {measured} of {e.claims.length} measured
+          {pending > 0 && ` · ${pending} first run pending`}
+          {coming > 0 && ` · ${coming} coming`}
+        </p>
       </div>
       <section className={s.head}>
         <h1 className={`script ${s.title}`}>The back office</h1>
@@ -114,6 +191,7 @@ export default async function Office() {
           <Link href="/docs">in the API</Link> as <code>/api/v1/engineering</code>.
         </p>
       </section>
+      <Tally claims={ordered} />
       {ROLES.map((r) => (
         <section key={r.role} className={s.role} aria-labelledby={`role-${r.title}`}>
           <h2 id={`role-${r.title}`} className={s.h2}>
@@ -121,7 +199,7 @@ export default async function Office() {
             <span className={`cond ${s.years}`}>{r.years}</span>
           </h2>
           <ul className={s.cards}>
-            {e.claims.filter((c) => c.role === r.role).map((c) => <Card key={c.id} c={c} />)}
+            {ordered.map((c, i) => c.role === r.role && <Card key={c.id} c={c} n={i + 1} />)}
           </ul>
         </section>
       ))}
