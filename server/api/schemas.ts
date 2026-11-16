@@ -14,6 +14,11 @@ export const Health = z
     time: z.iso.datetime({ offset: true }),
     today: ShopDate,
     simulatorAhead: z.boolean().describe("Whether today and tomorrow are both written; false means the daily job missed"),
+    commit: z
+      .string()
+      .regex(/^[0-9a-f]{40}$/)
+      .nullable()
+      .describe("The commit this deployment was built from, so a deploy can tell when it has gone live; null off Vercel"),
   })
   .meta({ id: "Health" });
 

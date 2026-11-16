@@ -62,9 +62,13 @@ export const FACTORS: Factor[] = [
     n: 5,
     name: "Build, release, run",
     asks: "Keep building, releasing and running strictly apart.",
-    here: "next build makes an immutable build; Vercel releases it as a deployment with its own URL, and a deployment never changes once made. Rolling back is pointing production at an earlier one.",
-    evidence: [{ label: "The build step in CI", path: ".github/workflows/ci.yml" }],
-    gap: "Migrations are still run by hand before a release that needs one. Exhibit 8 puts them in the pipeline, between the checks and the deploy.",
+    here: "next build makes an immutable build; Vercel releases it as a deployment with its own URL, and a deployment never changes once made. A release happens only in the pipeline on main: checks, then the migrations, then the deploy, then a smoke test of what is running. Rolling back is pointing production at an earlier deployment.",
+    evidence: [
+      { label: "The deploy job", path: ".github/workflows/ci.yml" },
+      { label: "Migrations in the release", path: "scripts/deploy/migrate.mjs" },
+      { label: "Why each migration only expands", path: "docs/decisions/0007-zero-downtime-deploys.md" },
+    ],
+    gap: null,
   },
   {
     n: 6,
