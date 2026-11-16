@@ -30,9 +30,9 @@ test.describe("an export longer than 92 days", () => {
   // the page asks with HEAD, then GET for the wording; the browser logs both 400s
   test("is refused, with the reason", async ({ page }) => {
     await page.goto("/behind");
-    const to = await page.getByLabel("To").inputValue();
+    const to = await page.getByLabel("To", { exact: true }).inputValue();
     const from = new Date(Date.parse(`${to}T12:00:00Z`) - 120 * 86_400_000).toISOString().slice(0, 10);
-    await page.getByLabel("From").fill(from);
+    await page.getByLabel("From", { exact: true }).fill(from);
     await page.getByRole("button", { name: "Export .xlsx" }).click();
     await expect(page.getByRole("status")).toHaveText("121 days asked for; at most 92 in one workbook");
   });

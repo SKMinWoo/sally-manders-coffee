@@ -43,6 +43,11 @@ export const FACT_KINDS = {
     durationMs: Count,
   }),
   /**
+   * The test gap on a push to main (scripts/ci/test-gap.mjs): of the lines the push changed in
+   * lib/ and server/ that can run, how many no test ran, across how many files.
+   */
+  "test-gap": z.strictObject({ changed: Count, uncovered: Count, files: Count }),
+  /**
    * The release gate on main (scripts/ci/release-gate.mjs): each gate's outcome, the verdict, the
    * screenshot baselines compared (null: they didn't run), and checkout to verdict in ms.
    */

@@ -88,5 +88,27 @@ export const Engineering = z
   .object({ asOf: z.iso.datetime({ offset: true }), claims: z.array(Claim) })
   .meta({ id: "Engineering" });
 
+export const BriefFigure = z
+  .object({
+    key: z.string().regex(/^[A-Za-z]+$/).describe("Where the figure goes in template, as {key}"),
+    label: z.string(),
+    display: z.string().describe("The figure as the brief prints it"),
+    source: z.string().startsWith("/api/v1/").describe("The API path it comes from"),
+  })
+  .meta({ id: "BriefFigure" });
+
+export const Brief = z
+  .object({
+    date: ShopDate.describe("The complete Austin day the brief is about"),
+    writtenAt: z.iso.datetime({ offset: true }),
+    writer: z.string().describe('The model that wrote it, or "template" when none did'),
+    refused: z.string().nullable().describe("Why the model's draft wasn't kept, if it wasn't; the template was used instead"),
+    guarded: z.boolean().describe("Whether the guard turned the draft back for writing a number itself"),
+    text: z.string().describe("The brief, figures filled in"),
+    template: z.string().describe("The brief as written, with {key} where each figure goes; no number in it is the writer's"),
+    figures: z.array(BriefFigure),
+  })
+  .meta({ id: "Brief" });
+
 // RFC 9457 problem details: defined with the results every module returns, listed here with the rest
 export { Problem } from "@/server/platform/http";

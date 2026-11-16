@@ -8,8 +8,9 @@ import { listMenu } from "@/server/menu";
 import { daySummary, itemsSold, ordersByHour } from "@/server/reporting";
 import { daysAhead, writtenDays } from "@/server/simulator";
 import { engineering as engineeringReport } from "@/server/office";
+import { latestBrief, parts } from "@/server/brief";
 import { problem, type ApiResult } from "@/server/platform/http";
-import { DayHours, DayItems, DaySummary, Engineering, Health, Menu } from "./schemas";
+import { Brief, DayHours, DayItems, DaySummary, Engineering, Health, Menu } from "./schemas";
 
 // the routes and tests have always imported these from here
 export { problem, type ApiResult };
@@ -73,4 +74,21 @@ export async function dayItems(db: Db, param: string, now: Date): Promise<ApiRes
 /** Each résumé claim, its twin here, and the figures the twin has measured (the back office, as data). */
 export async function engineering(db: Db, now: Date): Promise<ApiResult> {
   return ok(Engineering, await engineeringReport(db, now));
+}
+
+/** The newest manager's brief: the note on the last complete day, and every figure it uses. */
+export async function brief(db: Db): Promise<ApiResult> {
+  const b = await latestBrief(db);
+  if (!b) return problem(404, "No brief yet", "The first is written by the daily job, the morning after the first full day");
+  const text = parts(b.body, b.figures).map((p) => (typeof p === "string" ? p : p.display)).join("");
+  return ok(Brief, {
+    date: b.day,
+    writtenAt: b.writtenAt,
+    writer: b.writer,
+    refused: b.refused,
+    guarded: b.guarded,
+    text,
+    template: b.body,
+    figures: b.figures,
+  });
 }

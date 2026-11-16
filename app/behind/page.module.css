@@ -85,6 +85,26 @@
 .track { height: 12px; border-radius: 0 4px 4px 0; background: #1A161312; }
 .track span { display: block; height: 100%; background: var(--teal); border-radius: 0 4px 4px 0; }
 
+/* yesterday's note from the manager: a sheet of check paper taped to the wall above the charts */
+.brief { display: grid; justify-items: start; }
+.note {
+  margin: 4px 0 0;
+  max-width: 62ch;
+  background: var(--check);
+  color: var(--check-ink);
+  padding: 22px 26px 18px;
+  border-top: 2px solid var(--rule);
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 14px 24px -14px #0006;
+  rotate: -.4deg;
+}
+.noteDate { font: 700 13px/1 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--red); }
+.noteBody { margin: 12px 0 14px; font: 400 23px/1.4 var(--font-script), cursive; color: var(--pen); }
+/* each figure the database filled in, underlined in the rule's green and linked to its source */
+.fig { color: inherit; font: 700 .82em/1 var(--font-cond), sans-serif; letter-spacing: .02em; text-decoration: underline 2px var(--rule); text-underline-offset: 4px; font-variant-numeric: tabular-nums; }
+.fig:hover, .fig:focus-visible { background: #6E9A7A26; }
+.noteBy { font-size: 14px; line-height: 1.45; color: #26412FCC; border-top: 1px dashed #6E9A7A88; padding-top: 10px; }
+
 .source { max-width: 70ch; font-size: 15px; color: #1A1613CC; border-top: 1px solid #1A161333; padding-top: 18px; }
 
 @media (max-width: 860px) {
@@ -93,5 +113,7 @@
   .lead { grid-template-columns: minmax(0, 1fr); gap: 30px; }
   .pinned:nth-child(n) { rotate: 0deg; }
   .pair { grid-template-columns: minmax(0, 1fr); }
+  .note { rotate: 0deg; padding: 18px 18px 14px; }
+  .noteBody { font-size: 21px; }
   .plot { height: 160px; margin-top: 30px; } /* room for the busiest-hour label under the heading */
 }

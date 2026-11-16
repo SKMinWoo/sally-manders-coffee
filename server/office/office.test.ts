@@ -6,6 +6,7 @@ import { ensureDays } from "@/server/simulator";
 import { openApiDocument } from "@/server/api/openapi";
 import { Engineering, Problem } from "@/server/api/schemas";
 import { engineering } from "@/server/api/v1";
+import { writeBrief } from "@/server/brief";
 import { existsSync } from "node:fs";
 import { CLAIMS } from "./claims";
 import { FACTORS } from "./twelve-factor";
@@ -255,13 +256,48 @@ test("quality gates: the verdict, what held it, the baselines and the time", asy
   }
 });
 
+test("ai-adoption: briefs counted live, the guard's refusals apart, and CI's test gap", async () => {
+  // its own database, so the days written here don't change the shared one's order counts
+  const own = await testDb();
+  try {
+    await ensureDays(own.db, ["2026-11-11", "2026-11-12"]);
+    const noNetwork = (async () => {
+      throw new Error("no request should have been made");
+    }) as typeof fetch;
+    const says = (text: string) =>
+      (async () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text }] } }] }), { status: 200 })) as typeof fetch;
+    await writeBrief(own.db, new Date("2026-11-12T15:00:00Z"), { key: "k", fetch: says("{orders} orders, 9 of them late.") }); // guarded
+    await writeBrief(own.db, NOON, { key: "k", fetch: says("{orders} orders on {weekday}.") }); // kept
+    assert.deepEqual(await writeBrief(own.db, NOON, { fetch: noNetwork }), { day: "2026-11-12", written: false });
+
+    const at = NOON.getTime() + 800_000;
+    const value = { changed: 412, uncovered: 9, files: 14 };
+    assert.equal((await ingestCi(own.db, req({ run: run(801), facts: [{ kind: "test-gap", value }] }), new Date(at), SECRET)).status, 201);
+    const e = Engineering.parse((await engineering(own.db, new Date(at + 60_000))).body);
+    const c = e.claims.find((x) => x.id === "ai-adoption")!;
+    assert.equal(c.status, "running");
+    const f = new Map(c.figures.map((x) => [x.label, x.display]));
+    assert.equal(f.get("Morning briefs written"), "2");
+    assert.equal(f.get("Kept as the model wrote them, every number checked"), "1 of 2");
+    assert.equal(f.get("Drafts the guard turned back for a number of their own"), "1");
+    assert.equal(f.get("Changed lines no test runs, last push to main"), "9 of 412");
+
+    for (const bad of [{ ...value, uncovered: -1 }, { ...value, changed: 1.5 }, { ...value, lines: 3 }]) {
+      const b = { run: run(802), facts: [{ kind: "test-gap", value: bad }] };
+      assert.equal((await ingestCi(own.db, req(b), new Date(at), SECRET)).status, 422, JSON.stringify(bad));
+    }
+  } finally {
+    await own.close();
+  }
+});
+
 test("every file a claim or a factor points at is in the repository", () => {
   const paths = [
     ...CLAIMS.flatMap((c) => c.code.map((x) => x.path)),
     ...FACTORS.flatMap((f) => f.evidence.map((x) => x.path)),
   ];
   for (const p of paths) {
-    const file = p.startsWith("/") ? `app${p}/page.tsx` : p; // a page of the site, or a file
+    const file = p.startsWith("/") ? `app${p.split("#")[0]}/page.tsx` : p; // a page of the site (and a place on it), or a file
     assert.ok(existsSync(file), `${p} is linked but ${file} doesn't exist`);
   }
   assert.deepEqual(FACTORS.map((f) => f.n), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);

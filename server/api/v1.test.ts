@@ -7,8 +7,9 @@ import { ensureDays } from "@/server/simulator";
 import { cronAuthorised } from "@/server/platform/auth";
 import { openApiDocument } from "./openapi";
 import { respond } from "../platform/http";
-import { DayHours, DayItems, DaySummary, Health, Menu, Problem } from "./schemas";
-import { day, dayHours, dayItems, health, menu } from "./v1";
+import { writeBrief } from "@/server/brief";
+import { Brief, DayHours, DayItems, DaySummary, Health, Menu, Problem } from "./schemas";
+import { brief, day, dayHours, dayItems, health, menu } from "./v1";
 
 let db: Db, close: () => Promise<void>;
 before(async () => ({ db, close } = await testDb()));
@@ -73,7 +74,7 @@ test("responses carry the cache policy, and errors are problem+json", async () =
 
 test("the OpenAPI document covers every endpoint, and every $ref resolves", () => {
   const doc = openApiDocument();
-  assert.deepEqual(Object.keys(doc.paths).sort(), ["/days/{date}", "/days/{date}/hours", "/days/{date}/items", "/engineering", "/exports/sales", "/health", "/menu"]);
+  assert.deepEqual(Object.keys(doc.paths).sort(), ["/brief", "/days/{date}", "/days/{date}/hours", "/days/{date}/items", "/engineering", "/exports/sales", "/health", "/menu"]);
   // collect every $ref, not only the well-formed ones, so a malformed ref fails instead of being skipped
   const refs = [...JSON.stringify(doc).matchAll(/"\$ref":"([^"]*)"/g)].map((m) => m[1]!);
   assert.ok(refs.length > 0);
@@ -85,6 +86,27 @@ test("the OpenAPI document covers every endpoint, and every $ref resolves", () =
   for (const s of Object.values(doc.components.schemas)) assert.ok(!("$schema" in s) && !("$id" in s));
   const summary = doc.components.schemas.DaySummary as { required: string[] };
   assert.ok(summary.required.includes("waitP95Seconds"));
+});
+
+test("the brief is a 404 until one is written, then the note with every figure filled in from its source", async () => {
+  const none = await brief(db);
+  assert.equal(none.status, 404);
+  Problem.parse(none.body);
+
+  await writeBrief(db, new Date("2026-11-14T15:00:00Z")); // the morning after the 13th, with no model key
+  const r = await brief(db);
+  const b = Brief.parse(r.body);
+  assert.equal(b.date, "2026-11-13");
+  assert.equal(b.writer, "template");
+  assert.doesNotMatch(b.text, /[{}]/, "every {key} is filled in");
+  const used = [...b.template.matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
+  for (const key of used) {
+    const f = b.figures.find((x) => x.key === key)!;
+    assert.ok(b.text.includes(f.display), `${key} is shown as ${f.display}`);
+  }
+  const orders = b.figures.find((f) => f.key === "orders")!;
+  assert.equal(orders.display, sim.orders.length.toLocaleString("en-US"), "the figure is the whole day's, from the database");
+  assert.equal(r.cache, "public");
 });
 
 test("the daily job only runs with the exact secret", () => {

@@ -97,3 +97,22 @@ export const engineeringFacts = pgTable("engineering_facts", {
   index("facts_kind_recorded").on(t.kind, t.recordedAt),
   check("facts_sha_hex", sql`${t.sha} ~ '^[0-9a-f]{40}$'`),
 ]);
+
+/**
+ * The manager's brief (server/brief): one note per complete Austin day. The body holds {key}
+ * where each figure goes and the figures are stored beside it, so a figure in a brief is always
+ * the database's, never the writer's, and a brief reads the same however the data changes later.
+ */
+export const briefs = pgTable("briefs", {
+  day: date({ mode: "string" }).primaryKey(),
+  body: text().notNull(),
+  /** each figure the body may use: key, label, display and the API path it comes from */
+  figures: jsonb().notNull(),
+  /** the model that wrote the body, or "template" when none did */
+  writer: text().notNull(),
+  /** why the model's draft wasn't kept, when it wasn't; the template was used instead */
+  refused: text(),
+  /** true when it was the guard that turned the draft back (it wrote a number), not the model failing to answer */
+  guarded: boolean().notNull().default(false),
+  writtenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+}, (t) => [check("briefs_writer_named", sql`length(${t.writer}) > 0`)]);

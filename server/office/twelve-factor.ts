@@ -39,7 +39,7 @@ export const FACTORS: Factor[] = [
     n: 3,
     name: "Config",
     asks: "Keep config that varies between deploys in the environment.",
-    here: "The database and the three secrets are environment variables, listed with what each is for. Nothing in the repository holds a real value.",
+    here: "The database, the three secrets and the optional model key are environment variables, listed with what each is for. Nothing in the repository holds a real value.",
     evidence: [
       { label: "What the environment must hold", path: ".env.example" },
       { label: "DATABASE_URL, read on first use", path: "server/platform/db/client.ts" },
@@ -50,10 +50,11 @@ export const FACTORS: Factor[] = [
     n: 4,
     name: "Backing services",
     asks: "Treat the database and other services as attached resources.",
-    here: "Postgres is attached by its URL. The same repository code runs on Neon in production and on PGlite, an in-process Postgres, in tests and local development; changing which one is configuration, not code.",
+    here: "Postgres is attached by its URL. The same repository code runs on Neon in production and on PGlite, an in-process Postgres, in tests and local development; changing which one is configuration, not code. The model that writes the morning brief is attached the same way, by a key; with none, the template writes it.",
     evidence: [
       { label: "One Db type, two attachments", path: "server/platform/db/client.ts" },
       { label: "The tests' database", path: "server/platform/db/test-db.ts" },
+      { label: "The model, attached by GEMINI_API_KEY", path: "server/brief/model.ts" },
     ],
     gap: "PGlite is real Postgres, but not Neon's HTTP driver; a behaviour only that driver has would only show up on a preview deployment.",
   },

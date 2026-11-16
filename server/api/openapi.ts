@@ -2,9 +2,9 @@
 // responses through. OpenAPI 3.1's schema dialect is JSON Schema 2020-12, zod 4's default.
 
 import { z } from "zod";
-import { Claim, DayHours, DayItems, DaySummary, Engineering, Figure, Health, HourCount, ItemSold, Menu, MenuItem, Problem } from "./schemas";
+import { Brief, BriefFigure, Claim, DayHours, DayItems, DaySummary, Engineering, Figure, Health, HourCount, ItemSold, Menu, MenuItem, Problem } from "./schemas";
 
-const SCHEMAS = { Health, MenuItem, Menu, DaySummary, HourCount, DayHours, ItemSold, DayItems, Figure, Claim, Engineering, Problem };
+const SCHEMAS = { Health, MenuItem, Menu, DaySummary, HourCount, DayHours, ItemSold, DayItems, BriefFigure, Brief, Figure, Claim, Engineering, Problem };
 
 function components() {
   const registry = z.registry<{ id: string }>();
@@ -70,6 +70,14 @@ export function openApiDocument() {
             "400": problem("Not a span the export takes"),
             "409": problem("A check in the span doesn't add up, so nothing was exported"),
           },
+        },
+      },
+      "/brief": {
+        get: {
+          summary: "The manager's brief on the last complete day",
+          description:
+            "A few sentences written each morning by a model, or by a template when no model is set up or its draft was turned back. The writer puts {key} where a figure goes and the figures are filled in from the database, so no number in the brief is the writer's own: a draft that writes one is turned back by the guard.",
+          responses: { "200": json("Brief", "The brief, and every figure it uses with its source"), "404": problem("No brief written yet") },
         },
       },
       "/engineering": {
