@@ -3,29 +3,11 @@
 
 import type { Page } from "@playwright/test";
 import { taxCents } from "@/lib/money";
-import { cents, expect, test } from "./fixtures";
+import { add, cents, expect, openOrderPage, placeOrder, test } from "./fixtures";
 
-/** React has hydrated the board, so a tap reaches its handler instead of a dead button. */
-async function openOrderPage(page: Page) {
-  await page.goto("/order");
-  await page.waitForFunction(() => {
-    const b = document.querySelector("#board button");
-    return !!b && Object.keys(b).some((k) => k.startsWith("__reactProps"));
-  });
-}
-
-const add = (page: Page, name: string) => page.getByRole("button", { name: new RegExp(`^Add ${name},`) }).click();
 const check = (page: Page) => page.locator("form dl");
 const lineFor = (page: Page, dt: string | RegExp) => check(page).locator("> div").filter({ has: page.locator("dt", { hasText: dt }) });
 const submit = (page: Page) => page.getByRole("button", { name: "Put it on the rail" });
-
-/** Places an order of `items` and lands on its page. */
-async function placeOrder(page: Page, items: string[]) {
-  await openOrderPage(page);
-  for (const name of items) await add(page, name);
-  await submit(page).click();
-  await page.waitForURL(/\/order\/[2-9a-z]{10}$/);
-}
 
 test("an empty check can't be sent", async ({ page }) => {
   await openOrderPage(page);
