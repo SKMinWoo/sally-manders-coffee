@@ -26,14 +26,30 @@ test("the example check on the storefront adds up", async ({ page }) => {
   expect(await amount(3), "total").toBe(subtotal + taxCents(subtotal));
 });
 
-test("“Order ahead” opens the order page, from the wall sign and from the rail", async ({ page }) => {
+test("“Order ahead” opens the order page, from the headline, the first plate and the rail", async ({ page }) => {
   await page.goto("/");
   const links = page.getByRole("link", { name: "Order ahead" });
-  await expect(links).toHaveCount(2);
+  await expect(links).toHaveCount(3);
   for (const a of await links.all()) await expect(a).toHaveAttribute("href", "/order");
   await links.last().click();
   await expect(page).toHaveURL(/\/order$/);
   await expect(page.getByRole("heading", { name: "Pick from the board" })).toBeVisible();
+});
+
+test("the model: three tags out front, thirteen pins behind, and each pin's card links to its proof", async ({ page }) => {
+  await page.goto("/");
+  const model = page.getByRole("region", { name: "The model" });
+  await expect(model.locator("button[data-key]")).toHaveCount(3);
+
+  await model.getByRole("button", { name: "What runs it" }).click();
+  await expect(model.locator("button[data-key]")).toHaveCount(13);
+  await model.locator('button[data-key="desk"]').click();
+  await expect(model.getByRole("link", { name: "The proof" })).toHaveAttribute("href", "/office#ai-adoption");
+  await page.keyboard.press("Escape");
+  await expect(model.getByRole("link", { name: "The proof" })).toHaveCount(0);
+
+  // the clock runs here, so the caption counts the quarter hour (visual.spec.ts covers it stopped)
+  await expect(model).toContainText(/\d+ orders? in the last 15 min/);
 });
 
 test("the switch moves between the storefront and behind the scenes, and says where you are", async ({ page }) => {

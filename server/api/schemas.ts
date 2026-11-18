@@ -88,6 +88,23 @@ export const Engineering = z
   .object({ asOf: z.iso.datetime({ offset: true }), claims: z.array(Claim) })
   .meta({ id: "Engineering" });
 
+export const Guest = z
+  .object({
+    placedAt: z.iso.datetime({ offset: true }),
+    readyAt: z.iso.datetime({ offset: true }).describe("When the cup was up: the guest leaves then"),
+    items: z.int().positive(),
+    source: z.enum(["sim", "visitor"]).describe("sim: written by the simulator; visitor: a real order from /order"),
+  })
+  .meta({ id: "Guest" });
+
+export const Footfall = z
+  .object({
+    since: z.iso.datetime({ offset: true }).describe("Orders placed after this instant (never more than 15 minutes back)"),
+    asOf: z.iso.datetime({ offset: true }).describe("…and up to this one; send it back as since to get only what's new"),
+    guests: z.array(Guest).describe("Oldest first, with no ids, lines or anything about the visitor"),
+  })
+  .meta({ id: "Footfall" });
+
 export const BriefFigure = z
   .object({
     key: z.string().regex(/^[A-Za-z]+$/).describe("Where the figure goes in template, as {key}"),

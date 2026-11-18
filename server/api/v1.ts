@@ -10,7 +10,8 @@ import { daysAhead, writtenDays } from "@/server/simulator";
 import { engineering as engineeringReport } from "@/server/office";
 import { latestBrief, parts } from "@/server/brief";
 import { problem, type ApiResult } from "@/server/platform/http";
-import { Brief, DayHours, DayItems, DaySummary, Engineering, Health, Menu } from "./schemas";
+import { listFootfall } from "@/server/orders";
+import { Brief, DayHours, DayItems, DaySummary, Engineering, Footfall, Health, Menu } from "./schemas";
 
 // the routes and tests have always imported these from here
 export { problem, type ApiResult };
@@ -69,6 +70,33 @@ export async function dayItems(db: Db, param: string, now: Date): Promise<ApiRes
   const date = resolveDay(param, now);
   if (typeof date !== "string") return date;
   return ok(DayItems, { date, asOf: now.toISOString(), items: await itemsSold(db, date, now) });
+}
+
+/** How far back footfall reaches: longer than any wait the simulator writes, so everyone still waiting is in it. */
+export const FOOTFALL_WINDOW_MS = 15 * 60_000;
+
+/**
+ * Guests through the door: orders placed after `since` (at most 15 minutes back; the default) and
+ * up to now. The home page walks them across the model and polls with the last `asOf` as `since`.
+ */
+export async function footfall(db: Db, since: string | null, now: Date): Promise<ApiResult> {
+  const floor = now.getTime() - FOOTFALL_WINDOW_MS;
+  let from = floor;
+  if (since !== null) {
+    const t = Date.parse(since);
+    if (Number.isNaN(t)) return problem(400, "Not a time", `Expected an ISO 8601 instant, got "${since.slice(0, 40)}"`);
+    from = Math.min(Math.max(t, floor), now.getTime());
+  }
+  const guests = await listFootfall(db, new Date(from), now);
+  return ok(
+    Footfall,
+    {
+      since: new Date(from).toISOString(),
+      asOf: now.toISOString(),
+      guests: guests.map((g) => ({ placedAt: g.placedAt.toISOString(), readyAt: g.readyAt.toISOString(), items: g.items, source: g.source })),
+    },
+    "none", // each poll asks from its own instant, so an edge cache would only hold stale doors
+  );
 }
 
 /** Each résumé claim, its twin here, and the figures the twin has measured (the back office, as data). */

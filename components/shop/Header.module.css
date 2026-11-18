@@ -1,4 +1,4 @@
-.header { display: flex; align-items: center; gap: 20px; padding: 12px var(--gutter); background: var(--black); color: var(--cream); }
+.header { position: relative; z-index: 3; /* over the model's column, so the lifted roof leaves under it */ display: flex; align-items: center; gap: 20px; padding: 12px var(--gutter); background: var(--black); color: var(--cream); }
 .lockup { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 .mark { display: block; width: 80px; height: 58px; }
 .mark svg { width: 100%; height: 100%; overflow: visible; }

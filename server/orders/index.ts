@@ -3,7 +3,7 @@
 // and on the simulator for how busy the bar is.
 
 export { placeVisitorOrder } from "./place";
-export { findOrder, placedBy } from "./repository";
+export { findOrder, listFootfall, placedBy, type Footfall } from "./repository";
 export { getMenu, getPulse, type Pulse } from "./storefront";
 export { clientIp, visitorHashOf } from "./visitor";
 export { expectedWait } from "./wait";

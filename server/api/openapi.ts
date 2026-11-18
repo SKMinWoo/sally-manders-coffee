@@ -2,9 +2,9 @@
 // responses through. OpenAPI 3.1's schema dialect is JSON Schema 2020-12, zod 4's default.
 
 import { z } from "zod";
-import { Brief, BriefFigure, Claim, DayHours, DayItems, DaySummary, Engineering, Figure, Health, HourCount, ItemSold, Menu, MenuItem, Problem } from "./schemas";
+import { Brief, BriefFigure, Claim, DayHours, DayItems, DaySummary, Engineering, Figure, Footfall, Guest, Health, HourCount, ItemSold, Menu, MenuItem, Problem } from "./schemas";
 
-const SCHEMAS = { Health, MenuItem, Menu, DaySummary, HourCount, DayHours, ItemSold, DayItems, BriefFigure, Brief, Figure, Claim, Engineering, Problem };
+const SCHEMAS = { Health, MenuItem, Menu, DaySummary, HourCount, DayHours, ItemSold, DayItems, Guest, Footfall, BriefFigure, Brief, Figure, Claim, Engineering, Problem };
 
 function components() {
   const registry = z.registry<{ id: string }>();
@@ -54,6 +54,17 @@ export function openApiDocument() {
       },
       "/days/{date}/items": {
         get: { summary: "Items sold, most first, so far", description: SO_FAR, parameters: [dateParam], responses: { "200": json("DayItems", "Items"), ...dayErrors } },
+      },
+      "/footfall": {
+        get: {
+          summary: "Guests through the door in the last quarter hour",
+          description:
+            "Each order placed after since and up to now, as a guest: when they ordered, when the cup was up, and how many items. Nothing identifies an order or a visitor. Poll with the last asOf as since to get only what's new. Never cached.",
+          parameters: [
+            { name: "since", in: "query", required: false, description: "An ISO 8601 instant; clamped to the last 15 minutes (the default)", schema: { type: "string", format: "date-time" } },
+          ],
+          responses: { "200": json("Footfall", "The guests, oldest first"), "400": problem("since isn't a time") },
+        },
       },
       "/exports/sales": {
         get: {

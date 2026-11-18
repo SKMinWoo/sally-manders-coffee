@@ -37,7 +37,7 @@ function Card({ c }: { c: ClaimReport }) {
   // when one run measured every figure on the card, say so once, under them all
   const oneRun = c.figures.length > 1 && c.figures.every((f) => f.source === "ci" && f.runUrl === c.figures[0]!.runUrl);
   return (
-    <li className={running ? s.running : s.coming}>
+    <li id={c.id} className={running ? s.running : s.coming}>
       <p className={s.no}>
         <span>Exhibit {String(c.exhibit).padStart(2, "0")}</span>
         <span className={s.status}>{running ? "Running" : "Coming"}</span>
