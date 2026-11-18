@@ -44,9 +44,13 @@ test("the model: three tags out front, thirteen pins behind, and each pin's card
   await model.getByRole("button", { name: "What runs it" }).click();
   await expect(model.locator("button[data-key]")).toHaveCount(13);
   await model.locator('button[data-key="desk"]').click();
+  // the camera glides onto the desk, and once it lands the lens refocuses: its close-up fades in
+  await expect(model.locator("[data-zoom]")).toHaveCount(1);
+  await expect(model.locator("img[data-on]")).toHaveCount(1);
   await expect(model.getByRole("link", { name: "The proof" })).toHaveAttribute("href", "/office#ai-adoption");
   await page.keyboard.press("Escape");
   await expect(model.getByRole("link", { name: "The proof" })).toHaveCount(0);
+  await expect(model.locator("[data-zoom]")).toHaveCount(0); // and back out to the whole model
 
   // the clock runs here, so the caption counts the quarter hour (visual.spec.ts covers it stopped)
   await expect(model).toContainText(/\d+ orders? in the last 15 min/);

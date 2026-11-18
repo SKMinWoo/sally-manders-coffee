@@ -70,19 +70,33 @@
 .behind .dark { opacity: 1; }
 .behind .stage::before { opacity: 0; }
 
+/* the camera: what's being looked at fills the frame (Model's useGlide; zoom.ts has the geometry).
+   The film carries every picture and the guests; the tags and the card stay outside it, so their
+   text never scales. Only while it's zoomed does the frame clip, its cut edges feathered into the
+   cream as the renders' own are (unzoomed, the roof still rises out past the top). */
+.lens { position: relative; }
+.lens[data-zoom] {
+  overflow: clip;
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent), linear-gradient(transparent, #000 3%, #000 95%, transparent);
+  mask-composite: intersect;
+}
+.film { position: relative; transform-origin: 0 0; transition: transform .9s cubic-bezier(.42, 0, .18, 1); }
+/* as it lands on a fixture the lens refocuses: the same spot rendered with the focus on it */
+.closeup { position: absolute; display: block; max-width: none; opacity: 0; transition: opacity .15s ease; pointer-events: none; }
+.closeup[data-on] { opacity: 1; transition: opacity .5s ease; }
+/* while the camera moves the tags step off, and they come back where the picture has put them */
+.stage[data-moving] .tag, .tag[data-off] { opacity: 0; pointer-events: none; transition: opacity .15s ease; }
+
 .zones, .guests { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 .shade { fill: var(--night); opacity: 0; transition: opacity .45s ease; }
 .zones[data-on] .shade { opacity: .52; }
 .edge { fill: none; stroke: var(--glow); stroke-width: 2.5px; vector-effect: non-scaling-stroke; stroke-linejoin: round; opacity: 0; transition: opacity .45s ease; }
 .edge.on { opacity: .85; }
 
-/* the guests: the play set's painted peg people, cream with an ink outline and a shadow at their feet;
-   a real visitor's order in teal. The load test's still draws the same peg. */
+/* the guests: the Study's peg people, rendered (pegs.ts), a painted body and a maple head with their
+   own shadow; a real visitor's order in teal. The load test's still draws a flat peg of its own. */
 .peg { pointer-events: visiblePainted; }
-.peg path { fill: #F3E7CC; stroke: var(--black); stroke-width: 1.6px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }
-.peg path.under, .stillPeg path.under { fill: none; stroke: #F5EAD0A0; stroke-width: 4px; }
-.peg ellipse { fill: #0008; }
-.peg.visitor path { fill: var(--teal); }
+.stillPeg path.under { fill: none; stroke: #F5EAD0A0; stroke-width: 4px; }
 
 /* the roof: on for a beat, then lifted off with a settle before it rises */
 /* rendered under the same lamp as the set, so it needs no grading of its own */
@@ -218,7 +232,8 @@
 .live { color: var(--red); }
 .key { display: inline-flex; align-items: center; gap: 6px; opacity: .8; }
 .keySim, .keyVisitor { display: inline-block; width: 9px; height: 13px; border-radius: 5px 5px 2px 2px; border: 1.5px solid var(--black); box-shadow: 0 0 0 1px #F5EAD0A0; }
-.keySim { background: #F3E7CC; }
+/* a simulated guest is one of the three paints, so its chip carries all three */
+.keySim { background: linear-gradient(90deg, #C8952F 0 34%, #26324A 0 67%, #6B2624 0); }
 .keyVisitor { background: var(--teal); margin-left: 6px; }
 
 /* ── the plates ── */
@@ -318,6 +333,6 @@
   .roof, .closed { display: none; }
   .stage[data-roof="on"] .tag:not(.dim) { opacity: 1; pointer-events: auto; } /* no roof to wait for */
   .pins[data-roof="on"] .tag.dim { opacity: 1; pointer-events: auto; }
-  .stage::before, .dark, .shade, .edge, .tag, .switch button::after { transition: none; }
+  .stage::before, .dark, .shade, .edge, .tag, .switch button::after, .film, .closeup, .closeup[data-on] { transition: none; }
   .card { animation: none; }
 }

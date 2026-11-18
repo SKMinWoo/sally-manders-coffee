@@ -6,6 +6,9 @@ the same eye, the same perspective, the same depth of field. The Study's zoom th
 scaling one picture onto the other.
 
     $B -b -P run.py -- [--passes=beauty,shell,dark] [--samples=128] [--quick] [--el=DEG] [--meta-only]
+    $B -b -P run.py -- --close [--keys=clock,door] [--quick]     the fixtures' refocused close-ups
+    $B -b -P run.py -- --pegs [--quick]          the guests: a peg per colour, lamp on and off,
+                                                 public/cutaway/peg-{colour}-{night,dark}.webp
 
     beauty  roof off, the reading lamp on                public/cutaway/hero-beauty.webp
     shell   the roof, sign, awning and street front only, the rest held out, so the page lays it
@@ -172,6 +175,73 @@ scene.view_settings.view_transform = "AgX"
 scene.view_settings.look = "AgX - Medium High Contrast"
 scene.view_settings.exposure = 0.0
 
+# ── the guests: the Study's peg people, as this camera sees them ─────────
+# Each order walks the model as a peg: a painted body and a maple head, the same figure the Study's
+# guests are. Rendered one at a time on a shadow catcher, standing in the café where the camera
+# sees them, looking down the same line of sight, so the page stands a sprite on any walking spot and
+# scales it to that spot's 1.6 m. Built at full size and shrunk like the rest of the toy, so the
+# paint's bump and the maple's grain come out at the toy's scale. Hidden from every other pass.
+import bmesh
+PEG_COLOURS = {"mustard": "#C8952F", "navy": "#26324A", "oxblood": "#6B2624", "teal": "#2C6B67"}
+PEG_AT = WALK["wait-4"]
+PEG_FOOT = w((PEG_AT[0], PEG_AT[1], FLOOR))
+PEG_S = (w((PEG_AT[0], PEG_AT[1], FLOOR + 1.6)) - PEG_FOOT).length / 1.6   # world metres per full-size metre
+def peg_part(name, mesh_of, z, mat, bevel=0.0):
+    me = bpy.data.meshes.new(name); bm = bmesh.new(); mesh_of(bm); bm.to_mesh(me); bm.free()
+    for f in me.polygons: f.use_smooth = len(f.vertices) == 4 or name.endswith("head")
+    ob = bpy.data.objects.new(name, me); scene.collection.objects.link(ob)
+    ob.location = PEG_FOOT + Vector((0, 0, z * PEG_S)); ob.scale = (PEG_S,) * 3
+    if bevel:
+        mod = ob.modifiers.new("b", "BEVEL"); mod.width = bevel; mod.segments = 3; mod.limit_method = "ANGLE"
+    me.materials.append(mat); ob.hide_render = True
+    return ob
+# the Study's peg (scene.py's peg()), slimmed to stand in the queue's 0.42 m spacing: a body 1 m
+# tall, and the head resting on it (sunk a little, as the Study's is), its top at 1.4 m
+PEG_BODY = {c: peg_part(f"peg-{c}-body", lambda bm: bmesh.ops.create_cone(bm, cap_ends=True, segments=40, radius1=0.2, radius2=0.2, depth=1.0),
+                        0.5, paint(hexc), bevel=0.07) for c, hexc in PEG_COLOURS.items()}
+PEG_HEAD = peg_part("peg-head", lambda bm: bmesh.ops.create_uvsphere(bm, u_segments=40, v_segments=20, radius=0.21), 1.19, T_MAPLE)
+PEG_TOP = PEG_FOOT + Vector((0, 0, 1.6 * PEG_S))
+# an orthographic camera down the hero camera's own line of sight to that spot
+PEG_PX = 384
+pcd = bpy.data.cameras.new("peg"); pcd.type = "ORTHO"; pcd.ortho_scale = 2.3 * 1.6 * PEG_S
+pcam = bpy.data.objects.new("peg", pcd); scene.collection.objects.link(pcam)
+_mid = PEG_FOOT + Vector((0, 0, 0.45 * 1.6 * PEG_S))
+pcam.rotation_euler = (_mid - cam.location).to_track_quat("-Z", "Y").to_euler()
+pcam.location = _mid - (_mid - cam.location).normalized() * 0.3
+bpy.context.view_layer.update()
+def peg_px(p):
+    q = pcam.matrix_world.inverted() @ p
+    return [round((q.x / pcd.ortho_scale + 0.5) * PEG_PX, 1), round((0.5 - q.y / pcd.ortho_scale) * PEG_PX, 1)]
+PEG_META = {"size": [PEG_PX, PEG_PX], "foot": peg_px(PEG_FOOT), "top": peg_px(PEG_TOP), "colours": list(PEG_COLOURS)}
+
+PEG_ROOM_GAIN = float(ARGS.get("room", 0.15))
+def render_pegs():
+    for ob in BUILT:
+        if alive(ob) and ob.type in ("MESH", "FONT"):
+            ob.hide_render = True
+    CATCHER.hide_render = True
+    bpy.ops.mesh.primitive_plane_add(size=1.6 * PEG_S * 3, location=PEG_FOOT)
+    floor = bpy.context.object; floor.name = "peg-catcher"; floor.is_shadow_catcher = True
+    floor.data.materials.append(principled("peg-floor", "#E9DDC2", 0.6)[0])
+    scene.camera = pcam
+    r.resolution_x = r.resolution_y = PEG_PX; r.resolution_percentage = 100
+    r.image_settings.quality = 90
+    PEG_HEAD.hide_render = False
+    out = OUT if QUICK else PUB
+    for state in ("night", "dark"):
+        light(state)
+        # with the ceiling and the shades hidden, the rooms' pendants would light the peg bare; in the
+        # set they're shaded and mostly light the tables, so they get a fraction of their power here
+        for ob in ROOM_LIGHTS:
+            ob.data.energy *= PEG_ROOM_GAIN
+        for c, body in PEG_BODY.items():
+            body.hide_render = False
+            r.filepath = os.path.join(out, f"peg-{c}-{state}.webp")
+            if not META_ONLY:
+                bpy.ops.render.render(write_still=True)
+            log("wrote", r.filepath)
+            body.hide_render = True
+
 # ── the meta: everything the page pins, in the hero's pixels ─────────────
 def px(p):
     v = world_to_camera_view(scene, cam, w(p))
@@ -188,13 +258,25 @@ def hull(points):
         while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0: upper.pop()
         upper.append(p)
     return [list(p) for p in lower[:-1] + upper[:-1]]
+# The page glides in on a picked fixture until this rectangle fills the frame: 1/CLOSE_Z of it, centred
+# on the pin and kept inside the picture. The --close pass renders exactly this rectangle, so its
+# close-up lands on the zoomed hero pixel for pixel.
+CLOSE_Z = 2.2
+def close_rect(k):
+    ax, ay = px(ANCH[k])
+    cw, ch = W_ / CLOSE_Z, H_ / CLOSE_Z
+    x0 = min(max(ax - cw / 2, 0), W_ - cw); y0 = min(max(ay - ch / 2, 0), H_ - ch)
+    return [round(x0), round(y0), round(x0 + cw), round(y0 + ch)]
 meta = {
     "size": [W_, H_],
+    "close": {k: close_rect(k) for k in ANCH},
     "box": BOX,
     "view": {"el": round(EL, 2), "lens": round(cd.lens, 2)},
     "anchors": {k: px(v) for k, v in ANCH.items()},
     "walk": {k: px((x, y, FLOOR)) + px((x, y, FLOOR + 1.6)) for k, (x, y) in WALK.items()},
     "seats": [px(s) + px((s[0], s[1], s[2] + 0.75)) for s in SEATS],
+    # the peg sprites (--pegs): their size, and where the feet and the 1.6 m mark fall in them
+    "peg": PEG_META,
     "zones": {k: hull([px((x, y, z)) for x in (x0, x1) for y in (y0, y1) for z in (FLOOR, FLOOR + h)])
               for k, (x0, x1, y0, y1, h) in ZONES.items()},
 }
@@ -222,8 +304,40 @@ def show(pass_):
         ob.is_holdout = shell and ob not in SHELL_OBS   # in front of the shell it still hides it
     # with the lamp off, the walls would "shadow" the whole page from the rooms' own lights
     CATCHER.hide_render = pass_ in ("shell", "dark")
-for p in PASSES:
-    show(p)
-    light("dark" if p == "dark" else "night")
-    render(p)
+# ── close-ups (--close): each fixture's rectangle, at twice the density, focused on the fixture ──
+# The hero's tilt-shift keeps the middle of the set sharp and lets the back wall and the street go
+# soft; zooming the hero into the clock would only enlarge the blur. Each close-up is the same
+# camera and aperture with the focus moved onto its fixture, so the page's glide ends in the lens
+# refocusing. The guests' view tags three fixtures under the lamp; "What runs it" pins them all.
+FRONT_KEYS = ("door", "boards", "till")
+def render_close(k, pass_):
+    x0, y0, x1, y1 = meta["close"][k]
+    r.use_border = True; r.use_crop_to_border = True
+    r.border_min_x, r.border_max_x = x0 / W_, x1 / W_
+    r.border_min_y, r.border_max_y = 1 - y1 / H_, 1 - y0 / H_   # Blender counts up from the bottom
+    r.resolution_percentage = 200
+    fwd = cam.matrix_world.to_quaternion() @ Vector((0, 0, -1))
+    cd.dof.focus_distance = (w(ANCH[k]) - cam.location).dot(fwd)   # the focal plane is square to the lens
+    out = os.path.join(OUT if QUICK else PUB, "close"); os.makedirs(out, exist_ok=True)
+    r.filepath = os.path.join(out, f"{k}-{pass_}.webp")
+    if not META_ONLY:
+        bpy.ops.render.render(write_still=True)
+    log("wrote", r.filepath, "focus", round(cd.dof.focus_distance, 4))
+
+if "--pegs" in ARGV:
+    render_pegs()
+elif "--close" in ARGV:
+    r.image_settings.quality = 82
+    keys = ARGS["keys"].split(",") if "keys" in ARGS else list(ANCH)
+    for p in ("beauty", "dark"):
+        show(p)
+        light("dark" if p == "dark" else "night")
+        for k in keys:
+            if p == "dark" or k in FRONT_KEYS:
+                render_close(k, p)
+else:
+    for p in PASSES:
+        show(p)
+        light("dark" if p == "dark" else "night")
+        render(p)
 log("done")

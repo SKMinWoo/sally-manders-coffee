@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { plan, poseAt, waitingAt, type Order, type Timeline, type Walk } from "@/lib/footfall";
+import { PEGS, type PegLight, type PegMeta, type PegSprites } from "./pegs";
 import s from "./front.module.css";
 
 /** The model runs this far behind the clock, so an order is known before its guest has to set off. */
@@ -71,27 +72,32 @@ export function useFootfall(initial: Order[], asOf: number, frozen: boolean, bas
   return useMemo(() => ({ orders, drawnNow: () => Date.now() + offset.current - DRAW_DELAY_MS }), [orders]);
 }
 
-/** A peg person one unit tall, feet at the origin: the head, then the body tapering to the shoulders. */
-const PEG_BODY = "M-.16 0 L-.13 -.6 Q-.13 -.71 0 -.71 Q.13 -.71 .13 -.6 L.16 0 Z";
-const pegHead = (r = 0.125) => `M0 -.97 a${r} ${r} 0 1 0 .0001 0 Z`;
+/** The same order always gets the same paint, so a guest keeps their colour across polls and reloads. */
+function paintOf(key: string, n: number): number {
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
+  return Math.abs(h) % n;
+}
 
-function makePeg(g: Timeline): SVGGElement {
+/**
+ * A guest: the rendered peg, its feet at the origin and the walk's 1.6 m mark one unit up, so the
+ * frame loop scales it by each spot's own projected height and it stands where the render puts a person.
+ */
+function makePeg(g: Timeline, sprites: PegSprites, peg: PegMeta): SVGGElement {
   const el = document.createElementNS(NS, "g");
-  el.setAttribute("class", `${s.peg} ${g.source === "visitor" ? s.visitor : ""}`);
+  el.setAttribute("class", s.peg!);
   const title = document.createElementNS(NS, "title");
   const ready = new Date(g.readyAt).toLocaleTimeString("en-US", { timeZone: "America/Chicago", hour: "numeric", minute: "2-digit" });
   title.textContent = `${g.source === "visitor" ? "A real visitor's order" : "A simulated guest"} · ${g.items} item${g.items === 1 ? "" : "s"} · ready ${ready}`;
-  // a soft shadow at the feet stands the peg on the floor; a pale halo under the ink outline keeps it
-  // readable on the dark wood as well as the pale tile
-  const shadow = document.createElementNS(NS, "ellipse");
-  shadow.setAttribute("rx", ".22");
-  shadow.setAttribute("ry", ".07");
-  const under = document.createElementNS(NS, "path");
-  const over = document.createElementNS(NS, "path");
-  under.setAttribute("d", `${PEG_BODY} ${pegHead()}`);
-  over.setAttribute("d", `${PEG_BODY} ${pegHead()}`);
-  under.setAttribute("class", s.under!);
-  el.append(title, shadow, under, over);
+  const img = g.source === "visitor" ? sprites.visitor : sprites.simulated[paintOf(g.key, sprites.simulated.length)]!;
+  const unit = peg.foot[1] - peg.top[1]; // the sprite's pixels per 1.6 m
+  const im = document.createElementNS(NS, "image");
+  im.setAttribute("href", img.src);
+  im.setAttribute("x", (-peg.foot[0] / unit).toFixed(4));
+  im.setAttribute("y", (-peg.foot[1] / unit).toFixed(4));
+  im.setAttribute("width", (peg.size[0] / unit).toFixed(4));
+  im.setAttribute("height", (peg.size[1] / unit).toFixed(4));
+  el.append(title, im);
   return el;
 }
 
@@ -99,10 +105,19 @@ function makePeg(g: Timeline): SVGGElement {
  * The guests on the model, in the render's own pixel space. One loop moves them all, by transform
  * only, and it stops when the model is off screen or the tab is hidden.
  */
-export function GuestsLayer({ walk, state, width, height }: { walk: Walk; state: FootfallState; width: number; height: number }) {
+export function GuestsLayer({ walk, state, width, height, peg, light }: {
+  walk: Walk;
+  state: FootfallState;
+  width: number;
+  height: number;
+  peg: PegMeta;
+  /** the reading lamp on (the guests' view) or off ("What runs it"): the pegs are lit to match */
+  light: PegLight;
+}) {
   const svg = useRef<SVGSVGElement>(null);
   const reduced = useReducedMotion();
   const timelines = useMemo(() => plan(state.orders, walk), [state.orders, walk]);
+  const sprites = PEGS[light];
 
   useEffect(() => {
     const root = svg.current!;
@@ -122,12 +137,13 @@ export function GuestsLayer({ walk, state, width, height }: { walk: Walk; state:
           }
           continue;
         }
-        if (!el) pegs.set(g.key, (el = makePeg(g)));
+        if (!el) pegs.set(g.key, (el = makePeg(g, sprites, peg)));
         const [fx, fy, , hy] = pose.spot;
         const h = fy - hy;
-        // a little weight in the step: a hop and a sway while walking, still while waiting
-        const step = pose.moving ? Math.abs(Math.sin(t / 170)) : 0;
-        const sway = pose.moving ? Math.sin(t / 170) * 3 : 0;
+        // a little weight in the step: a rock from foot to foot and the smallest hop while walking (the
+        // shadow is in the sprite, so a bigger hop would lift it off the floor too), still while waiting
+        const step = pose.moving ? Math.abs(Math.sin(t / 170)) * 0.4 : 0;
+        const sway = pose.moving ? Math.sin(t / 170) * 2.5 : 0;
         const from = reduced ? g.placedAt : g.start, to = reduced ? g.readyAt : g.end;
         const fade = Math.max(0, Math.min(1, (t - from) / 500, (to - t) / 500));
         el.setAttribute("transform", `translate(${fx.toFixed(1)} ${(fy - step * h * 0.035).toFixed(1)}) rotate(${sway.toFixed(2)}) scale(${h.toFixed(1)})`);
@@ -159,7 +175,7 @@ export function GuestsLayer({ walk, state, width, height }: { walk: Walk; state:
       document.removeEventListener("visibilitychange", wake);
       for (const el of pegs.values()) el.remove();
     };
-  }, [timelines, reduced, state]);
+  }, [timelines, reduced, state, sprites, peg]);
 
   return <svg ref={svg} className={s.guests} viewBox={`0 0 ${width} ${height}`} aria-hidden="true" />;
 }
@@ -184,7 +200,7 @@ function useDrawnNow(state: FootfallState): number | null {
 export function GuestCaption({ state, frozen }: { state: FootfallState; frozen: boolean }) {
   const t = useDrawnNow(state);
   if (frozen) {
-    return <p className={`cond ${s.caption}`}>The clock is stopped, so the guests are too · simulated guests are cream, real visitors teal</p>;
+    return <p className={`cond ${s.caption}`}>The clock is stopped, so the guests are too · simulated guests are painted mustard, navy or oxblood, real visitors teal</p>;
   }
   const recent = t === null ? null : state.orders.filter((o) => o.placedAt > t - KEEP_MS && o.placedAt <= t).length;
   const waiting = t === null ? null : waitingAt(state.orders, t);
