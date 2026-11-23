@@ -34,6 +34,27 @@ test("on a phone the token stands back while the shop's own Order ahead is in si
   await expect(orderButton(page)).toBeHidden();
 });
 
+test("wide, the drawer's closed face rests beside the model, opens it, and takes the focus back", async ({ page, isMobile }) => {
+  test.skip(isMobile, "narrower, the drawer is a sheet from the bottom and the token is the way in");
+  // a laptop's usual window: at the project's 1280×720 the model's row is shorter than the card, so it
+  // stands back rather than ride up over the band (board.spec's "See the work" click holds that)
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openHome(page);
+  const open = page.getByRole("button", { name: "Open the board" });
+  await expect(open).toBeVisible();
+  // real rows from today's board, and the model left in full view beside it
+  await expect(page.getByRole("list", { name: /^From today’s board, \d+ items$/ })).toBeVisible();
+  const [card, model] = await Promise.all([open.locator("..").boundingBox(), page.locator("#sally-model").boundingBox()]);
+  expect(card!.x).toBeGreaterThan(model!.x + model!.width * 0.75);
+
+  await open.click();
+  await expect(drawer(page)).toHaveAttribute("data-open", "");
+  await expect(open).toBeHidden();
+  await page.keyboard.press("Escape");
+  await expect(open).toBeVisible();
+  await expect(open).toBeFocused();
+});
+
 async function openDrawer(page: Page) {
   await openHome(page);
   await orderButton(page).click();

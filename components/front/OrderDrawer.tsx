@@ -6,6 +6,7 @@ import { placeHere, type HereState } from "@/app/order/actions";
 import { RailCheck } from "@/app/order/RailCheck";
 import { useCart } from "@/app/order/useCart";
 import { MenuBoard } from "@/components/shop/MenuBoard";
+import { formatPrice } from "@/lib/money";
 import { formatWait } from "@/lib/time";
 import type { MenuGroup, MenuRow } from "@/server/menu";
 import type { PlacedHere } from "./Guests";
@@ -92,6 +93,48 @@ export function OrderDrawer({
         </>
       )}
     </aside>
+  );
+}
+
+/**
+ * Wide, at rest: the drawer's closed face, in the space beside the model it slides out over, so that
+ * space reads as the counter rather than an empty column (ship-day panel, all four). It shows a corner
+ * of the same chalkboard the drawer holds: the house drink and the first of each other section, from
+ * today's menu table, and the wait for one item at this minute's load, the figure the check would show.
+ * Its button opens the drawer, which comes out over it; the card fades as it does.
+ */
+export function OrderRest({ order, on, onOpen }: { order: OrderMenu; on: boolean; onOpen: (opener: HTMLElement) => void }) {
+  const { menu, groups, houseId, waits } = order;
+  // the house drink stands for its own section, so the warmer (the kolaches and tacos) makes the four
+  const house = menu.find((m) => m.id === houseId);
+  const rows = [house, ...groups.filter((g) => g.id !== house?.group).map((g) => menu.find((m) => m.group === g.id))]
+    .filter((m): m is MenuRow => !!m)
+    .slice(0, 4);
+  return (
+    <div className={s.rest} data-rest="" data-on={on ? "" : undefined}>
+      <p className={`script ${s.restTitle}`}>Order here</p>
+      <ul className={s.restBoard} aria-label={`From today’s board, ${menu.length} items`}>
+        {rows.map((m) => (
+          <li key={m.id} className={m.id === houseId ? s.restHouse : undefined}>
+            <b>{m.name}</b>
+            <i aria-hidden="true" />
+            <span>
+              <span className="visually-hidden">$</span>
+              {formatPrice(m.priceCents)}
+            </span>
+          </li>
+        ))}
+        <li className={`cond ${s.restMore}`} aria-hidden="true">
+          and {menu.length - rows.length} more on the board
+        </li>
+      </ul>
+      <p className={s.restWait}>
+        Order one thing now and it’s up in about <b>{formatWait(waits[1] ?? 0)}</b>.
+      </p>
+      <button type="button" className={s.restOpen} aria-controls="order-drawer" aria-expanded="false" onClick={(e) => onOpen(e.currentTarget)}>
+        Open the board &rarr;
+      </button>
+    </div>
   );
 }
 

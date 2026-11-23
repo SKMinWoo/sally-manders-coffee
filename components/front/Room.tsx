@@ -12,7 +12,7 @@ import { FIXTURES, type FixtureKey } from "./fixtures";
 import { Charts } from "./Charts";
 import { GuestCaption, RailCount, useFootfall, type PlacedHere } from "./Guests";
 import { Card, Model, type FixtureClaim, type Meta } from "./Model";
-import { OrderDrawer, type OrderMenu } from "./OrderDrawer";
+import { OrderDrawer, OrderRest, type OrderMenu } from "./OrderDrawer";
 import type { NumbersData } from "./useLive";
 import s from "./front.module.css";
 
@@ -69,10 +69,27 @@ export function Room({
   const story = useRef<HTMLElement>(null);
   const orderButton = useRef<HTMLButtonElement>(null);
 
-  const closeOrder = useCallback(() => {
-    setOrdering(false);
-    orderButton.current?.focus({ preventScroll: true });
+  // two things open the drawer (the token, and wide, the card at rest), so closing it hands focus back
+  // to whichever did. After the commit, not in the handler: the card is still hidden until it re-renders
+  const opener = useRef<HTMLElement | null>(null);
+  const wasOpen = useRef(false);
+  const openOrder = useCallback((el: HTMLElement) => {
+    opener.current = el;
+    setOrdering(true);
   }, []);
+  const closeOrder = useCallback(() => setOrdering(false), []);
+  useEffect(() => {
+    if (ordering) {
+      wasOpen.current = true;
+      return;
+    }
+    if (!wasOpen.current) return;
+    wasOpen.current = false;
+    (opener.current ?? orderButton.current)?.focus({ preventScroll: true });
+  }, [ordering]);
+  // wide, whether the drawer's column is clear of the model, so its closed face can rest there (a tall
+  // window gives the model the column's whole width, and then the card would sit on it)
+  const [room, setRoom] = useState(false);
   const { add } = footfall;
   const placed = useCallback(
     (o: PlacedHere) => {
@@ -156,6 +173,14 @@ export function Room({
       // the render's lower right corner is open floor beside the street lamp
       pinEl.style.setProperty("--order-x", `${Math.round(st.right - p.left - 92 - 6)}px`);
       pinEl.style.setProperty("--order-y", `${Math.round(st.bottom - p.top - 92 - 14)}px`);
+      // the drawer's left edge, as stepAside measures it, against where the model itself ends; and the
+      // card must fit the model's row, or centred in a short one it would ride up over the band's copy
+      const drawer = document.getElementById("order-drawer");
+      const rest = pinEl.querySelector<HTMLElement>("[data-rest]");
+      if (drawer && rest) {
+        const left = p.right - parseFloat(getComputedStyle(pinEl).paddingRight) - drawer.offsetWidth;
+        setRoom(st.left + st.width * 0.95 < left - 20 && rest.offsetHeight <= col.offsetHeight - 20);
+      }
     };
     const ro = new ResizeObserver(place);
     ro.observe(col);
@@ -300,11 +325,14 @@ export function Room({
           data-shy={shy && !ordering ? "" : undefined}
           aria-expanded={ordering}
           aria-controls="order-drawer"
-          onClick={() => (ordering ? closeOrder() : setOrdering(true))}
+          onClick={(e) => (ordering ? closeOrder() : openOrder(e.currentTarget))}
         >
           <span className={s.orderButtonRing} aria-hidden="true" />
           Order
         </button>
+        {/* wide, the drawer's closed face rests where it comes out, through the shop and its numbers;
+            "How it's built" dims the lamp and points at the model, so the card stands back for it */}
+        <OrderRest order={order} on={wide && room && act < 2 && !ordering} onOpen={openOrder} />
         <OrderDrawer id="order-drawer" open={ordering} onClose={closeOrder} onPlaced={placed} order={order} />
       </div>
       {/* wide only: what the page scrolls past while the model is pinned, one marker an act */}

@@ -97,7 +97,55 @@
     width: var(--drawer);
     translate: calc(100% + var(--gutter) + 12px) 0;
   }
+  /* the drawer's closed face, in the drawer's own cell and width, level with the model's middle */
+  .rest {
+    grid-area: 2 / 1;
+    justify-self: end;
+    align-self: center;
+    z-index: 3;
+    width: var(--drawer);
+    display: grid;
+    gap: 12px;
+    padding: 14px 18px 18px;
+    background: var(--cream);
+    border: 2px solid var(--black);
+    border-radius: 10px;
+    box-shadow: 5px 6px 0 var(--black);
+    opacity: 0;
+    translate: 0 8px;
+    visibility: hidden;
+    transition: opacity .3s ease, translate .3s ease, visibility 0s linear .3s;
+  }
+  .rest[data-on] { opacity: 1; translate: 0 0; visibility: visible; transition: opacity .35s ease .1s, translate .35s ease .1s, visibility 0s; }
 }
+/* the card's lettering: the drawer's head, and a corner of its chalkboard (MenuBoard's compact rows) */
+.rest { display: none; }
+@media (min-width: 1001px) { .rest { display: grid; } }
+.restTitle { font-size: 36px; line-height: 1; color: var(--red); text-shadow: .03em .04em 0 var(--black); padding-bottom: 8px; border-bottom: 1.5px dashed #1A161340; }
+.restBoard { display: grid; gap: 0; margin: 6px 6px 0; padding: 12px 16px 10px; background: var(--black); color: var(--cream); border-radius: 8px; box-shadow: 0 0 0 6px var(--frame); }
+.restBoard li { display: grid; grid-template-columns: auto 1fr auto; gap: 0 10px; align-items: baseline; padding: 3px 0; }
+.restBoard b { font: 800 18px/1.05 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; text-transform: uppercase; letter-spacing: .02em; }
+.restBoard i { border-bottom: 2px dotted #F5EAD055; translate: 0 -5px; }
+.restBoard li > span { font: 700 17px/1 var(--font-cond), sans-serif; color: var(--mustard); }
+.restBoard .restHouse b { font: 400 25px/1 var(--font-script), cursive; font-variation-settings: normal; text-transform: none; color: var(--pink); }
+.restBoard .restMore { display: block; margin-top: 6px; padding-top: 8px; border-top: 1px solid #F5EAD026; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: #F5EAD0A6; }
+.restWait { font-size: 16px; line-height: 1.45; }
+.restWait b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.restOpen {
+  justify-self: start;
+  padding: 12px 20px 10px;
+  border: 2px solid var(--black);
+  border-radius: 4px;
+  background: var(--mustard);
+  box-shadow: 3px 3px 0 var(--black);
+  font: 700 16px/1 var(--font-cond), sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  transition: translate .12s ease-out, box-shadow .12s ease-out;
+}
+.restOpen:hover { translate: 0 -2px; box-shadow: 3px 5px 0 var(--black); }
+.restOpen:active { translate: 2px 2px; box-shadow: 1px 1px 0 var(--black); }
+.restOpen:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; }
 
 /* ── ordering beside the model: the round button and the drawer it pulls out ── */
 /* a painted wooden token, mustard with a brass rim, in the kit's hard black shadow */
@@ -584,7 +632,7 @@
 @media (prefers-reduced-motion: reduce) {
   .roof, .closed { display: none; }
   .stage[data-roof="on"] .bead { opacity: 1; pointer-events: auto; } /* no roof to wait for */
-  .stage::before, .beauty, .dark, .lampOn, .lampOff, .act,.act[data-on], .beadN, .tip, .tabs button, .machineSteam, .orderButton, .drawer, .drawer[data-open], .modelCol { transition: none; }
+  .stage::before, .beauty, .dark, .lampOn, .lampOff, .act,.act[data-on], .beadN, .tip, .tabs button, .machineSteam, .orderButton, .drawer, .drawer[data-open], .modelCol, .rest, .rest[data-on], .restOpen { transition: none; }
   .card, .bead { animation: none; }
   /* the steam stands still: one faint strand where it would rise */
   .wisp { animation: none; opacity: .3; }
