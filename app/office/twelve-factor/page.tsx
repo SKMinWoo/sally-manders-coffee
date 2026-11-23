@@ -12,7 +12,7 @@ export default function TwelveFactor() {
     <main>
       <div className="wall-band">
         <p className="cond">
-          <Link href="/office">The back office</Link> · Exhibit 10 · {FACTORS.length - short} met, {short} with a gap
+          <Link href="/office">How it&rsquo;s built</Link> · Exhibit 10 · {FACTORS.length - short} met, {short} with a gap
         </p>
       </div>
       <section className={office.head}>

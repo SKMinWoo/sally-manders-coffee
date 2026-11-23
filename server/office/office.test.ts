@@ -9,6 +9,7 @@ import { engineering } from "@/server/api/v1";
 import { writeBrief } from "@/server/brief";
 import { existsSync } from "node:fs";
 import { CLAIMS } from "./claims";
+import { engineering as engineeringReport } from "./engineering";
 import { FACTORS } from "./twelve-factor";
 import { REPO } from "./facts";
 import { ingestCi, MAX_BODY_BYTES, type IngestRequest } from "./ingest";
@@ -301,4 +302,20 @@ test("every file a claim or a factor points at is in the repository", () => {
     assert.ok(existsSync(file), `${p} is linked but ${file} doesn't exist`);
   }
   assert.deepEqual(FACTORS.map((f) => f.n), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+});
+
+test("each running card's drawing comes from the facts its figures do; the API leaves it out", async () => {
+  const at = new Date(NOON.getTime() + 900_000);
+  const { claims } = await engineeringReport(db, at);
+  const by = new Map(claims.map((c) => [c.id, c.visual]));
+  assert.deepEqual(by.get("re-architecture"), { kind: "re-architecture", modules: 5, uses: [["office", "orders"], ["orders", "menu"]], violations: 0 });
+  assert.deepEqual(by.get("barcode"), { kind: "barcode", read: 73, unread: 1, refused: 32, damagedRead: 0, misread: 0 });
+  const ui = by.get("ui-tests");
+  assert.equal(ui?.kind === "ui-tests" && `${ui.passed}/${ui.flaky}/${ui.failed}`, "68/1/1");
+  // the unit-test runs ingested above, oldest first: the full-stack card's sparkline
+  const fs = by.get("full-stack");
+  assert.ok(fs?.kind === "full-stack" && fs.tests.length >= 2 && fs.tests.at(-1)!.value === 70, JSON.stringify(fs));
+  for (const c of claims.filter((x) => x.status === "coming")) assert.equal(c.visual, null, c.id);
+  const api = (await engineering(db, at)).body as { claims: object[] };
+  assert.ok(api.claims.every((c) => !("visual" in c)), "the API's contract has no visual");
 });

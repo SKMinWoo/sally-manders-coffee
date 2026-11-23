@@ -72,27 +72,18 @@ export const FIXTURES: readonly Fixture[] = [
   {
     key: "dining", title: "The dining room", tech: "the load test", claim: "performance", figure: 0,
     blurb: "Each seat stands for a database connection. Under a CI load test, the seats ran out before anything else did.",
-    links: [{ label: "What the test found", href: "#plate-3" }],
+    links: [{ label: "What the test found", href: "/office#performance" }],
   },
 ];
 
-/** The three tags out front; behind the scenes, every fixture gets a numbered pin. */
-export const FRONT: readonly FixtureKey[] = ["door", "boards", "till"];
-
-export const PLATES = [
-  {
-    no: "I", title: "The front", script: "what guests see", zones: ["front", "cafe"],
-    keys: ["door", "boards", "till"] as FixtureKey[],
-    lede: "The door, the boards and the till. Everything a guest touches is drawn from the same API a partner would call.",
-  },
-  {
-    no: "II", title: "The counter and the office", script: "what runs", zones: ["cafe", "office"],
-    keys: ["scanner", "rail", "machine", "desk", "cabinet", "certificate", "clock", "van"] as FixtureKey[],
-    lede: "Behind the counter, the rail and the machine make each order. Out back, the office keeps the shop honest and the van ships it.",
-  },
-  {
-    no: "III", title: "The dining room and the pantry", script: "what's kept", zones: ["dining"],
-    keys: ["pantry", "dining"] as FixtureKey[],
-    lede: "The pantry is the database. The tables are where the load test found the shop's first limit.",
-  },
-] as const;
+// TODO(Alex): how "How it's built" reads to a recruiter. The home page's third act lists the
+// thirteen fixtures under these headings, in this order, and each line lights its bead on the
+// model. Group them the way you'd talk through the system in an interview: by what the visitor
+// touches first, by your two roles (full-stack, test engineer), or by the stages an order goes
+// through. Every key should appear once; four short groups fit the band on a wide screen.
+export const GROUPS: readonly { title: string; keys: readonly FixtureKey[] }[] = [
+  { title: "Serving orders", keys: ["door", "boards", "till", "rail", "pantry"] },
+  { title: "Testing & quality", keys: ["scanner", "certificate", "dining"] },
+  { title: "Shipping & running", keys: ["van", "clock", "machine"] },
+  { title: "AI & data", keys: ["desk", "cabinet"] },
+];

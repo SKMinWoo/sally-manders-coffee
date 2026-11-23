@@ -13,6 +13,8 @@ export function MenuBoard({
   title = "Today’s board",
   onAdd,
   counts = {},
+  idPrefix = "",
+  compact = false,
 }: {
   menu: MenuRow[];
   /** the board's sections in order, and the house drink: from the menu module, passed in by the
@@ -22,10 +24,14 @@ export function MenuBoard({
   title?: string;
   onAdd?: (id: string) => void;
   counts?: Record<string, number>;
+  /** a second board on one page (the home page's order drawer) keeps the page's #board unique */
+  idPrefix?: string;
+  /** one narrow column, smaller lettering: the drawer beside the model */
+  compact?: boolean;
 }) {
   return (
-    <section className={s.row} id="board" aria-labelledby="board-title">
-      <h2 id="board-title" className={`script ${s.title}`}>{title}</h2>
+    <section className={`${s.row} ${compact ? s.compact : ""}`} id={`${idPrefix}board`} aria-labelledby={`${idPrefix}board-title`}>
+      <h2 id={`${idPrefix}board-title`} className={`script ${s.title}`}>{title}</h2>
       <div className={`${s.board} ${onAdd ? s.orderable : ""}`}>
         {groups.map((g) => (
           <div key={g.id} className={s[g.id]}>

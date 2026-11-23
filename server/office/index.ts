@@ -2,6 +2,6 @@
 // CI reports to. Depends on orders, reporting and the brief for the figures the shop counts live.
 
 export { codeUrl, SITE, type Role } from "./claims";
-export { engineering, type ClaimReport, type Figure } from "./engineering";
+export { engineering, type ClaimReport, type Figure, type Trend, type Visual } from "./engineering";
 export { ingestCi, MAX_BODY_BYTES } from "./ingest";
 export { FACTORS, type Factor } from "./twelve-factor";

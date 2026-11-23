@@ -1,4 +1,21 @@
-.header { position: relative; z-index: 3; /* over the model's column, so the lifted roof leaves under it */ display: flex; align-items: center; gap: 20px; padding: 12px var(--gutter); background: var(--black); color: var(--cream); }
+.header { position: relative; z-index: 3; /* over the model's column, so the lifted roof leaves under it */ background: var(--black); color: var(--cream); }
+.bar { display: flex; align-items: center; gap: 20px; padding: 10px var(--gutter) 12px; }
+
+/* the way back to the résumé: one quiet line above the shop's own bar */
+.back {
+  display: flex;
+  gap: 18px;
+  align-items: baseline;
+  margin: 0;
+  padding: 7px var(--gutter) 6px;
+  border-bottom: 1px solid #F5EAD024;
+  font-size: 12.5px;
+  letter-spacing: .1em;
+}
+.back a { color: var(--mustard); text-decoration: none; white-space: nowrap; }
+.back a:hover, .back a:focus-visible { color: var(--cream); text-decoration: underline; text-underline-offset: 3px; }
+.backNote { opacity: .62; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .lockup { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 .mark { display: block; width: 80px; height: 58px; }
 .mark svg { width: 100%; height: 100%; overflow: visible; }
@@ -14,26 +31,35 @@
   white-space: nowrap;
   text-decoration: none;
 }
+.switch a + a { border-left: 2px solid var(--cream); }
 .switch a[aria-current="page"] { background: var(--red); }
 .switch a:not([aria-current]):hover { background: #F5EAD01F; }
 
-@media (max-width: 860px) {
-  .header { flex-wrap: wrap; gap: 10px 14px; }
+@media (max-width: 1000px) {
   .hours { display: none; }
   .switch { margin-left: auto; }
+}
+@media (max-width: 860px) {
+  .bar { flex-wrap: wrap; gap: 10px 14px; }
   .switch a { padding: 8px 10px; font-size: 13px; }
 }
 .short, .shortLabel { display: none; }
 
 /* a phone: the lockup and the switch share one row, with the switch's short labels */
-@media (max-width: 480px) {
-  .header { flex-wrap: nowrap; gap: 10px; }
-  .lockup { gap: 8px; min-width: 0; }
-  .wordmark { font-size: 25px; white-space: nowrap; }
-  .mark { width: 52px; height: 38px; flex: none; }
+@media (max-width: 560px) {
+  .backNote { display: none; }
+  /* the lockup and the switch's padding scale with the screen, so the row fits from a small phone
+     up, and nothing gives up a word */
+  .bar { flex-wrap: nowrap; gap: 8px; }
+  .lockup { gap: 6px; min-width: 0; }
+  .wordmark { font-size: clamp(18px, 4.4vw, 25px); white-space: nowrap; }
+  .mark { width: clamp(36px, 9.5vw, 52px); height: auto; aspect-ratio: 52 / 38; flex: none; }
   .switch { flex: none; }
-  .switch a { padding: 8px 9px; }
+  .switch a { padding: 8px clamp(5px, 1.4vw, 8px); font-size: 12px; letter-spacing: .03em; }
   .long { display: none; }
   .short { display: inline; }
   .shortLabel { display: block; }
+}
+@media (max-width: 340px) {
+  .mark { display: none; }
 }

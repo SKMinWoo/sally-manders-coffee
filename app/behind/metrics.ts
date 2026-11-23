@@ -27,3 +27,20 @@ export const METRICS: Record<MetricKey, Metric> = {
 // different things from a recruiter reading the résumé: takings and orders say "busy", the p95
 // wait says "and it's run well". Pick any three keys of METRICS, most important first.
 export const LEAD_METRICS: [MetricKey, MetricKey, MetricKey] = ["sales", "orders", "waitP95"];
+
+export const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+export const clock = (hour: number, minute: number) =>
+  `${hour % 12 || 12}:${String(minute).padStart(2, "0")} ${hour < 12 ? "am" : "pm"}`;
+
+/** "▲ 12% up on last Saturday ($1,204)", or a word when there's no fair comparison. */
+export function versus(key: MetricKey, today: number | null, last: number | null, weekday: string) {
+  if (today === null || last === null || last === 0) return `No figures for last ${weekday} yet`;
+  const m = METRICS[key];
+  const pct = Math.round(((today - last) / last) * 100);
+  if (pct === 0) return `Level with last ${weekday} (${m.format(last)})`;
+  // the arrow says better or worse; the word says which way the number moved
+  const better = m.lowerIsBetter ? pct < 0 : pct > 0;
+  const moved = m.lowerIsBetter ? (pct > 0 ? "slower than" : "faster than") : pct > 0 ? "up on" : "down on";
+  return `${better ? "▲" : "▼"} ${Math.abs(pct)}% ${moved} last ${weekday} (${m.format(last)})`;
+}

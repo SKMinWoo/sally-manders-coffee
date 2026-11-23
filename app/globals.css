@@ -31,6 +31,19 @@
 ::view-transition-old(sally) { z-index: 1; animation: sally-letgo .7s both; }
 ::view-transition-new(sally) { animation: none; }
 @keyframes sally-letgo { 0%, 60% { opacity: 1; } 100% { opacity: 0; } }
+/* and it lands: carried a touch above the page in flight, it comes down onto its base, gives the
+   smallest amount as it takes its weight, and settles, a quarter second after the flight ends.
+   Then the roof comes off (Model.tsx waits for this transition to finish) */
+::view-transition-image-pair(sally) { transform-origin: 50% 88%; animation: sally-land .95s cubic-bezier(.3, .55, .35, 1) both; }
+@keyframes sally-land {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.016); }
+  74% { transform: scale(.996); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-image-pair(sally) { animation: none; }
+}
 
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }

@@ -11,14 +11,15 @@ import { ExampleCheck } from "@/components/shop/GuestCheck";
 import { MenuBoard } from "@/components/shop/MenuBoard";
 import { HOUSE_ID, MENU_GROUPS } from "@/server/menu";
 import { engineering } from "@/server/office";
-import { getMenu, getPulse, listFootfall } from "@/server/orders";
+import { expectedWait, getMenu, getPulse, listFootfall } from "@/server/orders";
 import { now, stoppedAt } from "@/server/platform/clock";
 import { shopDb } from "@/server/platform/db/client";
 import { FOOTFALL_WINDOW_MS } from "@/server/api/v1";
+import { getBehind } from "@/server/reporting";
+import { PORTFOLIO } from "@/lib/site";
+import { formatCheckDate, weekdayOf } from "@/lib/time";
+import { clock, LEAD_METRICS, METRICS, versus, WEEKDAYS } from "./behind/metrics";
 import s from "./page.module.css";
-
-/** The résumé site, whose Study zooms into this page. */
-const PORTFOLIO = "https://alex-minwoo-kim.vercel.app";
 /** Set when the shop is served under a path (the portfolio's dev server proxies it at /shop). */
 const BASE = process.env.NEXT_PUBLIC_SHOP_BASE ?? "";
 
@@ -33,14 +34,15 @@ const ARRIVE = `addEventListener("pagereveal",function(e){if(e.viewTransition)wi
 // the back office's report, a minute stale at most, so the home page doesn't run its queries per visit
 const getEngineering = unstable_cache(async () => engineering(await shopDb(), now()), ["engineering", stoppedAt()], { revalidate: 60 });
 
-export default async function Storefront() {
+export default async function Shop() {
   await connection(); // rendered per request (from one-minute caches), never at build, which has no database
   const at = now();
   const frozen = stoppedAt() !== "";
-  const [menu, pulse, report, guests, h, jar] = await Promise.all([
+  const [menu, pulse, report, day, guests, h, jar] = await Promise.all([
     getMenu(),
     getPulse(),
     getEngineering(),
+    getBehind(),
     listFootfall(await shopDb(), new Date(at.getTime() - FOOTFALL_WINDOW_MS), at),
     headers(),
     cookies(),
@@ -57,29 +59,61 @@ export default async function Storefront() {
     const c = report.claims.find((x) => x.id === f.claim);
     if (!c) continue;
     const fig = f.figure === undefined ? undefined : c.figures[f.figure];
-    claims[f.key] = { status: c.status, exhibit: c.exhibit, figure: fig ? { label: fig.label, display: fig.display } : null };
+    claims[f.key] = { status: c.status, exhibit: c.exhibit, figure: fig ? { label: fig.label, display: fig.display } : null, visual: c.visual };
   }
 
-  const intro = (
-    <header className={s.intro}>
+  // act 1: the shop, and the way in
+  const shop = (
+    <>
       <div>
         <p className={`cond ${s.kicker}`}>Coffee · Kolaches · Tacos · South Austin</p>
         <h1 className={`block shade ${s.headline}`}>
-          See how it&rsquo;s built <span className="script">lift the roof off Sally Mander&rsquo;s</span>
+          Sally Mander&rsquo;s <span className="script">a coffee shop that runs on real software</span>
         </h1>
       </div>
       <div className={s.lede}>
         <p>
-          Every fixture in this shop is a working part of the software behind it: the door is the API, the pantry is
-          the database, the van ships each release. The guests walking in are today&rsquo;s orders, as the simulator
-          wrote them.
+          A working demo of a South Austin café: you can order from it, and the guests walking in are today&rsquo;s
+          orders, each one stored and timed. Scroll for the numbers it keeps, then for how it&rsquo;s run and built.
         </p>
         <p className={s.cta}>
           <Link href="/order">Order ahead</Link>
-          <a href="#board">See the board</a>
+          <a href="#board">See the menu</a>
         </p>
       </div>
-    </header>
+    </>
+  );
+
+  // act 2: three of today's figures, each against the same weekday last week at the same hour
+  const weekday = WEEKDAYS[weekdayOf(day.date)]!;
+  const numbers = (
+    <>
+      <div>
+        <p className={`cond ${s.kicker}`}>Today so far · as of {clock(day.hour, day.minute)}</p>
+        <h2 className={`block shade ${s.headline}`}>
+          The numbers <span className="script">every order, counted as it lands</span>
+        </h2>
+      </div>
+      <div className={s.lede}>
+        <dl className={s.figs}>
+          {LEAD_METRICS.map((k) => {
+            const m = METRICS[k];
+            const v = m.value(day.today);
+            return (
+              <div key={k}>
+                <dt>{m.label}</dt>
+                <dd className={s.fig}>{v === null ? "—" : m.format(v)}</dd>
+                <dd className={s.vs}>{versus(k, v, m.value(day.lastWeek), weekday)}</dd>
+              </div>
+            );
+          })}
+        </dl>
+        <p className={`cond ${s.more}`}>
+          <Link href="/behind">All the numbers &rarr;</Link>
+          <span>the hour by hour, the top sellers, the morning brief and a sales export</span>
+        </p>
+      </div>
+    </>
   );
 
   return (
@@ -90,7 +124,16 @@ export default async function Storefront() {
       {lift && <link rel="expect" href="#sally-model" {...{ blocking: "render" }} />}
       {/* a stopped clock is for tests and screenshots: no guests mid-stride and no roof mid-lift */}
       <Room
-        intro={intro}
+        shop={shop}
+        numbers={numbers}
+        figures={{
+          hours: day.hours,
+          lastWeekHours: day.lastWeekHours,
+          top: day.top.map(({ name, qty }) => ({ name, qty })),
+          wait: { p50: day.today.waitP50, p95: day.today.waitP95 },
+          lastWeekWait: { p50: day.lastWeek.waitP50, p95: day.lastWeek.waitP95 },
+          asOf: day.asOf,
+        }}
         lift={lift && !frozen}
         initial={frozen ? [] : guests.map((g) => ({ placedAt: g.placedAt.getTime(), readyAt: g.readyAt.getTime(), items: g.items, source: g.source }))}
         asOf={at.getTime()}
@@ -98,6 +141,14 @@ export default async function Storefront() {
         base={BASE}
         claims={claims}
         menuCount={menu.length}
+        // the order drawer: the board, and (as on the order page) the wait for 0..50 items at this minute's load
+        order={{
+          menu,
+          groups: MENU_GROUPS,
+          houseId: HOUSE_ID,
+          date: formatCheckDate(pulse.date),
+          waits: Array.from({ length: 51 }, (_, n) => (n ? expectedWait(n, pulse.load) : 0)),
+        }}
       />
 
       <MenuBoard menu={menu} groups={MENU_GROUPS} houseId={HOUSE_ID} />

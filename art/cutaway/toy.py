@@ -152,31 +152,41 @@ def hang_bulbs(bulbs, top, energy=45, glow=9.0, pools=0.0):
 rnd = random.Random(7)
 SACK = principled("sack", "#B39A72", 0.95)[0]
 SEATS = []
-def chair(x, y, facing):
-    """A shell chair, mustard on walnut legs; facing is the way its sitter looks."""
+# Every place a guest can stay with their cup: a dining chair, sat in, or a spot at the window ledge,
+# stood at. Each says where the guest's cup is set down (on the table in front of the chair, on the
+# ledge in front of the spot), so the page stands the cup there for as long as they stay.
+CHAIRS = []
+def chair(x, y, facing, cup):
+    """A shell chair, mustard on walnut legs, with a brass socket in the seat that a peg drops into
+    (the play set's way of sitting: pegs have no knees); facing is the way its sitter looks."""
     box("chair-seat", x - 0.2, x + 0.2, y - 0.2, y + 0.2, FLOOR + 0.43, FLOOR + 0.48, MUSTARD, bevel=0.06)
+    cyl("chair-socket", 0.235, x, y, FLOOR + 0.48, FLOOR + 0.515, BRASS)
     bx, by = {"n": (0, -1), "s": (0, 1)}[facing]
     y0 = y + by * 0.16
     box("chair-back", x - 0.19, x + 0.19, min(y0, y0 + by * 0.06), max(y0, y0 + by * 0.06), FLOOR + 0.48, FLOOR + 0.8, MUSTARD, bevel=0.03)
     for lx, ly in ((-0.15, -0.15), (-0.15, 0.15), (0.15, -0.15), (0.15, 0.15)):
         rod("chair-leg", 0.012, (x + lx, y + ly, FLOOR), (x + lx * 0.7, y + ly * 0.7, FLOOR + 0.43), WALNUT)
     SEATS.append((x, y, FLOOR + 0.48))
-TABLES = [(DX0 + 0.85, -2.55), (DX1 - 0.85, -2.55), (DX0 + 0.85, -1.0), (DX1 - 0.85, -1.0)]
+    CHAIRS.append({"at": (x, y, FLOOR + 0.48), "facing": facing, "kind": "chair", "cup": cup})
+# The two rows stand apart enough for a guest to walk between them (y -1.75), and the chairs tuck
+# under the tops, so the aisle between the columns (x 4.45) reaches every chair.
+TABLES = [(DX0 + 0.85, -2.65), (DX1 - 0.85, -2.65), (DX0 + 0.85, -0.85), (DX1 - 0.85, -0.85)]
+TUCK = 0.45
 for tx, ty in TABLES:
     cyl("table-top", 0.33, tx, ty, FLOOR + 0.72, FLOOR + 0.75, TOP_T)
     cyl("table-post", 0.03, tx, ty, FLOOR + 0.05, FLOOR + 0.72, BRASS)
     cyl("table-foot", 0.22, tx, ty, FLOOR, FLOOR + 0.04, BRASS)
-    chair(tx, ty - 0.55, "n"); chair(tx, ty + 0.55, "s")
-# a walnut ledge along the front, four stools
+    chair(tx, ty - TUCK, "n", (tx, ty - 0.14, FLOOR + 0.75)); chair(tx, ty + TUCK, "s", (tx, ty + 0.14, FLOOR + 0.75))
+# a walnut ledge along the front, stood at: four places, a peg's width and more apart, the cup set on
+# the ledge in front of each (no stools: a peg can't sit on one, and a guest at a window stands)
+LEDGE = GLASS - 0.55
 box("ledge", DX0 + 0.25, DX1 - 0.25, GLASS - 0.32, GLASS - 0.02, FLOOR + 1.0, FLOOR + 1.04, WALNUT, bevel=0.004)
 for bx in (DX0 + 0.5, DX1 - 0.5):
     box("ledge-bracket", bx - 0.015, bx + 0.015, GLASS - 0.3, GLASS - 0.02, FLOOR + 0.48, FLOOR + 1.0, BRASS)
 for k in range(4):
-    sx = DX0 + 0.6 + k * (DX1 - DX0 - 1.2) / 3
-    cyl("stool-seat", 0.16, sx, GLASS - 0.6, FLOOR + 0.7, FLOOR + 0.76, MUSTARD)
-    cyl("stool-post", 0.022, sx, GLASS - 0.6, FLOOR, FLOOR + 0.7, BRASS)
-    cyl("stool-foot", 0.17, sx, GLASS - 0.6, FLOOR, FLOOR + 0.02, BRASS)
-    SEATS.append((sx, GLASS - 0.6, FLOOR + 0.76))
+    lx = DX0 + 0.65 + 0.6 * k
+    SEATS.append((lx, LEDGE, FLOOR))
+    CHAIRS.append({"at": (lx, LEDGE, FLOOR), "facing": "n", "kind": "ledge", "cup": (lx + 0.05, GLASS - 0.2, FLOOR + 1.04)})
 # the pantry: three bays of walnut shelving against the back wall
 SH0, SH1, SY0, SY1 = DX0 + 0.3, DX1 - 0.3, YS, YS + 0.42
 UP = [SH0 + k * (SH1 - SH0) / 3 for k in range(4)]
@@ -207,7 +217,7 @@ for b in range(3):
                 box("box-label", x + wd * 0.22, x + wd * 0.78, SY1 - 0.03, SY1 - 0.026, z + hg * 0.42, z + hg * 0.72, PAPER)
             x += wd + rnd.uniform(0.015, 0.05)
 # the bulbs hang from two walnut beams resting on brass posts over the low walls
-for BY_ in (-2.55, -1.0):
+for BY_ in sorted({ty for _, ty in TABLES}):
     box("dining-beam", DX0, DX1 + T, BY_ - 0.05, BY_ + 0.05, CEIL - 0.1, CEIL, WALNUT, bevel=0.004)
     for x in (DX0 + T / 2, DX1 + T / 2):
         rod("beam-post", 0.02, (x, BY_, FLOOR + 1.23), (x, BY_, CEIL - 0.1), BRASS)
@@ -300,11 +310,19 @@ for k, tx in enumerate((-0.75, -0.5, -0.22, 0.05, 0.3, 0.62)):
 
 # ── on the street, as on the Study's old play set: the specials board, a lamp, a tree ──
 AF = (-1.55, GLASS + 0.95)        # the A-frame, between the walking line and the kerb
+# Two boards hinged at the top, feet 0.3 m apart on the pavement. box() leaves each object's origin
+# at the world origin, so a board is built round the origin, leant there, then moved into place:
+# leaning it where it stood swung it about the origin, one board floating and the other sunk.
+AF_H, AF_SPLAY = 0.95, 0.15
+AF_LEAN = math.atan2(AF_SPLAY, AF_H); AF_L = math.hypot(AF_SPLAY, AF_H)
 for s_ in (1, -1):
-    bd = box("a-frame", AF[0] - 0.3, AF[0] + 0.3, AF[1] - 0.025, AF[1] + 0.025, FLOOR, FLOOR + 0.95, SLATE, bevel=0.012)
-    bd.location.y += s_ * 0.13; bd.rotation_euler[0] = math.radians(s_ * 9)
-for k, (wd, z) in enumerate(((0.38, 0.62), (0.3, 0.48), (0.34, 0.36))):
-    box("a-frame-chalk", AF[0] - wd / 2, AF[0] + wd / 2, AF[1] + 0.13 + 0.03, AF[1] + 0.13 + 0.04, FLOOR + z, FLOOR + z + 0.035, PAPER)
+    bd = box("a-frame", -0.3, 0.3, -0.022, 0.022, -AF_L / 2, AF_L / 2, SLATE, bevel=0.012)
+    bd.rotation_euler[0] = s_ * AF_LEAN
+    bd.location = (AF[0], AF[1] + s_ * AF_SPLAY / 2, FLOOR + AF_H / 2)
+    if s_ == 1:   # the specials, chalked on the street-facing board, ride on it
+        for wd, z in ((0.38, 0.62), (0.3, 0.48), (0.34, 0.36)):
+            ch = box("a-frame-chalk", -wd / 2, wd / 2, 0.022, 0.028, z - AF_H / 2, z - AF_H / 2 + 0.035, PAPER)
+            ch.parent = bd
 LAMPPOST = (XW + 0.25, PY1 - 0.45)
 cyl("lamp-post", 0.05, LAMPPOST[0], LAMPPOST[1], FLOOR, FLOOR + 3.3, BRASS)
 cyl("lamp-post-foot", 0.11, LAMPPOST[0], LAMPPOST[1], FLOOR, FLOOR + 0.18, BRASS)
@@ -380,18 +398,51 @@ ANCH = {
     "van": VANP,
 }
 # where a guest stands: a foot on the floor, a head 1.6 m up (the page scales its figures by these)
-LANE = GLASS + 0.42                      # the sidewalk's walking line, clear of the van and the board
+LANE = GLASS + 0.4                       # the sidewalk's walking line, clear of the van's tyres and the board
 WALK = {
-    "street-w": (XW - 0.2, LANE), "street-e": (OX1 - 0.4, LANE),
+    # guests step out from behind the van in the east, and from the open pavement past the lamp post
+    "street-w": (XW + 0.05, LANE), "street-e": (VANP[0] + 0.25, LANE),
     "door-out": (-2.9, LANE), "door-in": (-2.9, GLASS - 0.35),
     "aisle": (-1.75, -0.75), "till": (0.55, CY1 + 0.42),
+    # where a cup is handed over, at the counter's west end by the machine
+    "pass": (-1.1, CY1 + 0.38),
+    # into the dining room: across the café, through the partition's opening, along the gangway
+    # between the two rows of tables, and up and down the aisle between the two columns
+    "cafe-e": (2.0, -1.7), "din-gate": (DX0 + T / 2, -1.75),
+    "din-w": (TABLES[0][0], -1.75), "din-x": ((DX0 + DX1) / 2, -1.75), "din-e": (TABLES[1][0], -1.75),
+    "din-n": ((DX0 + DX1) / 2, TABLES[2][1] + TUCK), "din-s": ((DX0 + DX1) / 2, TABLES[0][1] - TUCK),
+    # on along the aisle to the window ledge, between the front tables' chairs
+    "din-ledge": ((DX0 + DX1) / 2, LEDGE),
 }
-for k, (wx, wy) in enumerate(((-1.0, -1.62), (-1.45, -1.62), (-1.9, -1.58), (-0.75, -1.12), (-1.2, -1.1),
+# the wait spots, nearest the pass first: the front row keeps a peg's width clear of the pass and the
+# till either side of it (cutaway.py checks every standing spot is that far from the rest)
+for k, (wx, wy) in enumerate(((-0.55, -1.62), (-1.65, -1.6), (-0.1, -1.62), (-0.75, -1.12), (-1.2, -1.1),
                               (-1.65, -1.06), (-0.3, -0.7), (-0.75, -0.55), (-1.2, -0.5), (0.15, -1.1))):
     WALK[f"wait-{k}"] = (wx, wy)
 for k in range(8):   # the load test's line, along the sidewalk east of the door
     WALK[f"queue-{k}"] = (-2.35 + 0.42 * k, LANE + 0.05)
 WALK["refused"] = (-3.7, LANE + 0.5)
+# The walking graph: a guest only ever moves along these straight edges, and cutaway.py fails the
+# render if any of them, widened by a peg's radius, touches something solid.
+EDGES = [("street-w", "door-out"), ("street-e", "door-out"), ("door-out", "door-in"), ("door-in", "aisle"),
+         ("aisle", "till"), ("aisle", "pass"), ("pass", "cafe-e"), ("cafe-e", "din-gate"),
+         ("din-gate", "din-w"), ("din-w", "din-x"), ("din-x", "din-e"), ("din-x", "din-n"), ("din-x", "din-s"),
+         ("din-n", "din-ledge")]
+EDGES += [("till", f"wait-{k}") for k in range(10)] + [(f"wait-{k}", "pass") for k in range(10)]
+EDGES += [(f"wait-{k}", "aisle") for k in range(10)]
+# each place's last step: from the gangway or the aisle into the seat (a sit, unchecked), or along the
+# ledge to the spot (a walk, which cutaway.py checks like an edge)
+for ch in CHAIRS:
+    x, y, _ = ch["at"]
+    if ch["kind"] == "ledge":
+        ch["from"] = "din-ledge"
+    else:
+        ch["from"] = ("din-w" if x < WALK["din-x"][0] else "din-e") if abs(y - (-1.75)) < 0.6 else ("din-n" if y > -1.75 else "din-s")
+# the baristas' marks behind the counter: the till, the pass, the machine (from its far side, where
+# the machine doesn't hide them) and the back bar between
+STATIONS = {"till": (0.3, -2.97), "pass": (-1.1, -2.95), "machine": (-2.12, -3.0), "backbar": (-0.35, -3.05)}
+CUP_AT = (-1.1, CY1 - 0.12, 0.0)                   # where a finished drink waits, on the counter at the pass
+STEAM_AT = (EX, CY0 + 0.5, 0.26)                   # the group heads, where the shots pour
 # rooms, for the floor-by-floor plates: floor boxes the caller hulls
 ZONES = {
     "front": (XW - T, ALLEY_E, GLASS, PY1, 0.0),
@@ -410,6 +461,92 @@ OUTSIDE = {
     "street": STREET_AT,
     "inside": (-1.75, -0.4, 0.4),
 }
+
+# ── the staff: two peg baristas behind the counter, in the shop's apron and cap ──
+# The same figure as the guests (a painted body, a maple head), a little taller so the apron's bib
+# clears the counter, in a cream shirt with a red apron and a red cap. The apron is a curved panel
+# on the body's front, tied at the waist, with a cream patch on the bib for the shop's mark.
+STAFF_SHIRT = principled("staff-shirt", "#E9DDC2", 0.6)[0]
+STAFF_RED = principled("staff-red", "#A3352B", 0.6)[0]
+STAFF_PATCH = principled("staff-patch", "#F2E8D2", 0.6)[0]
+# x clear of the pendants (-0.76, 0.76, 2.3) and of the machine, which stands taller than a peg's chest
+STAFF = [(0.2, -2.97), (-2.12, -3.0)]           # at the till, and on the far side of the espresso machine
+BODY_H, HEAD_R = 1.3, 0.21                       # the bib's top clears the counter (1.05 m) by a hand
+def arc_shell(nm, x, y, r0, r1, half_deg, z0, z1, mat, segs=24):
+    """A curved panel round the front (+y) of a peg: the arc ±half_deg, between radii r0 and r1."""
+    vs, fs = [], []
+    for i in range(segs + 1):
+        a = math.radians(-half_deg + 2 * half_deg * i / segs)
+        for r in (r0, r1):
+            for z in (z0, z1):
+                vs.append((x + r * math.sin(a), y + r * math.cos(a), z))
+    for i in range(segs):
+        a, b = 4 * i, 4 * (i + 1)
+        fs += [(a + 2, b + 2, b + 3, a + 3),   # outside
+               (a, a + 1, b + 1, b),           # inside
+               (a + 1, a + 3, b + 3, b + 1),   # top
+               (a, b, b + 2, a + 2)]           # bottom
+    fs += [(0, 2, 3, 1), (4 * segs, 4 * segs + 1, 4 * segs + 3, 4 * segs + 2)]   # the two ends
+    me = bpy.data.meshes.new(nm); me.from_pydata(vs, [], fs); me.update()
+    for f in me.polygons: f.use_smooth = True
+    ob = bpy.data.objects.new(nm, me); scene.collection.objects.link(ob); me.materials.append(mat)
+    md = ob.modifiers.new("b", "BEVEL"); md.width = 0.008; md.segments = 2; md.limit_method = "ANGLE"
+    return ob
+for sx, sy in STAFF:
+    body = cyl("staff-body", 0.2, sx, sy, FLOOR, FLOOR + BODY_H, STAFF_SHIRT)
+    md = body.modifiers.new("b", "BEVEL"); md.width = 0.07; md.segments = 3; md.limit_method = "ANGLE"
+    hz = FLOOR + BODY_H + HEAD_R - 0.02           # the head rests on the body, sunk a little
+    ball("staff-head", HEAD_R, (sx, sy, hz), WALNUT_L)
+    # the apron: a bib from the chest to the knees, round the front, tied at the waist
+    top = FLOOR + BODY_H - 0.07
+    arc_shell("staff-apron", sx, sy, 0.2, 0.218, 62, FLOOR + 0.3, top, STAFF_RED)
+    cyl("staff-tie", 0.209, sx, sy, FLOOR + 0.72, FLOOR + 0.76, STAFF_RED)
+    for s_ in (-1, 1):   # the neck strap, from the bib's corners over the shoulders
+        a0, a1 = math.radians(s_ * 60), math.radians(s_ * 28)
+        rod("staff-strap", 0.012, (sx + 0.214 * math.sin(a0), sy + 0.214 * math.cos(a0), top - 0.01),
+            (sx + 0.13 * math.sin(a1), sy + 0.13 * math.cos(a1), FLOOR + BODY_H + 0.005), STAFF_RED, 12)
+    arc_shell("staff-patch", sx, sy, 0.217, 0.222, 17, top - 0.17, top - 0.05, STAFF_PATCH, segs=6)
+    # the cap hugs the crown, so the maple face shows under it; a brim to the front, a button on top
+    ball("staff-cap", HEAD_R + 0.004, (sx, sy, hz + 0.09), STAFF_RED, squash=0.56)
+    cyl("staff-brim", 0.14, sx, sy + 0.11, hz + 0.075, hz + 0.093, STAFF_RED)
+    ball("staff-button", 0.022, (sx, sy, hz + 0.09 + (HEAD_R + 0.004) * 0.56), STAFF_PATCH)
+
+# ── the menu wall: one long sign-painted board behind the counter ───────
+# room.py's slat wall and its three empty boards stay for the portfolio's full-size tour; the toy
+# trades them for a plain plaster wall and the real menu, lettered by menu-wall.mjs from the
+# catalogue in the shop's own faces, so the board says what the till sells.
+_BACK = {"backing", "slat", "standoff", "specials-frame", "specials-face",
+         *(f"board-{k}-{p}" for k in ("fullstack", "sdet", "addons") for p in ("frame", "face"))}
+kill(lambda ob: ob.name.split(".")[0] in _BACK)
+box("back-wall", XW, XE, YS - 0.06, YS - 0.01, FLOOR, CEIL, PLASTER)
+# 7% under the painted size, kept to its proportions and hung from the counter's open end: at full
+# size its far end ran in behind the side wall's return, and the last price (the banana bread's) with
+# it (round 1, all four)
+box("menu-frame", -3.36, 2.8, YS - 0.01, YS + 0.05, 0.715, 2.08, WALNUT)
+def _menu_face(nm, x0, x1, z0, z1, y, image):
+    """A flat face toward the camera (+y), u running the way the viewer reads it (from +x to -x)."""
+    m, nt, p = principled("menu-wall", None, 0.7, coat=0.1)
+    tex = nt.nodes.new("ShaderNodeTexImage"); tex.image = bpy.data.images.load(image)
+    nt.links.new(tex.outputs["Color"], p.inputs["Base Color"])
+    tbump_ = nt.nodes.new("ShaderNodeTexNoise"); tbump_.inputs["Scale"].default_value = 400.0
+    bump = nt.nodes.new("ShaderNodeBump"); bump.inputs["Strength"].default_value = 0.05
+    nt.links.new(tbump_.outputs["Fac"], bump.inputs["Height"]); nt.links.new(bump.outputs["Normal"], p.inputs["Normal"])
+    me = bpy.data.meshes.new(nm)
+    me.from_pydata([(x1, y, z0), (x0, y, z0), (x0, y, z1), (x1, y, z1)], [], [(0, 1, 2, 3)])
+    uv = me.uv_layers.new()
+    for i, c in enumerate([(0, 0), (1, 0), (1, 1), (0, 1)]):
+        uv.data[i].uv = c
+    ob = bpy.data.objects.new(nm, me); scene.collection.objects.link(ob); me.materials.append(m)
+    return ob
+# 6.0 m by 1.285 m, the same proportions menu-wall.mjs paints at (6.44 by 1.38)
+_menu_face("menu-face", -3.28, 2.72, 0.755, 2.04, YS + 0.052, os.path.join(HERE, "menu-wall.png"))
+# three brass picture lights over the board, each a hooded tube on a swan arm throwing a warm scallop
+# down the painted face: next to the old slat wall the plain board read flat and cold (round 1, three
+# of four). Lights made here are in BUILT, so the toy's shrink scales their watts back like the rest.
+for i, px in enumerate((-2.28, -0.28, 1.72)):
+    rod("menu-lamp-arm", 0.011, (px, YS + 0.05, 2.1), (px, YS + 0.24, 2.24), BRASS, 10)
+    rod("menu-lamp-hood", 0.042, (px - 0.24, YS + 0.27, 2.22), (px + 0.24, YS + 0.27, 2.22), BRASS, 18)
+    area(f"menu-lamp-{i}", (px, YS + 0.25, 2.17), (px, YS + 0.02, 1.35), 0.44, 38, colour=(1.0, 0.76, 0.48), sy=0.05)
 
 # ── into a toy ───────────────────────────────────────────────────────────
 LAMPS[:] = [L for L in LAMPS if alive(L)]
@@ -504,6 +641,7 @@ TOY = {
     "steel": paint("#26324A"), "roof-deck": paint("#2F3B52", 0.55, 0.25), "dark": paint("#1F1A16", 0.8), "board": paint("#24282A", 0.8), "mat": paint("#24282A", 0.8),
     "slate": paint("#24282A", 0.85, 0.0), "stoneware": paint("#F4F0E8", 0.15, 0.6), "kraft": paint("#B48A5C", 0.75),
     "sack": paint("#B39A72", 0.9, 0.0), "soil": paint("#2A1E15", 1.0, 0.0),
+    "staff-shirt": paint(CREAM_P), "staff-red": paint("#9A3128", 0.65, 0.1), "staff-patch": paint("#F2E8D2"),
     # metal, felt, rubber
     "brass": T_BRASS, "chrome": T_NICKEL, "leaf": T_FELT, "felt": T_FELT, "tyre": T_RUBBER,
 }

@@ -48,7 +48,7 @@ export const DaySummary = z
   .meta({ id: "DaySummary" });
 
 export const HourCount = z
-  .object({ hour: z.int().min(0).max(23), orders: z.int().nonnegative(), salesCents: Cents })
+  .object({ hour: z.int().min(0).max(23), orders: z.int().nonnegative(), salesCents: Cents, waitP50Seconds: Seconds.describe("The hour's typical wait (the median), placed to ready") })
   .meta({ id: "HourCount" });
 
 export const DayHours = z.object({ ...SoFar, hours: z.array(HourCount) }).meta({ id: "DayHours" });

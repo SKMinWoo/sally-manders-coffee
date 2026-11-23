@@ -1,11 +1,12 @@
-/* the kicker, headline, lede and the two ways in, at the head of the plates beside the model, so
-   the model has the first screen's wide column to itself */
-.intro { display: grid; gap: 14px; padding-top: clamp(8px, 2vw, 22px); }
+/* The first two acts' type, which page.tsx renders on the server and Room's band shows (act 3 is
+   styled with the model, in components/front/front.module.css). Each act is two columns on a wide
+   screen, the heading on the left and what it means on the right, and one under the stuck model on a
+   narrow one. */
 .kicker { font-size: 13px; color: var(--red); }
-.headline { font-size: clamp(36px, 3.3vw, 50px); margin-top: 6px; }
+.headline { font-size: clamp(34px, 6vw, 44px); margin-top: 6px; }
 .headline :global(.script) { display: block; margin-top: .1em; font-size: .5em; text-transform: none; color: var(--teal); text-shadow: .03em .04em 0 var(--black); }
-.lede p:first-child { font-size: 16.5px; line-height: 1.5; }
-.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.lede > p:first-child { font-size: 16px; line-height: 1.5; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
 .cta a {
   padding: 12px 20px 10px;
   border: 2px solid var(--black);
@@ -19,6 +20,43 @@
 }
 .cta a:first-child { background: var(--mustard); }
 .cta a:active { translate: 2px 2px; box-shadow: 1px 1px 0 var(--black); }
+
+/* act 2: three of today's figures, the same checks that hang on The numbers' rail, in small: check
+   paper on a steel rail, each held by a brass clip and hanging a touch askew */
+.figs { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 0 8px; }
+.figs::before { content: ""; position: absolute; top: -4px; left: 0; right: 0; height: 5px; border-radius: 3px; background: linear-gradient(#D9D2C4, #8C8577); box-shadow: 0 2px 3px #1A161355; }
+.figs > div {
+  position: relative;
+  display: grid;
+  align-content: start;
+  gap: 3px;
+  padding: 14px 12px 11px;
+  background: var(--check);
+  color: var(--check-ink);
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 12px 18px -12px #1A1613AA, 0 0 0 1px #1A16131A;
+  transform-origin: 50% 0;
+}
+.figs > div::before { content: ""; position: absolute; top: -8px; left: 50%; translate: -50% 0; width: 30px; height: 12px; border-radius: 2px 2px 4px 4px; background: linear-gradient(#E9C46A, #B8862B); box-shadow: inset 0 -2px 0 #0003, 0 2px 3px #0005; }
+.figs > div:nth-child(1) { rotate: -1.2deg; }
+.figs > div:nth-child(2) { rotate: .8deg; }
+.figs > div:nth-child(3) { rotate: -.5deg; }
+.figs dt { font: 700 11.5px/1.2 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+.fig { font: 800 clamp(28px, 2.4vw, 38px)/1.05 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; font-variant-numeric: tabular-nums; }
+.vs { font: 400 15px/1.2 var(--font-script), cursive; color: var(--pen); }
+.more { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 14px; font-size: 13px; }
+.more a { color: var(--red); text-underline-offset: 3px; }
+.more span { font: 400 13px/1.35 var(--font-body), sans-serif; letter-spacing: 0; text-transform: none; opacity: .7; }
+
+@media (min-width: 1001px) {
+  .headline { font-size: clamp(34px, 2.8vw, 48px); }
+  /* the shop's own name is the page's sign, so it's the biggest thing in the band */
+  h1.headline { font-size: clamp(48px, 4.4vw, 68px); }
+  .lede > p:first-child { max-width: 60ch; }
+}
+@media (max-width: 560px) {
+  .figs { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+}
 
 .checkrow {
   display: grid;

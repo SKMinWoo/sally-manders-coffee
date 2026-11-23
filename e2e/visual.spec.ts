@@ -29,7 +29,9 @@ test("with the clock stopped, nobody walks on the model, and the caption says wh
   await page.goto("/");
   const model = page.getByRole("region", { name: "The model" });
   await expect(model).toContainText("The clock is stopped");
-  await expect(model.locator("svg[aria-hidden] g")).toHaveCount(0);
+  // the baristas stand at their stations and the model's own fronts are drawn in the same layer; a
+  // guest is the figure that carries a title (its order), and there are none
+  await expect(model.locator("svg[aria-hidden] title")).toHaveCount(0);
 });
 
 for (const [name, path] of PAGES) {
