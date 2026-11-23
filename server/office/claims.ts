@@ -76,7 +76,7 @@ export const CLAIMS: Claim[] = [
     id: "re-architecture",
     role: FS,
     gm: "Co-led the ground-up re-architecture of a legacy **Workflow Process System** into 12-factor, cloud-native microservices, with standardized domain boundaries and faster feature delivery.",
-    twin: "The server as six domain modules (menu, simulator, orders, reporting, the manager’s brief and this back office), each used only through its one public entry, with their dependencies running one way so none can form a cycle. A lint rule fails the build on any import that reaches inside a module or against the direction, and CI counts every import it checked. Each of the twelve factors is pointed at its evidence, gaps included, and the choices are written down as decision records. It’s one Next.js app, not a fleet of microservices: the boundaries carry over from GM, the network between services doesn’t.",
+    twin: "The server as seven domain modules (menu, simulator, orders, reporting, the manager’s brief, the board and this back office), each used only through its one public entry, with their dependencies running one way so none can form a cycle. A lint rule fails the build on any import that reaches inside a module or against the direction, and CI counts every import it checked. Each of the twelve factors is pointed at its evidence, gaps included, and the choices are written down as decision records. It’s one Next.js app, not a fleet of microservices: the boundaries carry over from GM, the network between services doesn’t.",
     exhibit: 10,
     status: "running",
     code: [

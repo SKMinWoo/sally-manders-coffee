@@ -16,6 +16,7 @@ import { now, stoppedAt } from "@/server/platform/clock";
 import { shopDb } from "@/server/platform/db/client";
 import { FOOTFALL_WINDOW_MS } from "@/server/api/v1";
 import { getBehind } from "@/server/reporting";
+import { getBoard, inProse, lineOf } from "@/server/board";
 import { PORTFOLIO } from "@/lib/site";
 import { formatCheckDate, weekdayOf } from "@/lib/time";
 import { clock, LEAD_METRICS, METRICS, versus, WEEKDAYS } from "./behind/metrics";
@@ -38,7 +39,7 @@ export default async function Shop() {
   await connection(); // rendered per request (from one-minute caches), never at build, which has no database
   const at = now();
   const frozen = stoppedAt() !== "";
-  const [menu, pulse, report, day, guests, h, jar] = await Promise.all([
+  const [menu, pulse, report, day, guests, h, jar, work] = await Promise.all([
     getMenu(),
     getPulse(),
     getEngineering(),
@@ -46,7 +47,9 @@ export default async function Shop() {
     listFootfall(await shopDb(), new Date(at.getTime() - FOOTFALL_WINDOW_MS), at),
     headers(),
     cookies(),
+    getBoard(),
   ]);
+  const line = lineOf(work);
 
   const lift = shouldLiftRoof({
     fromStudy: cameFromStudy(h.get("referer"), h.get("host"), BASE, PORTFOLIO),
@@ -80,6 +83,26 @@ export default async function Shop() {
           <Link href="/order">Order ahead</Link>
           <a href="#board">See the menu</a>
         </p>
+        {line && (
+          // a slip off the board, clipped under the buttons: what the manager is working on, in pen
+          <div className={s.slip}>
+            <p className={s.slipLine}>
+              {line.kind === "trying" && <>This week the manager is trying <b>{inProse(line.name)}</b>, <span>day {line.day} of {line.of}</span></>}
+              {line.kind === "planned" && <>From {formatCheckDate(line.startsOn)} the manager is trying <b>{inProse(line.name)}</b></>}
+              {line.kind === "kept" && <>The newest change kept: <b>{inProse(line.name)}</b>, since {formatCheckDate(line.since)}</>}
+            </p>
+            <p className={s.slipFoot}>
+              {line.kind === "trying" && (
+                <span className={s.slipDays} aria-hidden="true">
+                  {Array.from({ length: line.of }, (_, i) => (
+                    <i key={i} className={i < line.day ? s.slipDone : undefined} />
+                  ))}
+                </span>
+              )}
+              <Link href="/board">See the work &rarr;</Link>
+            </p>
+          </div>
+        )}
       </div>
     </>
   );
@@ -147,7 +170,7 @@ export default async function Shop() {
           groups: MENU_GROUPS,
           houseId: HOUSE_ID,
           date: formatCheckDate(pulse.date),
-          waits: Array.from({ length: 51 }, (_, n) => (n ? expectedWait(n, pulse.load) : 0)),
+          waits: Array.from({ length: 51 }, (_, n) => (n ? expectedWait(n, pulse.load, pulse.pace) : 0)),
         }}
       />
 

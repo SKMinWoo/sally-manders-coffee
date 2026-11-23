@@ -1,9 +1,9 @@
-// The shop's home page, the header's three parts, and every page on a phone.
+// The shop's home page, the header's four parts, and every page on a phone.
 
 import { taxCents } from "@/lib/money";
 import { cents, expect, expectNoSidewaysScroll, test } from "./fixtures";
 
-const PAGES = ["/", "/order", "/behind", "/docs", "/office", "/office/twelve-factor"];
+const PAGES = ["/", "/order", "/behind", "/board", "/docs", "/office", "/office/twelve-factor"];
 
 test("the board shows the whole menu, in its four sections, with prices", async ({ page }) => {
   await page.goto("/");
@@ -76,10 +76,10 @@ test("the model: no beads in the first two acts, thirteen in the third, and each
   await expect(model).toContainText(/\d+ orders? in the last 15 min/);
 });
 
-test("the header names the three parts, says which one you're in, and leads back to the résumé", async ({ page }) => {
+test("the header names the four parts, says which one you're in, and leads back to the résumé", async ({ page }) => {
   await page.goto("/");
   const parts = page.getByRole("navigation", { name: "Sections" });
-  await expect(parts.getByRole("link")).toHaveCount(3);
+  await expect(parts.getByRole("link")).toHaveCount(4);
   await expect(parts.getByRole("link", { name: /The shop/ })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("link", { name: /Back to the résumé/ })).toHaveAttribute("href", /^https:\/\/.+\.vercel\.app/);
 

@@ -48,8 +48,8 @@
 /* a phone: the lockup and the switch share one row, with the switch's short labels */
 @media (max-width: 560px) {
   .backNote { display: none; }
-  /* the lockup and the switch's padding scale with the screen, so the row fits from a small phone
-     up, and nothing gives up a word */
+  /* four parts in the switch since the work got its page: the lockup and the switch's padding scale
+     with the screen, so the row fits from a small phone up, and nothing gives up a word */
   .bar { flex-wrap: nowrap; gap: 8px; }
   .lockup { gap: 6px; min-width: 0; }
   .wordmark { font-size: clamp(18px, 4.4vw, 25px); white-space: nowrap; }

@@ -7,7 +7,9 @@ import { stoppedAt } from "@/server/platform/clock";
 import { latestBrief } from "./repository";
 
 export { dayFigures, type BriefFigure } from "./figures";
+export { endOf } from "./figures";
 export { guard, parts, type Verdict } from "./guard";
+export { askModel, DEFAULT_MODEL, type Draft, type ModelConfig } from "./model";
 export { briefCounts, latestBrief, type Brief, type BriefCounts } from "./repository";
 export { template, writeBrief, type BriefConfig, type WriteResult } from "./write";
 

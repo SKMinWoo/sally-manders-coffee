@@ -11,7 +11,8 @@ import { engineering as engineeringReport } from "@/server/office";
 import { latestBrief, parts } from "@/server/brief";
 import { problem, type ApiResult } from "@/server/platform/http";
 import { listFootfall } from "@/server/orders";
-import { Brief, DayHours, DayItems, DaySummary, Engineering, Footfall, Health, Menu } from "./schemas";
+import { boardView, type Arm, type Call, type Card, type Morning } from "@/server/board";
+import { Board, BoardArm, BoardCall, BoardCard, Brief, DayHours, DayItems, DaySummary, Engineering, Footfall, Health, Menu } from "./schemas";
 
 // the routes and tests have always imported these from here
 export { problem, type ApiResult };
@@ -102,6 +103,63 @@ export async function footfall(db: Db, since: string | null, now: Date): Promise
 /** Each résumé claim, its twin here, and the figures the twin has measured (the back office, as data). */
 export async function engineering(db: Db, now: Date): Promise<ApiResult> {
   return ok(Engineering, await engineeringReport(db, now));
+}
+
+const arm = (a: Arm): z.input<typeof BoardArm> => ({
+  orders: a.orders,
+  takingsCents: a.takingsCents,
+  waitP50Seconds: a.waitP50,
+  waitP90Seconds: a.waitP90,
+  hoursWaitP50Seconds: a.hoursWaitP50,
+  hoursWaitP90Seconds: a.hoursWaitP90,
+  staffHours: a.staffHours,
+});
+
+const boardCard = (c: Card): z.input<typeof BoardCard> => ({
+  ...c,
+  effect: c.effect && { from: c.effect.from, to: c.effect.to, days: c.effect.days, with: arm(c.effect.with), without: arm(c.effect.without) },
+  change: c.deltas,
+});
+
+const boardCall = (c: Call, speaker: string): z.input<typeof BoardCall> => ({
+  day: c.day,
+  kind: c.kind,
+  speaker,
+  text: parts(c.body, c.figures).map((p) => (typeof p === "string" ? p : p.display)).join(""),
+  template: c.body,
+  figures: c.figures,
+  writer: c.writer,
+  refused: c.refused,
+  guarded: c.guarded,
+  topic: c.kind === "customer" ? c.payload.topic : null,
+  mood: c.kind === "customer" ? c.payload.mood : null,
+  decision: c.kind === "manager" ? c.payload.decision : null,
+  declined: c.kind === "manager" ? c.payload.declined : null,
+});
+
+const morning = (m: Morning) => ({
+  day: m.day,
+  customer: m.customer && boardCall(m.customer, m.customer.speakerName),
+  manager: m.manager && boardCall(m.manager, "The manager"),
+  heldFor: m.heldFor,
+});
+
+/** The board: the morning calls, what's been heard, the change planned or being tried, and what was measured and kept. */
+export async function board(db: Db, now: Date): Promise<ApiResult> {
+  const b = await boardView(db, now);
+  return ok(Board, {
+    today: b.today,
+    asOf: now.toISOString(),
+    latest: b.latest && morning(b.latest),
+    log: b.log.map(morning),
+    heard: b.heard.map((h) => ({ topic: h.topic, label: h.label, times: h.times, latestDay: h.latest.day, latestSpeaker: h.latest.speaker })),
+    planned: b.planned && boardCard(b.planned),
+    trying: b.trying && boardCard(b.trying),
+    next: b.next,
+    measured: b.measured.map(boardCard),
+    standing: b.standing.map((k) => ({ lever: k.lever, name: k.name, since: k.since, proposedOn: k.proposedOn, heard: k.heard, change: k.deltas })),
+    counts: b.counts,
+  });
 }
 
 /** The newest manager's brief: the note on the last complete day, and every figure it uses. */

@@ -47,6 +47,33 @@
 .more { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; margin-top: 14px; font-size: 13px; }
 .more a { color: var(--red); text-underline-offset: 3px; }
 .more span { font: 400 13px/1.35 var(--font-body), sans-serif; letter-spacing: 0; text-transform: none; opacity: .7; }
+/* act 1: what the manager is working on this week, on a slip off the board's rail: the same check
+   paper, ruled line and brass clip as the checks on The work, small, and the day ticks in teal */
+.slip {
+  position: relative;
+  width: fit-content;
+  max-width: min(100%, 470px);
+  margin-top: 26px;
+  padding: 14px 16px 10px;
+  background: var(--check) repeating-linear-gradient(transparent 0 25px, #6E9A7A1F 25px 26px);
+  color: var(--check-ink);
+  border-top: 2px solid var(--rule);
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 12px 18px -12px #1A1613AA, 0 0 0 1px #1A16131A;
+  rotate: -.6deg;
+  transform-origin: 50% 0;
+}
+.slip::before { content: ""; position: absolute; top: -9px; left: 28px; width: 30px; height: 12px; border-radius: 2px 2px 4px 4px; background: linear-gradient(#E9C46A, #B8862B); box-shadow: inset 0 -2px 0 #0003, 0 2px 3px #0005; }
+.slipLine { font: 400 20px/1.3 var(--font-script), cursive; color: var(--pen); }
+/* one voice, the pen's: the change is the same hand, pressed harder and in red */
+.slipLine b { font-weight: inherit; color: var(--red); text-decoration: underline 1.5px #C0392B55; text-underline-offset: 4px; }
+/* the ticks and the link both on the left: on a phone the floating Order button sits over the slip's right end */
+.slipFoot { display: flex; align-items: center; gap: 18px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #6E9A7A88; }
+.slipLine span { white-space: nowrap; }
+.slipFoot a { order: 1; font: 700 12px/1 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--red); text-underline-offset: 3px; }
+.slipDays { display: flex; gap: 3px; }
+.slipDays i { width: 14px; height: 7px; border-radius: 2px; border: 1.5px solid var(--rule); }
+.slipDays .slipDone { background: var(--teal); border-color: var(--teal); }
 
 @media (min-width: 1001px) {
   .headline { font-size: clamp(34px, 2.8vw, 48px); }

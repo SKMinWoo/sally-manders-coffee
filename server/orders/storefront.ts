@@ -7,7 +7,7 @@ import { shopToday, type ShopDate } from "@/lib/time";
 import { shopDb } from "@/server/platform/db/client";
 import { listMenu } from "@/server/menu";
 import { countOrders } from "./repository";
-import { expectedWait, loadNow } from "./wait";
+import { expectedWait, loadNow, type Pace } from "./wait";
 import { now, stoppedAt } from "@/server/platform/clock";
 
 export const getMenu = unstable_cache(async () => listMenu(await shopDb()), ["menu"], { revalidate: 300 });
@@ -20,6 +20,8 @@ export interface Pulse {
   waitForTwo: number;
   /** orders in the last hour over this hour's capacity */
   load: number;
+  /** the bar's pace today, with the board's levers in */
+  pace: Pace;
 }
 
 export const getPulse = unstable_cache(
@@ -27,8 +29,8 @@ export const getPulse = unstable_cache(
     const db = await shopDb();
     const at = now();
     const date = shopToday(at);
-    const [placed, load] = await Promise.all([countOrders(db, date, at), loadNow(db, at)]);
-    return { date, nextTicket: String(placed + 1).padStart(4, "0"), waitForTwo: expectedWait(2, load), load };
+    const [placed, { load, pace }] = await Promise.all([countOrders(db, date, at), loadNow(db, at)]);
+    return { date, nextTicket: String(placed + 1).padStart(4, "0"), waitForTwo: expectedWait(2, load, pace), load, pace };
   },
   ["pulse", stoppedAt()],
   { revalidate: 60 },

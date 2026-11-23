@@ -90,7 +90,7 @@ test("responses carry the cache policy, and errors are problem+json", async () =
 
 test("the OpenAPI document covers every endpoint, and every $ref resolves", () => {
   const doc = openApiDocument();
-  assert.deepEqual(Object.keys(doc.paths).sort(), ["/brief", "/days/{date}", "/days/{date}/hours", "/days/{date}/items", "/engineering", "/exports/sales", "/footfall", "/health", "/menu"]);
+  assert.deepEqual(Object.keys(doc.paths).sort(), ["/board", "/brief", "/days/{date}", "/days/{date}/hours", "/days/{date}/items", "/engineering", "/exports/sales", "/footfall", "/health", "/menu"]);
   // collect every $ref, not only the well-formed ones, so a malformed ref fails instead of being skipped
   const refs = [...JSON.stringify(doc).matchAll(/"\$ref":"([^"]*)"/g)].map((m) => m[1]!);
   assert.ok(refs.length > 0);

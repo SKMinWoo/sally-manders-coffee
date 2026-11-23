@@ -7,7 +7,7 @@ import s from "./Header.module.css";
 
 /**
  * The black header every page shares: a thin line back to the résumé this shop belongs to, then the
- * lockup, the hours, and the shop's three parts.
+ * lockup, the hours, and the shop's four parts.
  */
 export function Header() {
   return (
