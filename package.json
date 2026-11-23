@@ -21,22 +21,22 @@
     "test:ci": "node -e \"require('fs').mkdirSync('.ci',{recursive:true})\" && node --import tsx --enable-source-maps --experimental-test-coverage --test-coverage-include=\"lib/**/*.ts\" --test-coverage-include=\"server/**/*.ts\" --test-coverage-exclude=\"**/*.test.ts\" --test-coverage-exclude=\"server/platform/db/test-db.ts\" --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./scripts/ci/test-facts.mjs --test-reporter-destination=.ci/unit-tests.json --test-reporter=./scripts/ci/coverage-facts.mjs --test-reporter-destination=.ci/coverage.json --test-reporter=lcov --test-reporter-destination=.ci/lcov.info \"lib/**/*.test.ts\" \"server/**/*.test.ts\" \"app/**/*.test.ts\""
   },
   "dependencies": {
-    "@neondatabase/serverless": "1.2.0",
+    "@neondatabase/serverless": "1.2.1",
     "drizzle-orm": "0.45.4",
-    "next": "16.4.5",
+    "next": "16.4.6",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.15",
+    "@electric-sql/pglite": "0.5.16",
     "@playwright/test": "1.65.1",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "drizzle-kit": "0.31.11",
     "eslint": "9.39.5",
-    "eslint-config-next": "16.4.5",
+    "eslint-config-next": "16.4.6",
     "tsx": "4.23.15",
     "typescript": "5.9.3"
   }
