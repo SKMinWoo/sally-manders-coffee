@@ -82,6 +82,23 @@ export function Room({
     [add],
   );
 
+  // Narrower, the token floats at the bottom of the screen, so while the first act's own "Order ahead"
+  // (page.tsx marks it data-order-cta) is in view it stands back rather than sit on the manager's slip.
+  const [shy, setShy] = useState(false);
+  useEffect(() => {
+    const cta = story.current?.querySelector("[data-order-cta]");
+    if (wide || !cta) {
+      setShy(false);
+      return;
+    }
+    // the model sticks to the top here, so a link scrolled under it is gone to the eye though still in
+    // the viewport: the line the link must cross is the stuck model's foot, measured once
+    const top = document.getElementById("sally-model")?.parentElement?.offsetHeight ?? 0;
+    const io = new IntersectionObserver(([e]) => setShy(e!.isIntersecting), { rootMargin: `-${top}px 0px 0px 0px` });
+    io.observe(cta);
+    return () => io.disconnect();
+  }, [wide]);
+
   useEffect(() => {
     if (!ordering) return;
     const esc = (e: KeyboardEvent) => e.key === "Escape" && closeOrder();
@@ -280,6 +297,7 @@ export function Room({
           ref={orderButton}
           type="button"
           className={s.orderButton}
+          data-shy={shy && !ordering ? "" : undefined}
           aria-expanded={ordering}
           aria-controls="order-drawer"
           onClick={() => (ordering ? closeOrder() : setOrdering(true))}

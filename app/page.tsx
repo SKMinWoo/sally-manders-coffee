@@ -80,7 +80,7 @@ export default async function Shop() {
           orders, each one stored and timed. Scroll for the numbers it keeps, then for how it&rsquo;s run and built.
         </p>
         <p className={s.cta}>
-          <Link href="/order">Order ahead</Link>
+          <Link href="/order" data-order-cta="">Order ahead</Link>
           <a href="#board">See the menu</a>
         </p>
         {line && (

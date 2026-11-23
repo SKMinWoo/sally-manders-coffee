@@ -17,7 +17,22 @@ async function openHome(page: Page) {
     const b = document.querySelector('button[aria-controls="order-drawer"]');
     return !!b && Object.keys(b).some((k) => k.startsWith("__reactProps"));
   });
+  // on a phone the token stands back while the first act's "Order ahead" is in sight, so scroll on
+  // past that link, as a visitor would, until the token comes up
+  await page.evaluate(() => {
+    if (!matchMedia("(max-width: 1000px)").matches) return;
+    const cta = document.querySelector("[data-order-cta]")!.getBoundingClientRect();
+    scrollBy(0, cta.bottom);
+  });
+  await expect(orderButton(page)).toBeVisible();
 }
+
+test("on a phone the token stands back while the shop's own Order ahead is in sight", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "wide, the token sits on the model's corner and never covers the copy");
+  await page.goto("/");
+  await expect(page.locator("[data-order-cta]")).toBeInViewport();
+  await expect(orderButton(page)).toBeHidden();
+});
 
 async function openDrawer(page: Page) {
   await openHome(page);

@@ -543,6 +543,10 @@
      column, so it leaves with the story), and the drawer is a sheet up from the bottom, under the stuck
      model, which stays in view above it */
   .orderButton { order: 99; position: sticky; bottom: calc(14px + env(safe-area-inset-bottom)); align-self: flex-end; margin-top: -92px; width: 76px; height: 76px; font-size: 16px; }
+  /* while the first act's own "Order ahead" is on screen, the token stands back: on arrival it sat on
+     the manager's slip (ship-day panel, four of four), and two ways to order side by side say nothing
+     more than one. Room.tsx sets data-shy from an observer on that link */
+  .orderButton[data-shy] { opacity: 0; scale: .8; visibility: hidden; pointer-events: none; transition: opacity .25s ease, scale .25s ease, visibility 0s linear .25s; }
   .drawer {
     position: fixed;
     left: 8px;
