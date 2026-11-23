@@ -75,7 +75,7 @@ export const Claim = z
   .object({
     id: z.string(),
     role: z.enum(["Full-Stack Software Engineer", "Software Development Engineer in Test"]),
-    gm: z.string().describe("The General Motors résumé bullet, word for word; **bold** marks its headline figure"),
+    gm: z.string().describe("The General Motors résumé bullet, word for word; **bold** marks the part this twin answers"),
     twin: z.string().describe("What Sally Mander's runs in its place"),
     exhibit: z.int().positive(),
     status: z.enum(["running", "coming"]),
