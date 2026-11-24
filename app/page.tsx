@@ -36,8 +36,14 @@ const BASE = process.env.NEXT_PUBLIC_SHOP_BASE ?? "";
  * globals.css can hold the page itself back on the cream while the model flies in: on a phone the
  * flight crosses the copy, and the page appearing under it mid-flight read as the model being
  * dragged over the text.
+ *
+ * The cut-out lets go onto the model's own first frame (the image marked `data-arrives`), and a page
+ * the browser didn't pre-load can be revealed before that image has arrived: then the cut-out faded
+ * onto an empty stage and the model went pale for a few frames. So once the transition is running,
+ * if that image isn't in yet, the cut-out holds (its animation paused, opaque) until the image
+ * decodes, for 1.5s at most; the flight and the landing go on meanwhile.
  */
-const ARRIVE = `window.__sallyArrival=new Promise(function(r){if(!("onpagereveal"in window))return r("plain");addEventListener("pagereveal",function(e){var t=e.viewTransition;if(!t)return r("plain");try{var a=window.navigation&&navigation.activation&&navigation.activation.from,u=new URL(a&&a.url||document.referrer),b=${JSON.stringify(BASE)};if(b&&u.origin===location.origin&&u.pathname!==b&&u.pathname.indexOf(b+"/")!==0&&t.types)t.types.add("from-study")}catch(x){}r(t.finished.then(function(){return"landed"},function(){return"landed"}))},{once:true})})`;
+const ARRIVE = `window.__sallyArrival=new Promise(function(r){if(!("onpagereveal"in window))return r("plain");addEventListener("pagereveal",function(e){var t=e.viewTransition;if(!t)return r("plain");try{var a=window.navigation&&navigation.activation&&navigation.activation.from,u=new URL(a&&a.url||document.referrer),b=${JSON.stringify(BASE)};if(b&&u.origin===location.origin&&u.pathname!==b&&u.pathname.indexOf(b+"/")!==0&&t.types)t.types.add("from-study")}catch(x){}t.ready.then(function(){var i=document.querySelector("img[data-arrives]");if(!i||i.complete&&i.naturalWidth)return;var o=document.documentElement.getAnimations({subtree:true}).filter(function(n){return n.effect&&n.effect.pseudoElement==="::view-transition-old(sally)"});if(!o.length)return;o.forEach(function(n){n.pause()});var g=function(){o.forEach(function(n){n.play()})};Promise.race([i.decode(),new Promise(function(z){setTimeout(z,1500)})]).then(g,g)},function(){});r(t.finished.then(function(){return"landed"},function(){return"landed"}))},{once:true})})`;
 
 // the back office's report, a minute stale at most, so the home page doesn't run its queries per visit
 const getEngineering = unstable_cache(async () => engineering(await shopDb(), now()), ["engineering", stoppedAt()], { revalidate: 60 });
