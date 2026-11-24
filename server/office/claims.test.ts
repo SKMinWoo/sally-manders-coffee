@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { CLAIMS } from "./claims";
 
 // /office and /api/v1/engineering quote the résumé "word for word". resume.txt is the PDF's text
-// (Alexander_Kim_Resume_Web.pdf, 2026-11-23), so a résumé edit means replacing it, and any quote
+// (Alexander_Kim_Resume_Web_v2.pdf, 2026-11-23), so a résumé edit means replacing it, and any quote
 // that drifts from it, or a claim Alex has retracted, fails here instead of in front of a recruiter.
 
 const flat = (s: string) => s.replace(/\*\*/g, "").replace(/\s+/g, " ").trim();
