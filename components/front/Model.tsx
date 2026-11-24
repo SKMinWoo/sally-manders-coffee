@@ -88,18 +88,17 @@ export function Model({
 
   useEffect(() => {
     if (!lift) return;
-    // Arriving by the Study's zoom, the roof waits for the set to land on the model and settle
-    // (page.tsx's ARRIVE script catches the page's view transition before React is here), then a
-    // beat so the landing reads as its own moment; otherwise a beat to see the shop with its roof on,
-    // then up it comes.
+    // Arriving by the Study's zoom, the roof waits for the set to land on the model and settle, then
+    // a beat so the landing reads as its own moment; otherwise a beat to see the shop with its roof
+    // on, then up it comes. Either way only once the page is revealed: page.tsx's ARRIVE script
+    // catches that before React is here, and a page the Study pre-loaded mounts long before it.
     let id: ReturnType<typeof setTimeout> | undefined;
     let gone = false;
     const up = (after: number) => {
       if (!gone) id = setTimeout(() => setRoof("lifting"), after);
     };
-    const landing = (window as { __sallyLanding?: Promise<unknown> }).__sallyLanding;
-    if (landing) landing.then(() => up(300));
-    else up(700);
+    const arrival = (window as { __sallyArrival?: Promise<"landed" | "plain"> }).__sallyArrival ?? Promise.resolve("plain");
+    void arrival.then((how) => up(how === "landed" ? 300 : 700));
     return () => {
       gone = true;
       clearTimeout(id);

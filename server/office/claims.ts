@@ -172,9 +172,9 @@ export const CLAIMS: Claim[] = [
   },
 ];
 
-/** A link to a file on main. */
-/** Where the shop is served. Public; also in CI, which posts its figures here. */
-export const SITE = "https://sally-manders-coffee.vercel.app";
+/** Where the shop is served (under its base path on Vercel: next.config.ts). Public; CI posts its
+ *  figures to the API here, which also still answers at the root. */
+export const SITE = `https://sally-manders-coffee.vercel.app${process.env.NEXT_PUBLIC_SHOP_BASE ?? ""}`;
 
 /** A repository path as its file on GitHub; a path starting with "/" is a page of this site. */
 export const codeUrl = (path: string) => (path.startsWith("/") ? `${SITE}${path}` : `https://github.com/${REPO}/blob/main/${path}`);

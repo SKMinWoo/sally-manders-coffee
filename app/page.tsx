@@ -25,12 +25,19 @@ import s from "./page.module.css";
 const BASE = process.env.NEXT_PUBLIC_SHOP_BASE ?? "";
 
 /**
- * Arriving by the Study's zoom, the model's roof should lift only once the Study's cut-out has
- * finished landing on it. The page's view transition is announced by `pagereveal`, which fires
- * before React hydrates, so this runs inline as the page is parsed and leaves a promise for
- * Model.tsx to wait on (none when there's no transition).
+ * The model's roof lifts once the reader is here to see it: arriving by the Study's zoom, only after
+ * the Study's cut-out has finished landing on it. Both are announced by `pagereveal`, which fires
+ * before React hydrates, and, on a page the Study pre-loaded, only when the reader actually arrives
+ * (React has long since mounted by then). So this runs inline as the page is parsed and leaves a
+ * promise for Model.tsx: "landed" after a view transition, "plain" otherwise, at once in a browser
+ * without `pagereveal`.
+ *
+ * A transition that came from outside the shop's base path (the Study) is tagged `from-study`, so
+ * globals.css can hold the page itself back on the cream while the model flies in: on a phone the
+ * flight crosses the copy, and the page appearing under it mid-flight read as the model being
+ * dragged over the text.
  */
-const ARRIVE = `addEventListener("pagereveal",function(e){if(e.viewTransition)window.__sallyLanding=e.viewTransition.finished.catch(function(){})},{once:true})`;
+const ARRIVE = `window.__sallyArrival=new Promise(function(r){if(!("onpagereveal"in window))return r("plain");addEventListener("pagereveal",function(e){var t=e.viewTransition;if(!t)return r("plain");try{var a=window.navigation&&navigation.activation&&navigation.activation.from,u=new URL(a&&a.url||document.referrer),b=${JSON.stringify(BASE)};if(b&&u.origin===location.origin&&u.pathname!==b&&u.pathname.indexOf(b+"/")!==0&&t.types)t.types.add("from-study")}catch(x){}r(t.finished.then(function(){return"landed"},function(){return"landed"}))},{once:true})})`;
 
 // the back office's report, a minute stale at most, so the home page doesn't run its queries per visit
 const getEngineering = unstable_cache(async () => engineering(await shopDb(), now()), ["engineering", stoppedAt()], { revalidate: 60 });

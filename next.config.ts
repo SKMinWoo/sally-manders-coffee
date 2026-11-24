@@ -17,8 +17,9 @@ const csp = [
   "object-src 'none'",
 ].join("; ");
 
-// Unset everywhere but one dev setup: the portfolio's dev server proxies the shop at /shop, so the
-// Study can zoom into it on one origin (a view transition can't cross origins).
+// /shop on Vercel (SHOP_BASE_PATH, set for Production and Preview) and in the portfolio's dev proxy:
+// the portfolio serves the shop at its own /shop, so the Study can zoom into it on one origin (a view
+// transition can't cross origins). Unset in CI and plain local dev, where the shop is at the root.
 const base = process.env.SHOP_BASE_PATH || "";
 
 const nextConfig: NextConfig = {
@@ -40,6 +41,17 @@ const nextConfig: NextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
         ],
       },
+    ];
+  },
+  // Under a base path, the shop's old addresses still answer. Pages move for good (a reader's link
+  // lands on the same page under /shop). The API is answered in place by vercel.json's rewrite (Next
+  // can't rewrite outside its base path), so CI's ingest, the uptime probe and the portfolio's reads
+  // keep their URLs and never have to follow a redirect.
+  async redirects() {
+    if (!base) return [];
+    return [
+      { source: "/", destination: base, permanent: true, basePath: false },
+      { source: `/:path((?!${base.slice(1)}(?:/|$)|api/|_next/).*)`, destination: `${base}/:path`, permanent: true, basePath: false },
     ];
   },
 };

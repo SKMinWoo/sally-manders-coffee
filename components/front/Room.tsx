@@ -101,7 +101,9 @@ export function Room({
 
   // Narrower, the token floats at the bottom of the screen, so while the first act's own "Order ahead"
   // (page.tsx marks it data-order-cta) is in view it stands back rather than sit on the manager's slip.
-  const [shy, setShy] = useState(false);
+  // shy until measured: on a phone the first act's link is usually in view on arrival, and a token
+  // that showed for a moment and then stood back read as a flicker as the page arrived
+  const [shy, setShy] = useState(true);
   useEffect(() => {
     const cta = story.current?.querySelector("[data-order-cta]");
     if (wide || !cta) {
