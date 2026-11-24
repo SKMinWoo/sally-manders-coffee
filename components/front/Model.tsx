@@ -142,9 +142,11 @@ export function Model({
         )}
         {/* the set as it stands, roof on and casting the roof's own shadow: the very file the Study's
             zoom flies in, so the page change swaps a picture for the same picture. It lets go as the
-            roof starts up, taking the roof's shadow with it */}
+            roof starts up, taking the roof's shadow with it. `data-arrives`: the Study's cut-out
+            waits for this picture before letting go (app/page.tsx) */}
         {roofState !== "off" && (
           <Image
+            data-arrives=""
             className={`${s.closed} ${roofState === "lifting" ? s.opening : ""}`}
             src={closed}
             alt=""
