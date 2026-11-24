@@ -21,29 +21,10 @@ import { PORTFOLIO } from "@/lib/site";
 import { formatCheckDate, weekdayOf } from "@/lib/time";
 import { clock, LEAD_METRICS, METRICS, versus, WEEKDAYS } from "./behind/metrics";
 import s from "./page.module.css";
+import { arriveScript } from "./arrive";
 /** Set when the shop is served under a path (the portfolio's dev server proxies it at /shop). */
 const BASE = process.env.NEXT_PUBLIC_SHOP_BASE ?? "";
 
-/**
- * The model's roof lifts once the reader is here to see it: arriving by the Study's zoom, only after
- * the Study's cut-out has finished landing on it. Both are announced by `pagereveal`, which fires
- * before React hydrates, and, on a page the Study pre-loaded, only when the reader actually arrives
- * (React has long since mounted by then). So this runs inline as the page is parsed and leaves a
- * promise for Model.tsx: "landed" after a view transition, "plain" otherwise, at once in a browser
- * without `pagereveal`.
- *
- * A transition that came from outside the shop's base path (the Study) is tagged `from-study`, so
- * globals.css can hold the page itself back on the cream while the model flies in: on a phone the
- * flight crosses the copy, and the page appearing under it mid-flight read as the model being
- * dragged over the text.
- *
- * The cut-out lets go onto the model's own first frame (the image marked `data-arrives`), and a page
- * the browser didn't pre-load can be revealed before that image has arrived: then the cut-out faded
- * onto an empty stage and the model went pale for a few frames. So once the transition is running,
- * if that image isn't in yet, the cut-out holds (its animation paused, opaque) until the image
- * decodes, for 1.5s at most; the flight and the landing go on meanwhile.
- */
-const ARRIVE = `window.__sallyArrival=new Promise(function(r){if(!("onpagereveal"in window))return r("plain");addEventListener("pagereveal",function(e){var t=e.viewTransition;if(!t)return r("plain");try{var a=window.navigation&&navigation.activation&&navigation.activation.from,u=new URL(a&&a.url||document.referrer),b=${JSON.stringify(BASE)};if(b&&u.origin===location.origin&&u.pathname!==b&&u.pathname.indexOf(b+"/")!==0&&t.types)t.types.add("from-study")}catch(x){}t.ready.then(function(){var i=document.querySelector("img[data-arrives]");if(!i||i.complete&&i.naturalWidth)return;var o=document.documentElement.getAnimations({subtree:true}).filter(function(n){return n.effect&&n.effect.pseudoElement==="::view-transition-old(sally)"});if(!o.length)return;o.forEach(function(n){n.pause()});var g=function(){o.forEach(function(n){n.play()})};Promise.race([i.decode(),new Promise(function(z){setTimeout(z,1500)})]).then(g,g)},function(){});r(t.finished.then(function(){return"landed"},function(){return"landed"}))},{once:true})})`;
 
 // the back office's report, a minute stale at most, so the home page doesn't run its queries per visit
 const getEngineering = unstable_cache(async () => engineering(await shopDb(), now()), ["engineering", stoppedAt()], { revalidate: 60 });
@@ -154,7 +135,7 @@ export default async function Shop() {
 
   return (
     <main>
-      {lift && <script dangerouslySetInnerHTML={{ __html: ARRIVE }} />}
+      {lift && <script dangerouslySetInnerHTML={{ __html: arriveScript(BASE) }} />}
       {/* arriving from the Study, the first frame waits until the model's frame is parsed, so the set
           always has somewhere to land (React hoists this into <head>; without `blocking` it's ignored) */}
       {lift && <link rel="expect" href="#sally-model" {...{ blocking: "render" }} />}
