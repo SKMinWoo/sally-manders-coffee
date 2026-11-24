@@ -79,7 +79,8 @@ jobs:
         run: npx playwright install --with-deps --only-shell chromium
       # Gate: every browser test passes on desktop and phone, the barcode tests and the screenshot
       # baselines among them. The counts land in .ci/ui-tests.json, what the barcode tests read in
-      # .ci/barcodes.json, and the baselines compared in .ci/baselines.json.
+      # .ci/barcodes.json, and the baselines compared in .ci/parts/baselines.json (a part of the
+      # "quality-gates" figure, not a figure of its own, so post-facts.mjs never posts it).
       - name: UI tests (Playwright, desktop and phone)
         id: ui
         run: npx playwright test
