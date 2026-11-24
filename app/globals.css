@@ -41,6 +41,22 @@
   74% { transform: scale(.996); }
   100% { transform: scale(1); }
 }
+/* from the Study (app/page.tsx tags it), the old page is the Study's cream sheet. It stays put, and
+   the shop's page waits under the flight and comes up round the model as it settles, so the model
+   crosses empty cream rather than the copy (on a phone it flies from mid-screen to the top) */
+html:active-view-transition-type(from-study)::view-transition-old(root) { animation: none; }
+html:active-view-transition-type(from-study)::view-transition-new(root) { animation: sally-page .4s .55s ease-out both; }
+@keyframes sally-page { from { opacity: 0; } to { opacity: 1; } }
+/* narrow, the stacked page puts the model at the top while the Study left it low on the screen, so it
+   travels half the screen, not a few pixels. The wide curve's burst covers most of that in the first
+   frames and reads as a jump (and a phone's first frames are its slowest), so here the model lifts
+   off gently, crosses, and settles, over a little longer; the landing and the page follow it */
+@media (max-width: 1000px) {
+  html:active-view-transition-type(from-study)::view-transition-group(sally) { animation-duration: .9s; animation-timing-function: cubic-bezier(.45, 0, .2, 1); }
+  html:active-view-transition-type(from-study)::view-transition-old(sally) { animation-duration: .9s; }
+  html:active-view-transition-type(from-study)::view-transition-image-pair(sally) { animation-duration: 1.15s; }
+  html:active-view-transition-type(from-study)::view-transition-new(root) { animation-delay: .7s; }
+}
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-image-pair(sally) { animation: none; }
 }
