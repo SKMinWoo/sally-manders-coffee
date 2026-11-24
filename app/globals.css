@@ -63,6 +63,14 @@ html:active-view-transition-type(from-study)::view-transition-new(root) { animat
   ::view-transition-image-pair(sally) { animation-duration: 1.4s; }
   html:active-view-transition-type(from-study)::view-transition-new(root) { animation-delay: .7s; }
 }
+/* when the Study measured this page first (app/arrive.ts tags it `landing`), its zoom already ended
+   with the cut-out over the model, raised by 3.5% of its height. So nothing flies: the group only
+   drops that little way into place, easing in and setting down softly, the cut-out lets go onto the
+   same picture beneath it, and the page comes up round it. Last, so it wins over the rules above */
+html:active-view-transition-type(landing)::view-transition-group(sally) { animation-duration: .6s; animation-timing-function: cubic-bezier(.45, 0, .35, 1); }
+html:active-view-transition-type(landing)::view-transition-old(sally) { animation-duration: .6s; }
+html:active-view-transition-type(landing)::view-transition-image-pair(sally) { animation: none; }
+html:active-view-transition-type(landing)::view-transition-new(root) { animation: sally-page .5s .2s ease-out both; }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-image-pair(sally) { animation: none; }
 }
