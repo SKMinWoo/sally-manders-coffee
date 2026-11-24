@@ -13,7 +13,7 @@
 .years { font-size: 14px; color: #1A1613AA; }
 
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 22px; align-items: start; }
-.running, .coming { padding: 20px 22px 22px; border-radius: 3px; display: grid; gap: 10px; }
+.running, .coming { padding: 20px 22px 22px; border-radius: 3px; display: grid; gap: 10px; scroll-margin-top: 28px; /* a fixture's "The proof" lands with the card's edge in view */ }
 .running {
   grid-column: 1 / -1; /* a running exhibit takes the whole row: it has figures to show */
   background: var(--check);

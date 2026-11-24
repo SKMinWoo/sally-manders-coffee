@@ -1,11 +1,11 @@
-// Behind the scenes: today's figures, and the sales export as a visitor uses it.
+// The numbers: today's figures, and the sales export as a visitor uses it.
 
 import { readFile } from "node:fs/promises";
 import { expect, test } from "./fixtures";
 
 test("today's figures are pinned up, each against last week", async ({ page }) => {
   await page.goto("/behind");
-  await expect(page.getByText(/^Behind the scenes · \w{3} \d+ \w{3} · as of \d/)).toBeVisible();
+  await expect(page.getByText(/^The numbers · \w{3} \d+ \w{3} · as of \d/)).toBeVisible();
   const pinned = page.locator("main ul").first().getByRole("listitem");
   await expect(pinned).not.toHaveCount(0);
   for (const card of await pinned.all()) await expect(card.locator("p")).toHaveCount(3); // label, figure, versus
@@ -38,8 +38,8 @@ test.describe("an export longer than 92 days", () => {
   });
 });
 
-test("the back office is a link away", async ({ page }) => {
+test("how it's built is a link away", async ({ page }) => {
   await page.goto("/behind");
-  await page.getByRole("main").getByRole("link", { name: "the back office" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("The back office");
+  await page.getByRole("main").getByRole("link", { name: "how it’s built" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("How it’s built");
 });

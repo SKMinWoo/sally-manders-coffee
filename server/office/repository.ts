@@ -34,6 +34,17 @@ export async function latestFacts(db: Db): Promise<Map<FactKind, StoredFact>> {
   return new Map(rows.map((r) => [r.kind as FactKind, { ...r, kind: r.kind as FactKind }]));
 }
 
+/** The last `limit` runs' figures of one kind, oldest first: the trend a card draws as a sparkline. */
+export async function factHistory(db: Db, kind: FactKind, limit: number): Promise<{ value: unknown; recordedAt: Date }[]> {
+  const rows = await db
+    .select({ value: engineeringFacts.value, recordedAt: engineeringFacts.recordedAt })
+    .from(engineeringFacts)
+    .where(eq(engineeringFacts.kind, kind))
+    .orderBy(desc(engineeringFacts.recordedAt))
+    .limit(limit);
+  return rows.reverse();
+}
+
 /** Every order placed up to `asOf`, and how many of them visitors placed: the shop's running total. */
 export async function ordersToDate(db: Db, asOf: Date): Promise<{ orders: number; visitorOrders: number }> {
   const [all] = await db.select({ n: count() }).from(orders).where(placedBy(asOf));

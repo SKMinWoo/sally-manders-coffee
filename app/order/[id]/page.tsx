@@ -34,7 +34,12 @@ export default async function OrderStatus({ params }: { params: Promise<{ id: st
         barcode={order.publicId}
       />
       <Countdown readyAt={order.readyAt.getTime()} serverNow={at.getTime()} />
-      <Link href="/order" className={s.again}>Order something else</Link>
+      {/* your order is a teal guest on the model, so the way back to the shop can show it arriving */}
+      <p className={s.ways}>
+        <Link href="/#sally-model" className={s.again}>See your order walk in &rarr;</Link>
+        <Link href="/order">Order something else</Link>
+        <Link href="/"><span aria-hidden="true">&larr; </span>Back to the shop</Link>
+      </p>
       <p className={`sim-note ${s.note}`}>A simulated shop: no drink is coming, but the wait is the one a real order would get right now.</p>
     </main>
   );

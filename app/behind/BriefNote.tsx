@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { formatCheckDate } from "@/lib/time";
 import { parts, type Brief } from "@/server/brief";
 import s from "./page.module.css";
@@ -32,7 +33,9 @@ export function BriefNote({ brief }: { brief: Brief | null }) {
               )}
             </p>
           </blockquote>
-          <figcaption className={s.noteBy}>{provenance(brief)}</figcaption>
+          <figcaption className={s.noteBy}>
+            {provenance(brief)} What the manager is changing about the shop, and why, is on <Link href="/board">the work</Link>.
+          </figcaption>
         </figure>
       ) : (
         <p className={s.source}>The first note is written the morning after the shop’s first full day.</p>

@@ -4,10 +4,12 @@ import { connection } from "next/server";
 import { shopDb } from "@/server/platform/db/client";
 import type { Role } from "@/server/office";
 import { engineering, SITE, type ClaimReport, type Figure } from "@/server/office";
+import { LoadTest } from "@/components/front/LoadTest";
+import { ExhibitVisual } from "@/components/office/ExhibitVisual";
 import s from "./office.module.css";
 import { now } from "@/server/platform/clock";
 
-export const metadata: Metadata = { title: "The back office" };
+export const metadata: Metadata = { title: "How it’s built" };
 
 const ROLES: { role: Role; title: string; years: string }[] = [
   { role: "Full-Stack Software Engineer", title: "Full-stack", years: "General Motors · 2022 – now" },
@@ -37,7 +39,7 @@ function Card({ c }: { c: ClaimReport }) {
   // when one run measured every figure on the card, say so once, under them all
   const oneRun = c.figures.length > 1 && c.figures.every((f) => f.source === "ci" && f.runUrl === c.figures[0]!.runUrl);
   return (
-    <li className={running ? s.running : s.coming}>
+    <li id={c.id} className={running ? s.running : s.coming}>
       <p className={s.no}>
         <span>Exhibit {String(c.exhibit).padStart(2, "0")}</span>
         <span className={s.status}>{running ? "Running" : "Coming"}</span>
@@ -48,6 +50,7 @@ function Card({ c }: { c: ClaimReport }) {
       </blockquote>
       <p className={s.here}>{running ? "Here, running:" : "Here, next:"}</p>
       <p className={s.twin}>{c.twin}</p>
+      <ExhibitVisual v={c.visual} />
       {c.figures.length > 0 && (
         <dl className={s.figures}>
           {c.figures.map((f) => (
@@ -61,6 +64,8 @@ function Card({ c }: { c: ClaimReport }) {
         </dl>
       )}
       {oneRun && <p className={s.measured}><Measured f={c.figures[0]!} lead="All measured" /></p>}
+      {/* the load test as the model shows it: the dining room at the run's peak */}
+      {c.id === "performance" && <LoadTest />}
       {c.code.length > 0 && (
         <ul className={s.code}>
           {c.code.map((x) => (
@@ -82,10 +87,10 @@ export default async function Office() {
   return (
     <main>
       <div className="wall-band">
-        <p className="cond">The back office · {running} of {e.claims.length} running</p>
+        <p className="cond">How it&rsquo;s built · {running} of {e.claims.length} running</p>
       </div>
       <section className={s.head}>
-        <h1 className={`script ${s.title}`}>The back office</h1>
+        <h1 className={`script ${s.title}`}>How it&rsquo;s built</h1>
         <p className={s.lede}>
           Each line of the résumé from General Motors, beside the small version of it that runs here. A figure on this
           page is either counted as you load it or posted by the CI run that measured it, linked, so none of it is typed

@@ -6,7 +6,9 @@
   color: var(--cream);
 }
 .head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 56px; align-items: end; }
-.title { font-size: clamp(60px, 7vw, 104px); line-height: 1; }
+/* balanced, so a phone breaks it "The numbers, / so far" rather than leaving "far" alone with its
+   swash f hanging into the gutter (ship-day panel, two of four) */
+.title { font-size: clamp(60px, 7vw, 104px); line-height: 1; text-wrap: balance; }
 .sub { color: #F5EAD0BB; max-width: 56ch; margin-top: 10px; }
 
 /* the lead figures hang from a steel rail like checks */

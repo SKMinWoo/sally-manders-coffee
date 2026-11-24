@@ -13,6 +13,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export const menuGroup = pgEnum("menu_group", ["bar", "brewed", "not-coffee", "food"]);
@@ -74,6 +75,11 @@ export const simDays = pgTable("sim_days", {
   day: date({ mode: "string" }).primaryKey(),
   seed: bigint({ mode: "number" }).notNull(),
   orders: integer().notNull(),
+  /**
+   * The levers the day was simulated with (server/simulator/levers.ts), sorted; null for a day
+   * simulated the original way, before the board, or with none in effect.
+   */
+  levers: jsonb().$type<string[]>(),
   writtenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -116,3 +122,55 @@ export const briefs = pgTable("briefs", {
   guarded: boolean().notNull().default(false),
   writtenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
 }, (t) => [check("briefs_writer_named", sql`length(${t.writer}) > 0`)]);
+
+export const callKind = pgEnum("call_kind", ["customer", "manager"]);
+
+/**
+ * The morning calls (server/board): a regular on yesterday, then the manager's reply, one of each
+ * per Austin day. Like a brief, the body holds {key} where each figure goes, stored beside it.
+ */
+export const calls = pgTable("calls", {
+  day: date({ mode: "string" }).notNull(),
+  kind: callKind().notNull(),
+  /** who spoke: the regular's id, or "manager" */
+  speaker: text().notNull(),
+  body: text().notNull(),
+  figures: jsonb().notNull(),
+  /** what came with it: the regular's topic and mood, the manager's decision and the reason a decision was turned down */
+  payload: jsonb().notNull(),
+  writer: text().notNull(),
+  refused: text(),
+  guarded: boolean().notNull().default(false),
+  writtenAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+}, (t) => [primaryKey({ columns: [t.day, t.kind] }), check("calls_writer_named", sql`length(${t.writer}) > 0`)]);
+
+export const experimentStatus = pgEnum("experiment_status", ["live", "measured"]);
+export const experimentVerdict = pgEnum("experiment_verdict", ["kept", "rolled-back"]);
+
+/**
+ * The work: each change the manager tried, one at a time. It runs from startsOn for a week (to
+ * endsOn), then code measures it against the same week replayed without it and keeps it or takes
+ * it back. `until` is the last day a rolled-back change was still in, since a day or two are
+ * always written ahead of the verdict.
+ */
+export const experiments = pgTable("experiments", {
+  id: bigint({ mode: "number" }).primaryKey().generatedAlwaysAsIdentity(),
+  lever: text().notNull(),
+  /** the regular's topic the manager was answering */
+  heard: text().notNull(),
+  proposedOn: date({ mode: "string" }).notNull(),
+  startsOn: date({ mode: "string" }).notNull(),
+  endsOn: date({ mode: "string" }).notNull(),
+  status: experimentStatus().notNull().default("live"),
+  verdict: experimentVerdict(),
+  until: date({ mode: "string" }),
+  /** the measured effect, in the shape server/board/measure.ts gives it */
+  effect: jsonb(),
+  measuredOn: date({ mode: "string" }),
+}, (t) => [
+  // one change at a time: at most one row can be live
+  uniqueIndex("experiments_one_live").on(t.status).where(sql`${t.status} = 'live'`),
+  index("experiments_lever").on(t.lever),
+  check("experiments_week", sql`${t.endsOn} >= ${t.startsOn}`),
+  check("experiments_measured", sql`(${t.status} = 'live') = (${t.verdict} is null)`),
+]);

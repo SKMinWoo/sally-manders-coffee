@@ -1,6 +1,6 @@
 // The domain boundaries, as a lint rule (docs/decisions/0004-domain-modules.md).
 //
-// The server is six modules. Each is a folder under server/ with one public entry, its index.ts,
+// The server is seven modules. Each is a folder under server/ with one public entry, its index.ts,
 // and may use only the modules listed for it below, so the dependencies run one way and can't
 // form a cycle. Under them is a shared kernel (lib/ and server/platform/) that anything may use
 // and that uses no module. Around them are the edges, where the modules meet the outside world:
@@ -20,6 +20,7 @@ export const MODULES = {
   reporting: ["menu", "orders"],
   brief: ["reporting"],
   office: ["orders", "reporting", "brief"],
+  board: ["menu", "simulator", "reporting", "brief"],
 };
 
 /** The shared kernel: anything may use it, and it uses no module. */

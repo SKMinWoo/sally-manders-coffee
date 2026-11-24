@@ -14,6 +14,35 @@
   --pen: #1F3B8A; /* the server's ballpoint */
   --frame: #6B4A2E; /* the menu board's wooden frame */
   --gutter: clamp(18px, 4vw, 56px);
+  --brass: #C9A15A; /* the pins on the model */
+  --glow: #FFC979; /* lamplight, round the room a plate is about */
+  --night: #14110F; /* the shop after dark, behind the scenes */
+}
+
+/* arriving from the Study (or moving between pages), the browser morphs what it can; the opt-in
+   itself is inline in layout.tsx, so it never misses the first frame */
+/* the Study's photo lands on the model, easing in to rest where the push-in left off at speed */
+::view-transition-group(sally) { animation-duration: .7s; animation-timing-function: cubic-bezier(.15, .6, .25, 1); }
+/* the cut-out and the model's first frame are one file (hero-closed.webp), so nothing should change
+   but size and place. A half-and-half cross-fade would still thin the shadow's soft edge, and the
+   model's image may be decoding as the flight starts, so the cut-out flies on top, opaque, with the
+   model solid beneath it, and lets go only near the end, onto the same picture */
+::view-transition-old(sally), ::view-transition-new(sally) { mix-blend-mode: normal; }
+::view-transition-old(sally) { z-index: 1; animation: sally-letgo .7s both; }
+::view-transition-new(sally) { animation: none; }
+@keyframes sally-letgo { 0%, 60% { opacity: 1; } 100% { opacity: 0; } }
+/* and it lands: carried a touch above the page in flight, it comes down onto its base, gives the
+   smallest amount as it takes its weight, and settles, a quarter second after the flight ends.
+   Then the roof comes off (Model.tsx waits for this transition to finish) */
+::view-transition-image-pair(sally) { transform-origin: 50% 88%; animation: sally-land .95s cubic-bezier(.3, .55, .35, 1) both; }
+@keyframes sally-land {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.016); }
+  74% { transform: scale(.996); }
+  100% { transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-image-pair(sally) { animation: none; }
 }
 
 *, *::before, *::after { box-sizing: border-box; }

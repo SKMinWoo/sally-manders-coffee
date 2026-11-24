@@ -17,10 +17,18 @@ const csp = [
   "object-src 'none'",
 ].join("; ");
 
+// Unset everywhere but one dev setup: the portfolio's dev server proxies the shop at /shop, so the
+// Study can zoom into it on one origin (a view transition can't cross origins).
+const base = process.env.SHOP_BASE_PATH || "";
+
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  basePath: base || undefined,
+  env: { NEXT_PUBLIC_SHOP_BASE: base }, // for the few fetches that build their own URLs
   // PGlite loads its WebAssembly from beside its own files, so it runs from node_modules unbundled.
   serverExternalPackages: ["@electric-sql/pglite"],
+  // the home page's model renders ask for 90 (components/front/Model.tsx); everything else keeps 75
+  images: { qualities: [75, 90] },
   async headers() {
     return [
       {

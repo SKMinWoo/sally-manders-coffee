@@ -1,0 +1,60 @@
+Alex Kim 
+Full-Stack Software Engineer · Cloud & Platform · DevSecOps · Performance & Test Automation 
+Austin, TX | linkedin.com/in/alex-minwoo-kim | github.com/SKMinWoo | alex-minwoo-kim.vercel.app 
+SUMMARY 
+Full-stack software engineer with 7+ years at General Motors, rising from SDET to owning manufacturing platforms used in 30+ plants by 
+2,000+ daily users. Builds Java/Spring Boot and C#/.NET microservices with React and Angular front ends, and ships them on Kubernetes 
+(AKS) through GitOps CI/CD. Test-first on performance, supply-chain security, and AI-assisted engineering; mentors junior engineers. 
+SKILLS 
+Languages: Java, C#, TypeScript, JavaScript, Python, PowerShell, SQL, GraphQL, HTML5/CSS3 
+Frameworks: Spring Boot, Hibernate/JPA, ASP.NET Core, EF Core, React, Redux, Angular, Next.js, REST APIs 
+Cloud & Platform: Azure (AKS, Entra ID), AWS (S3), Kubernetes, OpenShift, PCF, Docker, Helm, Argo CD (GitOps), Linux, Windows 
+CI/CD & DevSecOps: GitHub Actions, Azure DevOps, Jenkins, SonarQube, CodeQL, Dependabot, Wiz, Chainguard, Vault, Artifactory 
+Data & Messaging: PostgreSQL, SQL Server, MySQL, Redis, Kafka, Databricks, Neon 
+Testing & Observability: Playwright, Selenium, JMeter, JUnit, Mockito, TestNG, xUnit, Moq, Jest, Datadog, Grafana, OpenTelemetry 
+AI Engineering: LLM agents, Agentic workflows, Databricks AI Gateway, Gemini API, Claude Code, Cursor, GitHub Copilot 
+Practices: Scrum, TDD, BDD, Blue/Green, Canary and Big Bang deployments, OAuth 2/JWT, web accessibility 
+EXPERIENCE 
+General Motors Austin, TX 
+Full Stack Software Engineer Apr 2022 – Present 
+Equipment & plant-configuration platform, 2024 – Present | Java/Spring Boot, Kafka, React/TypeScript, PostgreSQL, Azure 
+• Self-service tools: Architected full-stack equipment management (React/TypeScript, Spring Boot REST APIs, PostgreSQL) with bulk edit 
+and Excel import/export, replacing IT-run data requests; users make ~3,150 edits/month with these tools across 30 plants. 
+• Scale & data integrity: JDBC batch writes (50% fewer DB round trips), composite indexes on 600K-row tables, a batched API replacing 
+460 parallel calls, and server-side Excel for 20K+ row workbooks with no-op change detection. 
+• Performance: Implemented a nightly JMeter suite (~26K requests/run, 58 SLA transactions) and built Datadog dashboards whose 
+findings cut p95 latency across services, by up to 42% on some endpoints. 
+• Self-healing tests: Led and built a self-healing perf dashboard (100+ tests, nightly since Nov 2026); built a Playwright suite (50+ tests) 
+that restored UI regression after nearly a year; caught 4 bugs; AI workflows heal tests, A/B tested on branches before merge. 
+• Cloud migration: Drove the move of 15+ microservices and an AI agent from OpenShift to Azure Kubernetes Service with Helm and 
+Argo CD GitOps; built 5 reusable GitHub Actions workflows (43 PRs, 7 repos). 
+• DevSecOps: Led supply-chain hardening across 15 repos (44 PRs): Chainguard images for 11 services, critical Wiz CVEs, 34+ 
+Dependabot alerts, CodeQL; restored CI for 13 repos same day via keyless JFrog OIDC; held >80% test coverage. 
+• AI/LLM: Built a production LLM chatbot assistant on GPT via Databricks AI Gateway with Entra ID auth; built an AI test agent in GitHub 
+Actions that writes Playwright E2E tests from Jira acceptance criteria, and Glean agents that automate sprint reporting. 
+• Leadership: Run UAT meetings to set requirements and assign tasks; mentor junior engineers; led team AI adoption; 480+ PRs since 
+2025, 347 code reviews in 2026; #1 contributor to the main UI repo; Business Impact Summary 6 months straight. 
+Plant-floor quality & change-management apps, 2022 – 2024 | C#/.NET, Angular, SQL Server, Azure DevOps 
+• Modernization: Led re-platforming of 4 app instances from Pivotal Cloud Foundry (PCF) to Kubernetes (containerized .NET, 21 Azure 
+DevOps pipelines); co-led re-architecture of a legacy workflow system into 12-Factor microservices. 
+• Full-stack delivery: #1 contributor on 2 apps (45K+ lines in 12 months): shipped 8+ large features, built APIs with xUnit/Moq tests, 
+handled regular Angular version upgrades, and resolved 18 production defects. 
+Software Development Engineer in Test (SDET) Sep 2019 – Apr 2022 
+Supply-chain & quality systems (warehouse, part-presentation, plant-floor apps) | C#, Selenium, Jenkins, Azure DevOps, SQL 
+• Test automation: Engineered 100+ automated UI tests in C#/Selenium and wired them into Jenkins CI jobs mapped to TFS test cases, 
+turning manual regression into unattended automated runs. 
+• Test strategy: Built and owned a 300+ case Azure DevOps test suite (automated and manual, plus SQL and XML message validation) for 
+Manhattan WMS rollouts to plants in 3 countries. 
+• Efficiency: Automated AIAG 2D-barcode validation, saving 2+ days of tester time per regression cycle; regression baselines cut release 
+verification 35%; ran monthly patch testing for zero-downtime releases. 
+PROJECTS 
+Sally Mander's: simulated 24/7 coffee shop 2026 
+sally-manders-coffee.vercel.app | Next.js, TypeScript, Neon Postgres, Drizzle, Vercel, Playwright, Gemini API 
+• Product: Public companion app where each resume claim has a working twin: order-ahead storefront, back office with live CI figures, 
+streamed .xlsx exports with no-op detection, and a Gemini-drafted manager's brief whose guard rejects any model-written number. 
+• Release gate: GitHub Actions gates every merge on signature and audit checks, CodeQL, types, lint, unit/API tests, and Playwright on 
+desktop and phone with screenshot baselines; tests decode each receipt's Code 128 barcode from a screenshot. 
+• In progress (branches): JMeter load test in CI through Neon's HTTP proxy; zero-downtime deploy pipeline with expand-only migrations 
+and live uptime probing; Kubernetes (kind) deployment synced by Argo CD from a Helm chart. 
+EDUCATION 
+University of Utah: M.S. (Dec 2019) and B.S. (Dec 2018), Information Systems Salt Lake City, UT 

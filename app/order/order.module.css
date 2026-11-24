@@ -38,3 +38,7 @@
 .up { font: 400 clamp(44px, 8vw, 76px)/1 var(--font-script), cursive; color: var(--teal); }
 .label { font: 700 15px/1 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; }
 .again { font: 700 18px/1 var(--font-cond), sans-serif; letter-spacing: .08em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 4px; }
+/* the ways on from a placed order: see it arrive on the model, order again, or go back to the shop */
+.ways { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 10px 26px; font: 600 14px/1.2 var(--font-cond), sans-serif; letter-spacing: .1em; text-transform: uppercase; }
+.ways a { text-underline-offset: 4px; }
+.ways a.again { font-size: 18px; color: var(--red); }
