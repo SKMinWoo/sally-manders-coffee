@@ -92,13 +92,20 @@ export function Model({
     // a beat so the landing reads as its own moment; otherwise a beat to see the shop with its roof
     // on, then up it comes. Either way only once the page is revealed: page.tsx's ARRIVE script
     // catches that before React is here, and a page the Study pre-loaded mounts long before it.
+    // And only once the pictures it uncovers are in: on a cold load over a phone's connection the roof
+    // came up off an empty stage for half a second (2026-11-24). If one never arrives, the roof stays on.
     let id: ReturnType<typeof setTimeout> | undefined;
     let gone = false;
     const up = (after: number) => {
       if (!gone) id = setTimeout(() => setRoof("lifting"), after);
     };
+    const uncovered = [...document.querySelectorAll<HTMLImageElement>("#sally-model img[data-uncovered]")];
+    // by its load event: a decode() started while the image is still settling can reject
+    const inPicture = (img: HTMLImageElement) =>
+      img.complete && img.naturalWidth ? undefined : new Promise((go) => img.addEventListener("load", go, { once: true }));
+    const pictured = Promise.all(uncovered.map(inPicture));
     const arrival = (window as { __sallyArrival?: Promise<"landed" | "plain"> }).__sallyArrival ?? Promise.resolve("plain");
-    void arrival.then((how) => up(how === "landed" ? 300 : 700));
+    void Promise.all([arrival, pictured]).then(([how]) => up(how === "landed" ? 300 : 700), () => {});
     return () => {
       gone = true;
       clearTimeout(id);
@@ -123,7 +130,7 @@ export function Model({
       <div className={s.stage} data-roof={roofState} style={{ viewTransitionName: "sally" }}>
         <div className={s.lens}>
           <div className={s.film}>
-            <Image className={s.beauty} src={beauty} alt="A painted-wood model of Sally Mander's with the roof lifted off, standing on the page under a reading lamp: the café with its teal counter, two baristas in red aprons and caps, and menu boards on the right, a dining room with tables and pantry shelving in the middle, the back office on the left, and a toy van at the kerb." sizes={SIZES} quality={QUALITY} priority />
+            <Image data-uncovered="" className={s.beauty} src={beauty} alt="A painted-wood model of Sally Mander's with the roof lifted off, standing on the page under a reading lamp: the café with its teal counter, two baristas in red aprons and caps, and menu boards on the right, a dining room with tables and pantry shelving in the middle, the back office on the left, and a toy van at the kerb." sizes={SIZES} quality={QUALITY} priority />
             {/* the lamp goes off for "How it's built": the set lit only by its own bulbs and the street lamp */}
             <Image className={s.dark} src={dark} alt="" sizes={SIZES} quality={QUALITY} />
             <GuestsLayer world={meta.world} occluders={meta.occluders} state={footfall} width={W} height={H} peg={meta.peg} />
@@ -131,6 +138,7 @@ export function Model({
         </div>
         {roofState !== "off" && (
           <Image
+            data-uncovered=""
             className={`${s.roof} ${roofState === "lifting" ? s.lifting : ""}`}
             src={roof}
             alt=""
