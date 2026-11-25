@@ -1,9 +1,9 @@
-// The storefront, the switch between the two views, and every page on a phone.
+// The shop's home page, the header's four parts, and every page on a phone.
 
 import { taxCents } from "@/lib/money";
 import { cents, expect, expectNoSidewaysScroll, test } from "./fixtures";
 
-const PAGES = ["/", "/order", "/behind", "/docs", "/office", "/office/twelve-factor"];
+const PAGES = ["/", "/order", "/behind", "/board", "/docs", "/office", "/office/twelve-factor"];
 
 test("the board shows the whole menu, in its four sections, with prices", async ({ page }) => {
   await page.goto("/");
@@ -26,7 +26,7 @@ test("the example check on the storefront adds up", async ({ page }) => {
   expect(await amount(3), "total").toBe(subtotal + taxCents(subtotal));
 });
 
-test("“Order ahead” opens the order page, from the wall sign and from the rail", async ({ page }) => {
+test("“Order ahead” opens the order page, from the first act and the check", async ({ page }) => {
   await page.goto("/");
   const links = page.getByRole("link", { name: "Order ahead" });
   await expect(links).toHaveCount(2);
@@ -36,16 +36,62 @@ test("“Order ahead” opens the order page, from the wall sign and from the ra
   await expect(page.getByRole("heading", { name: "Pick from the board" })).toBeVisible();
 });
 
-test("the switch moves between the storefront and behind the scenes, and says where you are", async ({ page }) => {
+test("the model: no beads in the first two acts, thirteen in the third, and each one's card links to its proof", async ({ page, isMobile }) => {
   await page.goto("/");
-  const view = page.getByRole("navigation", { name: "View" });
-  await expect(view.getByRole("link", { name: "Storefront" })).toHaveAttribute("aria-current", "page");
+  const model = page.getByRole("region", { name: "The model" });
+  await expect(model.locator("button[data-key]")).toHaveCount(0);
 
-  await view.getByRole("link", { name: "Behind the scenes" }).click();
+  // wide, the tab brings the act; on a phone the acts are sections under the stuck model
+  if (isMobile) await page.locator('[data-act="2"]').scrollIntoViewIfNeeded();
+  else await page.getByRole("navigation", { name: "The shop in three parts" }).getByRole("button", { name: /How it’s built/ }).click();
+  await expect(model.locator("button[data-key]")).toHaveCount(13);
+  // a first visit lifts the roof (a beat, then 1.6s), and the beads take no pointer until it's off
+  await expect(model.locator('[data-roof="off"]')).toHaveCount(1);
+
+  // a part's line in the list and its bead light together
+  const line = model.locator('[data-act="2"] button', { hasText: "Brief" });
+  await line.hover();
+  await expect(model.locator('button[data-key="desk"]')).toHaveAttribute("data-hot", "");
+
+  // tapped where it stands, as a person would: Playwright's own scroll-into-view would take the stuck
+  // model back to its place in the page, and the page back to the first act, before clicking
+  const bead = (await model.locator('button[data-key="desk"]').boundingBox())!;
+  const [x, y] = [bead.x + bead.width / 2, bead.y + bead.height / 2];
+  if (isMobile) await page.touchscreen.tap(x, y);
+  else await page.mouse.click(x, y);
+  await expect(model.getByRole("link", { name: "The proof" })).toHaveAttribute("href", "/office#ai-adoption");
+  await expect(model.getByRole("dialog")).toBeVisible();
+  if (!isMobile) {
+    // wide, the card takes the act's place above the model, so it never covers the set
+    const [cardBottom, setTop] = await page.evaluate(() => [
+      document.querySelector('[role="dialog"]')!.getBoundingClientRect().bottom,
+      document.querySelector("#sally-model img")!.getBoundingClientRect().top,
+    ]);
+    expect(cardBottom).toBeLessThanOrEqual(setTop);
+  }
+  await page.keyboard.press("Escape");
+  await expect(model.getByRole("link", { name: "The proof" })).toHaveCount(0);
+
+  // the clock runs here, so the caption counts the quarter hour (visual.spec.ts covers it stopped)
+  await expect(model).toContainText(/\d+ orders? in the last 15 min/);
+});
+
+test("the header names the four parts, says which one you're in, and leads back to the résumé", async ({ page }) => {
+  await page.goto("/");
+  const parts = page.getByRole("navigation", { name: "Sections" });
+  await expect(parts.getByRole("link")).toHaveCount(4);
+  await expect(parts.getByRole("link", { name: /The shop/ })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: /Back to the résumé/ })).toHaveAttribute("href", /^https:\/\/.+\.vercel\.app/);
+
+  await parts.getByRole("link", { name: /The numbers/ }).click();
   await expect(page).toHaveURL(/\/behind$/);
-  await expect(page.getByRole("heading", { name: "The rail, so far" })).toBeVisible();
-  await expect(view.getByRole("link", { name: "Behind the scenes" })).toHaveAttribute("aria-current", "page");
-  await expect(view.getByRole("link", { name: "Storefront" })).not.toHaveAttribute("aria-current", /./);
+  await expect(parts.getByRole("link", { name: /The numbers/ })).toHaveAttribute("aria-current", "page");
+  await expect(parts.getByRole("link", { name: /The shop/ })).not.toHaveAttribute("aria-current", /./);
+
+  await parts.getByRole("link", { name: /How it’s built/ }).click();
+  await expect(page).toHaveURL(/\/office$/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("How it’s built");
+  await expect(parts.getByRole("link", { name: /How it’s built/ })).toHaveAttribute("aria-current", "page");
 
   await page.getByRole("link", { name: "Sally Mander’s" }).click();
   await expect(page).toHaveURL(/\/$/);

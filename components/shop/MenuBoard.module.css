@@ -46,6 +46,22 @@
   letter-spacing: .04em;
 }
 
+/* the drawer beside the model: the same board, one column, lettered small enough to read at arm's length */
+.compact { padding: 0; }
+/* the drawer's own heading already says what this is: the board's title stays for screen readers only */
+.compact .title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.compact .board { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 18px 18px 14px; border-radius: 8px; box-shadow: 0 0 0 6px var(--frame); }
+.compact .bar { grid-row: auto; }
+.compact .food { grid-column: auto; }
+.compact .food ul { columns: 1; }
+.compact h3 { font-size: 20px; border-bottom-width: 2px; padding-bottom: 4px; margin-bottom: 6px; }
+.compact .item { padding: 4px 8px; }
+.compact .item > b { font-size: 18px; }
+.compact .price { font-size: 17px; }
+.compact .item > small { font-size: 13px; }
+.compact .house .item > b { font-size: 25px; }
+.compact .count { font-size: 13px; bottom: -2px; }
+
 @media (max-width: 860px) {
   .board { grid-template-columns: minmax(0, 1fr); }
   .bar { grid-row: auto; }

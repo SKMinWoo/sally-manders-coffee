@@ -1,0 +1,185 @@
+/* The work: the board hangs on the pass, like the checks on The numbers, and the calls are notes
+   on the floor below. Same column, same rail, same check paper, so it reads as the same shop. */
+
+.pass {
+  padding: 44px max(var(--gutter), calc((100% - 1120px) / 2)) 64px;
+  background: radial-gradient(ellipse 60% 55% at 50% 78%, #EDB23016, transparent 70%), var(--black);
+  color: var(--cream);
+}
+.head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 56px; align-items: end; }
+.title { font-size: clamp(60px, 7vw, 104px); line-height: 1; }
+.sub { color: #F5EAD0BB; max-width: 60ch; margin-top: 10px; }
+
+.ledger { display: grid; gap: 14px; padding-left: 28px; border-left: 1px solid #F5EAD033; }
+.ledger > div { display: flex; justify-content: space-between; align-items: baseline; gap: 32px; }
+.ledger dt { font: 700 12px/1 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #F5EAD0AA; }
+.ledger dd { font: 700 26px/1.3 var(--font-cond), sans-serif; color: var(--mustard); font-variant-numeric: tabular-nums; }
+
+/* four columns hung from one rail; each column's checks clip on where it meets the rail */
+.rail { margin: 44px 0 -6px; position: relative; z-index: 1; }
+.columns { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 2vw, 26px); padding: 0 clamp(0px, 1vw, 12px); align-items: start; }
+.column { display: grid; gap: 16px; }
+/* each column's name is printed at the head of its first check, where a guest check has its table box */
+.colTitle {
+  margin: -4px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--rule);
+  font: 700 13px/1 var(--font-cond), sans-serif;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--check-ink);
+}
+.check {
+  background: var(--check);
+  color: var(--check-ink);
+  border-radius: 0 0 3px 3px;
+  padding: 20px 18px 16px;
+  box-shadow: 0 18px 28px -14px #000A;
+  border-top: 2px solid var(--rule);
+  position: relative;
+  /* guest-check rules, faint, every line */
+  background-image: repeating-linear-gradient(transparent 0 25px, #6E9A7A1F 25px 26px);
+}
+.column > .check:first-of-type::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  translate: -50% 0;
+  width: 46px;
+  height: 18px;
+  border-radius: 3px 3px 5px 5px;
+  background: linear-gradient(#E9C46A, #B8862B);
+  box-shadow: inset 0 -2px 0 #0003, 0 2px 3px #0006;
+}
+/* hung from the clip, so a check only turns about where it's held: a hair, alternating, not a scatter */
+.column > .check { transform-origin: 50% 0; }
+.column:nth-child(odd) > .check:first-of-type { rotate: -.35deg; }
+.column:nth-child(even) > .check:first-of-type { rotate: .35deg; }
+.column > .check + .check { rotate: -.2deg; }
+
+.empty { font: 400 19px/1.3 var(--font-script), cursive; color: var(--pen); }
+.when + .empty { margin-top: 10px; }
+.listHead { margin-top: 16px; padding-top: 10px; border-top: 1px dashed #6E9A7A88; font: 700 11px/1 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #26412FAA; }
+/* what could be chosen next, each a line on the check with a box left to tick */
+.open { display: grid; margin-top: 4px; }
+.open li { display: flex; align-items: center; gap: 10px; min-height: 26px; font: 600 16px/1.2 var(--font-cond), sans-serif; }
+.open li::before { content: ""; flex: none; width: 11px; height: 11px; border: 1.5px solid var(--rule); border-radius: 2px; }
+.colFoot { margin-top: 14px; padding-top: 8px; border-top: 1px dashed #6E9A7A88; font: 700 11px/1 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #26412FAA; }
+
+.heard { display: grid; gap: 12px; }
+.heard li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; align-items: center; }
+.topic { font: 600 17px/1.2 var(--font-cond), sans-serif; }
+/* a tally: one pen stroke a call */
+.times { display: flex; gap: 3px; justify-self: end; }
+.times i { width: 3px; height: 15px; border-radius: 2px; background: var(--pen); rotate: 8deg; }
+.lastHeard { grid-column: 1 / -1; font: 400 16px/1.2 var(--font-script), cursive; color: var(--pen); }
+
+.when { font: 700 13px/1 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--red); }
+.days { display: flex; gap: 4px; margin: 10px 0 2px; }
+.days i { flex: 1; height: 8px; border-radius: 2px; border: 1.5px solid var(--rule); }
+.days .dayDone { background: var(--teal); border-color: var(--teal); }
+.cardName { margin: 10px 0 6px; font: 800 21px/1.1 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; text-wrap: balance; }
+.cardWhat { font-size: 15px; line-height: 1.4; }
+.cardWhy { margin-top: 8px; font-size: 14px; line-height: 1.4; color: #26412FCC; }
+.cardWhy b { font-weight: 600; }
+
+.effect { display: grid; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #6E9A7A88; }
+.effect dt { font: 700 11px/1 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #26412FAA; }
+.effect dd { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 10px; margin-top: 3px; font: 700 17px/1.2 var(--font-cond), sans-serif; font-variant-numeric: tabular-nums; }
+.effect dd span { font: 400 18px/1.1 var(--font-script), cursive; color: var(--pen); }
+
+/* the verdict, stamped in the corner the way a check is marked paid */
+.stamp {
+  position: absolute;
+  top: 14px;
+  right: 12px;
+  rotate: -7deg;
+  padding: 4px 8px 3px;
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  font: 800 13px/1 var(--font-block), sans-serif;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  opacity: .9;
+}
+.kept { color: var(--teal); }
+.back { color: var(--red); }
+
+/* the floor: the calls and the record, on cream */
+.floor { padding: 56px var(--gutter) 72px; max-width: calc(1120px + 2 * var(--gutter)); margin: 0 auto; display: grid; gap: 56px; }
+.h2 { font: 800 28px/1 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 18px; }
+
+/* the call and its reply side by side, level, the same height: a pair, not a scatter */
+.calls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; align-items: stretch; }
+.note {
+  margin: 0;
+  background: var(--check);
+  color: var(--check-ink);
+  padding: 20px 24px 16px;
+  border-top: 2px solid var(--rule);
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 14px 24px -14px #0006;
+}
+.guest { rotate: -.3deg; }
+.manager { rotate: .3deg; }
+.sharedBy { max-width: 70ch; margin-top: 16px; font-size: 14px; line-height: 1.45; color: #1A1613AA; }
+.noteHead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font: 700 13px/1.2 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--red); }
+.noteWho { letter-spacing: .02em; text-transform: none; font-weight: 600; color: #26412FAA; }
+.noteBody { margin: 12px 0 14px; font: 400 22px/1.4 var(--font-script), cursive; color: var(--pen); }
+.fig { color: inherit; font: 700 .82em/1 var(--font-cond), sans-serif; letter-spacing: .02em; text-decoration: underline 2px var(--rule); text-underline-offset: 4px; font-variant-numeric: tabular-nums; }
+.fig:hover, .fig:focus-visible { background: #6E9A7A26; }
+.noteBy { font-size: 14px; line-height: 1.45; color: #26412FCC; border-top: 1px dashed #6E9A7A88; padding-top: 10px; }
+
+/* the shop as it stands: a changelog, the date of each change the way the menu board dates a special */
+.standing { width: 100%; border-collapse: collapse; border-top: 2px solid var(--black); font-variant-numeric: tabular-nums; }
+.standing th, .standing td { padding: 14px 16px 14px 0; border-bottom: 1px solid #1A161333; text-align: left; vertical-align: baseline; }
+.standing thead th { padding-block: 10px; font: 700 11px/1 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #1A1613AA; }
+.standing tbody th { font: 800 22px/1.15 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; }
+.standing tbody td:nth-child(n + 3) { font: 400 22px/1.1 var(--font-script), cursive; color: var(--pen); white-space: nowrap; }
+.standing td.since { width: 8.5em; }
+/* why it's there at all: the call it answered, in pen under its name */
+.why { display: block; margin-top: 6px; font: 400 19px/1.25 var(--font-script), cursive; color: var(--pen); }
+.since { font: 700 13px/1.6 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+
+.log { display: grid; border-top: 2px solid var(--black); }
+.log details { border-bottom: 1px solid #1A161333; }
+.log summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; padding: 12px 0; cursor: pointer; font: 600 17px/1.3 var(--font-cond), sans-serif; list-style-position: inside; }
+.log summary .since { min-width: 8.5em; }
+.decided { margin-left: auto; font: 400 18px/1 var(--font-script), cursive; color: var(--pen); }
+.logCalls { padding: 8px 0 28px; }
+.log .note { rotate: 0deg; }
+/* the rest of the four weeks, folded under one line */
+.older { border-bottom: 0 !important; }
+.older > summary { color: #1A1613AA; font: 700 12px/1 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; padding: 16px 0; }
+.older > summary::after { content: "↓"; letter-spacing: 0; }
+.older[open] > summary::after { content: "↑"; }
+.older > summary:hover { color: var(--red); }
+.older > details:last-child { border-bottom: 0; }
+.teaser { margin-top: 18px; }
+.teaser a { color: var(--mustard); font: 400 21px/1.3 var(--font-script), cursive; text-decoration: underline 1px #EDB23066; text-underline-offset: 5px; }
+.teaser a:hover, .teaser a:focus-visible { text-decoration-color: var(--mustard); }
+
+.source { max-width: 70ch; font-size: 15px; color: #1A1613CC; border-top: 1px solid #1A161333; padding-top: 18px; }
+
+@media (max-width: 960px) {
+  .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 56px; }
+}
+@media (max-width: 860px) {
+  .head { grid-template-columns: minmax(0, 1fr); }
+  .ledger { padding: 16px 0 0; border-left: 0; border-top: 1px solid #F5EAD033; }
+  .calls { grid-template-columns: minmax(0, 1fr); }
+  .note { rotate: 0deg; padding: 18px 18px 14px; }
+  .noteBody { font-size: 20px; }
+}
+@media (max-width: 600px) {
+  .columns { grid-template-columns: minmax(0, 1fr); row-gap: 52px; }
+  .column > .check { rotate: 0deg !important; }
+  /* a row a block: the date, the name, then the two figures under their labels */
+  .standing thead { display: none; }
+  .standing tbody tr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4px 16px; padding: 14px 0; border-bottom: 1px solid #1A161333; }
+  .standing th, .standing td { padding: 0; border: 0; }
+  .standing td.since, .standing tbody th { grid-column: 1 / -1; width: auto; }
+  .standing tbody td:nth-child(n + 3) { white-space: normal; }
+  .standing tbody td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 4px; font: 700 11px/1 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #1A1613AA; }
+}

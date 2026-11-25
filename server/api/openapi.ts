@@ -2,9 +2,9 @@
 // responses through. OpenAPI 3.1's schema dialect is JSON Schema 2020-12, zod 4's default.
 
 import { z } from "zod";
-import { Brief, BriefFigure, Chart, Claim, DayHours, DayItems, DaySummary, Engineering, Figure, Health, HourCount, ItemSold, Menu, MenuItem, Problem } from "./schemas";
+import { Board, BoardArm, BoardCall, BoardCard, Brief, BriefFigure, Chart, Claim, DayHours, DayItems, DaySummary, Engineering, Figure, Footfall, Guest, Health, HourCount, ItemSold, Menu, MenuItem, Problem } from "./schemas";
 
-const SCHEMAS = { Health, MenuItem, Menu, DaySummary, HourCount, DayHours, ItemSold, DayItems, BriefFigure, Brief, Figure, Chart, Claim, Engineering, Problem };
+const SCHEMAS = { Health, MenuItem, Menu, DaySummary, HourCount, DayHours, ItemSold, DayItems, Guest, Footfall, BriefFigure, Brief, BoardCall, BoardArm, BoardCard, Board, Figure, Chart, Claim, Engineering, Problem };
 
 function components() {
   const registry = z.registry<{ id: string }>();
@@ -55,6 +55,17 @@ export function openApiDocument() {
       "/days/{date}/items": {
         get: { summary: "Items sold, most first, so far", description: SO_FAR, parameters: [dateParam], responses: { "200": json("DayItems", "Items"), ...dayErrors } },
       },
+      "/footfall": {
+        get: {
+          summary: "Guests through the door in the last quarter hour",
+          description:
+            "Each order placed after since and up to now, as a guest: when they ordered, when the cup was up, and how many items. Nothing identifies an order or a visitor. Poll with the last asOf as since to get only what's new. Never cached.",
+          parameters: [
+            { name: "since", in: "query", required: false, description: "An ISO 8601 instant; clamped to the last 15 minutes (the default)", schema: { type: "string", format: "date-time" } },
+          ],
+          responses: { "200": json("Footfall", "The guests, oldest first"), "400": problem("since isn't a time") },
+        },
+      },
       "/exports/sales": {
         get: {
           summary: "Every order line over a span of Austin days, as an Excel workbook",
@@ -78,6 +89,14 @@ export function openApiDocument() {
           description:
             "A few sentences written each morning by a model, or by a template when no model is set up or its draft was turned back. The writer puts {key} where a figure goes and the figures are filled in from the database, so no number in the brief is the writer's own: a draft that writes one is turned back by the guard.",
           responses: { "200": json("Brief", "The brief, and every figure it uses with its source"), "404": problem("No brief written yet") },
+        },
+      },
+      "/board": {
+        get: {
+          summary: "The board: the morning calls, and the changes tried, measured and kept",
+          description:
+            "Each morning a regular (a character, from the simulator's figures for their hour) calls about the day before, and the manager answers and decides whether to try one change from a fixed list of the simulator's levers. A change runs a week and is then measured against the same week replayed without it, and kept or taken back by a rule in code, not by the model. Calls follow the brief's rule: no number in them is the writer's own.",
+          responses: { "200": json("Board", "The board as it stands, with the last fortnight of calls") },
         },
       },
       "/engineering": {
