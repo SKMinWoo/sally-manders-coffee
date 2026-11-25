@@ -47,6 +47,8 @@ export interface HourCount {
   hour: number;
   orders: number;
   salesCents: number;
+  /** the hour's typical wait (the median), placed to ready, in whole seconds */
+  waitP50Seconds: number;
 }
 
 export async function ordersByHour(db: Db, day: ShopDate, asOf: Date): Promise<HourCount[]> {
@@ -54,7 +56,12 @@ export async function ordersByHour(db: Db, day: ShopDate, asOf: Date): Promise<H
   // and "$1" and "$4" don't match. SHOP_TZ is a constant in the code, never input.
   const hour = sql<number>`extract(hour from ${orders.placedAt} at time zone ${sql.raw(`'${SHOP_TZ}'`)})::int`;
   return db
-    .select({ hour, orders: sql<number>`count(*)::int`, salesCents: sql<number>`sum(${orders.subtotalCents})::int` })
+    .select({
+      hour,
+      orders: sql<number>`count(*)::int`,
+      salesCents: sql<number>`sum(${orders.subtotalCents})::int`,
+      waitP50Seconds: sql<number>`round(percentile_cont(0.5) within group (order by ${waitSecs}))::int`,
+    })
     .from(orders)
     .where(and(eq(orders.day, day), placedBy(asOf)))
     .groupBy(hour)

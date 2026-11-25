@@ -33,7 +33,7 @@ export default defineConfig({
         ["list"],
         ["./scripts/ci/ui-test-facts.mjs", { outputFile: ".ci/ui-tests.json" }],
         ["./scripts/ci/barcode-facts.mjs", { outputFile: ".ci/barcodes.json" }],
-        ["./scripts/ci/baseline-facts.mjs", { outputFile: ".ci/baselines.json" }],
+        ["./scripts/ci/baseline-facts.mjs", { outputFile: ".ci/parts/baselines.json" }],
         ["html", { open: "never" }],
       ]
     : [["list"], ["./scripts/ci/barcode-facts.mjs", { outputFile: ".ci/barcodes.json" }]],

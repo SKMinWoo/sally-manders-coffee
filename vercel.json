@@ -4,6 +4,10 @@
     "deploymentEnabled": { "main": false }
   },
   "crons": [
-    { "path": "/api/cron/simulate", "schedule": "0 9 * * *" }
+    { "path": "/shop/api/cron/standup", "schedule": "30 8 * * *" },
+    { "path": "/shop/api/cron/simulate", "schedule": "0 9 * * *" }
+  ],
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/shop/api/:path*" }
   ]
 }

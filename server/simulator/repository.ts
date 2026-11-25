@@ -7,6 +7,7 @@ import type { ShopDate } from "@/lib/time";
 import type { Db } from "@/server/platform/db/client";
 import { orderLines, orders, simDays } from "@/server/platform/db/schema";
 import type { SimDay } from "./day";
+import { isLeverId, type LeverId } from "./levers";
 
 // Rows per insert: well under Postgres's 65,535 bind parameters, and small enough for one
 // HTTP request to Neon.
@@ -45,8 +46,14 @@ export async function writeSimDay(db: Db, day: SimDay): Promise<"written" | "alr
     );
   }
 
-  await db.insert(simDays).values({ day: day.date, seed: day.seed, orders: day.orders.length }).onConflictDoNothing();
+  await db.insert(simDays).values({ day: day.date, seed: day.seed, orders: day.orders.length, levers: day.levers ?? null }).onConflictDoNothing();
   return "written";
+}
+
+/** The levers a written day was simulated with: none for a day not written, or written without any. */
+export async function leversOn(db: Db, day: ShopDate): Promise<LeverId[]> {
+  const [r] = await db.select({ levers: simDays.levers }).from(simDays).where(eq(simDays.day, day));
+  return (r?.levers ?? []).filter(isLeverId);
 }
 
 /** Which of these days the simulator has already written. */

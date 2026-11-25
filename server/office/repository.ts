@@ -50,6 +50,17 @@ export async function deployCounts(db: Db): Promise<{ deploys: number; clean: nu
   return { deploys: row?.deploys ?? 0, clean: row?.clean ?? 0 };
 }
 
+/** The last `limit` runs' figures of one kind, oldest first: the trend a card draws as a sparkline. */
+export async function factHistory(db: Db, kind: FactKind, limit: number): Promise<{ value: unknown; recordedAt: Date }[]> {
+  const rows = await db
+    .select({ value: engineeringFacts.value, recordedAt: engineeringFacts.recordedAt })
+    .from(engineeringFacts)
+    .where(eq(engineeringFacts.kind, kind))
+    .orderBy(desc(engineeringFacts.recordedAt))
+    .limit(limit);
+  return rows.reverse();
+}
+
 /** Every order placed up to `asOf`, and how many of them visitors placed: the shop's running total. */
 export async function ordersToDate(db: Db, asOf: Date): Promise<{ orders: number; visitorOrders: number }> {
   const [all] = await db.select({ n: count() }).from(orders).where(placedBy(asOf));

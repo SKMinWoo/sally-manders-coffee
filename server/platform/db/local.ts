@@ -10,6 +10,7 @@ import { shopToday } from "@/lib/time";
 import { now } from "../clock";
 import { backfillDays, daysAhead, ensureDays } from "@/server/simulator";
 import { writeBrief } from "@/server/brief";
+import { leverPlan, rehearse, runStandup } from "@/server/board";
 import type { Db } from "./client";
 import * as schema from "./schema";
 
@@ -20,6 +21,8 @@ async function open(dir: string): Promise<Db> {
   const pg = drizzle({ client: new PGlite(dir), schema, casing: "snake_case" });
   await migrate(pg, { migrationsFolder: "./drizzle" });
   const db = pg as unknown as Db;
+  // a fresh database gets a fortnight of mornings first, so the board has a change measured and one being tried
+  await rehearse(db, now());
   // a week back, so week-over-week has something to compare, and a day more for yesterday's brief
   await ensureDays(db, backfillDays(8, now()));
   await writeBrief(db, now()); // yesterday's, from the template: a local database never calls the model
@@ -32,7 +35,8 @@ export async function localDb(dir: string): Promise<Db> {
   // a dev server left running past midnight in Austin: write the new day and the one after
   const today = shopToday(now());
   if (g.__sallySeeded !== today) {
-    await ensureDays(db, daysAhead(now()));
+    await runStandup(db, now()); // the templates: a local database never calls the model
+    await ensureDays(db, daysAhead(now()), leverPlan(db));
     await writeBrief(db, now());
     g.__sallySeeded = today;
   }

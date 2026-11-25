@@ -1,4 +1,4 @@
-import { and, asc, count, eq, gt, lte, type SQL } from "drizzle-orm";
+import { and, asc, count, eq, gt, lte, sum, type SQL } from "drizzle-orm";
 import type { ShopDate } from "@/lib/time";
 import type { Db } from "@/server/platform/db/client";
 import { menuItems, orderLines, orders } from "@/server/platform/db/schema";
@@ -21,6 +21,31 @@ export async function countOrders(db: Db, day: ShopDate, asOf: Date): Promise<nu
 export async function countPlacedBetween(db: Db, from: Date, asOf: Date): Promise<number> {
   const [row] = await db.select({ n: count() }).from(orders).where(and(gt(orders.placedAt, from), placedBy(asOf)));
   return row?.n ?? 0;
+}
+
+/** One guest through the front door: when they ordered, when the cup was up, and how much they carried. */
+export interface Footfall {
+  placedAt: Date;
+  readyAt: Date;
+  /** cups and plates on the order (the sum of its lines' quantities) */
+  items: number;
+  source: "sim" | "visitor";
+}
+
+/**
+ * Orders placed after `from` and up to `asOf`, oldest first, with no ids, lines or visitor hash:
+ * the guests the home page walks across the model. Nothing past `asOf` comes back, the way
+ * nothing does from any other read.
+ */
+export async function listFootfall(db: Db, from: Date, asOf: Date): Promise<Footfall[]> {
+  const rows = await db
+    .select({ placedAt: orders.placedAt, readyAt: orders.readyAt, source: orders.source, items: sum(orderLines.qty).mapWith(Number) })
+    .from(orders)
+    .innerJoin(orderLines, eq(orderLines.orderId, orders.id))
+    .where(and(gt(orders.placedAt, from), placedBy(asOf)))
+    .groupBy(orders.id)
+    .orderBy(asc(orders.placedAt), asc(orders.id));
+  return rows;
 }
 
 /**

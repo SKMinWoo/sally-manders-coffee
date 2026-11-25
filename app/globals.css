@@ -14,6 +14,73 @@
   --pen: #1F3B8A; /* the server's ballpoint */
   --frame: #6B4A2E; /* the menu board's wooden frame */
   --gutter: clamp(18px, 4vw, 56px);
+  --brass: #C9A15A; /* the pins on the model */
+  --glow: #FFC979; /* lamplight, round the room a plate is about */
+  --night: #14110F; /* the shop after dark, behind the scenes */
+}
+
+/* arriving from the Study (or moving between pages), the browser morphs what it can; the opt-in
+   itself is inline in layout.tsx, so it never misses the first frame */
+/* the Study's photo flies onto the model. It eases out and eases in: the old curve was front-loaded
+   and covered most of the way in the first few frames, which read as a snap, not a flight */
+::view-transition-group(sally) { animation-duration: .8s; animation-timing-function: cubic-bezier(.45, 0, .2, 1); }
+/* app/arrive.ts recasts the flight as a translation plus a scale, so it runs off the main thread;
+   scaled from the corner, the browser's own translations still place it (they are pure translations,
+   so the origin doesn't change them) */
+::view-transition-group(sally) { transform-origin: 0 0; }
+/* the cut-out and the model's first frame are one file (hero-closed.webp), so nothing should change
+   but size and place. A half-and-half cross-fade would still thin the shadow's soft edge, and the
+   model's image may be decoding as the flight starts, so the cut-out flies on top, opaque, with the
+   model solid beneath it, and lets go only near the end, onto the same picture */
+::view-transition-old(sally), ::view-transition-new(sally) { mix-blend-mode: normal; }
+::view-transition-old(sally) { z-index: 1; animation: sally-letgo .8s both; }
+::view-transition-new(sally) { animation: none; }
+@keyframes sally-letgo { 0%, 60% { opacity: 1; } 100% { opacity: 0; } }
+/* and it lands. In flight it rises a little, so it comes to rest just above its place as the flight
+   ends (the 64% mark is the flight's end: .8s of 1.25s, and .9s of 1.4s on a phone), hangs there
+   for a beat, then drops lightly onto its base with gravity's ease-in, and the smallest give back
+   up as it takes its weight. The lift is a share of the model's own height, so it reads the same at
+   every width. Then the roof comes off (Model.tsx waits for this transition to finish) */
+::view-transition-image-pair(sally) { transform-origin: 50% 88%; animation: sally-land 1.25s both; }
+@keyframes sally-land {
+  0% { transform: none; animation-timing-function: cubic-bezier(.45, 0, .2, 1); }
+  64% { transform: translateY(-4%) scale(1.008); animation-timing-function: cubic-bezier(.55, 0, .9, .5); }
+  84% { transform: none; animation-timing-function: cubic-bezier(.25, .6, .45, 1); }
+  92% { transform: translateY(-.45%); animation-timing-function: cubic-bezier(.5, 0, .75, .45); }
+  100% { transform: none; }
+}
+/* from the Study (app/page.tsx tags it), the old page is the Study's cream sheet. It stays put, and
+   the shop's page waits under the flight and comes up round the model as it settles, so the model
+   crosses empty cream rather than the copy (on a phone it flies from mid-screen to the top) */
+html:active-view-transition-type(from-study)::view-transition-old(root) { animation: none; }
+html:active-view-transition-type(from-study)::view-transition-new(root) { animation: sally-page .45s .6s ease-out both; }
+@keyframes sally-page { from { opacity: 0; } to { opacity: 1; } }
+/* and the two pages must not add up while one comes up over the other. The browser blends the old and
+   new page with plus-lighter, which suits its own cross-fade (the two opacities always sum to one),
+   but here the Study's sheet stays fully opaque under the shop's page as it fades in, so cream plus
+   cream ran past white and the screen went blank white until the transition ended. Laid over plainly,
+   the shop's page just comes up on the cream */
+html:active-view-transition-type(from-study)::view-transition-image-pair(root) { isolation: auto; }
+html:active-view-transition-type(from-study)::view-transition-old(root),
+html:active-view-transition-type(from-study)::view-transition-new(root) { mix-blend-mode: normal; }
+/* narrow, the stacked page puts the model at the top while the Study left it low on the screen, so it
+   travels half the screen, not a few pixels: the same flight and drop, a little longer */
+@media (max-width: 1000px) {
+  ::view-transition-group(sally) { animation-duration: .9s; }
+  ::view-transition-old(sally) { animation-duration: .9s; }
+  ::view-transition-image-pair(sally) { animation-duration: 1.4s; }
+  html:active-view-transition-type(from-study)::view-transition-new(root) { animation-delay: .7s; }
+}
+/* when the Study measured this page first (app/arrive.ts tags it `landing`), its zoom already ended
+   with the cut-out over the model, raised by 3.5% of its height. So nothing flies: the group only
+   drops that little way into place, easing in and setting down softly, the cut-out lets go onto the
+   same picture beneath it, and the page comes up round it. Last, so it wins over the rules above */
+html:active-view-transition-type(landing)::view-transition-group(sally) { animation-duration: .6s; animation-timing-function: cubic-bezier(.45, 0, .35, 1); }
+html:active-view-transition-type(landing)::view-transition-old(sally) { animation-duration: .6s; }
+html:active-view-transition-type(landing)::view-transition-image-pair(sally) { animation: none; }
+html:active-view-transition-type(landing)::view-transition-new(root) { animation: sally-page .5s .2s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-image-pair(sally) { animation: none; }
 }
 
 *, *::before, *::after { box-sizing: border-box; }

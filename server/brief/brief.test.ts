@@ -112,9 +112,9 @@ test("a model's draft that keeps the rule is the brief; the key goes in a header
   const draft = "{weekday} was a steady one: {orders} orders and {takings} through the till. Keep the {topItem} coming.";
   const m = model(200, says(draft));
   const r = await writeBrief(db, NOW, { key: "test-key", fetch: m.fetch });
-  assert.deepEqual(r, { day: DAY, written: true, writer: "gemini-flash-latest", refused: null, guarded: false });
+  assert.deepEqual(r, { day: DAY, written: true, writer: "gemini-flash-lite-latest", refused: null, guarded: false });
   assert.equal(m.calls.length, 1);
-  assert.equal(m.calls[0]!.url, "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent");
+  assert.equal(m.calls[0]!.url, "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent");
   assert.equal(new Headers(m.calls[0]!.init.headers).get("x-goog-api-key"), "test-key");
   const sent = JSON.parse(String(m.calls[0]!.init.body));
   assert.match(sent.contents[0].parts[0].text, /\{orders\}: Orders over the whole day \(\d[\d,]*\)/, "the figures go to the model with their keys");
@@ -137,7 +137,7 @@ test("a model that can't answer leaves the template, and says why, without blami
 
   const thinking = model(200, { candidates: [{ content: { parts: [{ text: "Let me count 312…", thought: true }, { text: "{orders} orders on {weekday}." }] } }] });
   const t = await writeBrief(await shop(), NOW, { key: "k", fetch: thinking.fetch });
-  assert.equal(t.written && t.writer, "gemini-flash-latest", "a thinking model's reasoning isn't the draft");
+  assert.equal(t.written && t.writer, "gemini-flash-lite-latest", "a thinking model's reasoning isn't the draft");
 
   const odd = await writeBrief(await shop(), NOW, { key: "k", model: "../../evil?x=", fetch: noNetwork });
   assert.equal(odd.written && odd.refused, "GEMINI_MODEL isn't a model name");

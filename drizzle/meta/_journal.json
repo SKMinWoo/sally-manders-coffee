@@ -29,6 +29,13 @@
       "when": 1794792797304,
       "tag": "0003_briefs",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795412767063,
+      "tag": "0004_board",
+      "breakpoints": true
     }
   ]
 }
