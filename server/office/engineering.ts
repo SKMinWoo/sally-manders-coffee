@@ -239,6 +239,20 @@ function deployFigures(counts: { deploys: number; clean: number }, last: StoredF
   return out;
 }
 
+/** The last main's cluster: what ran, how long Argo CD took to sync it, and what health said. */
+function clusterFigures(f: StoredFact | undefined): Figure[] {
+  if (!f) return [];
+  const c = f.value as FactValue<"cluster">;
+  // a pod that answered with another commit is a failed check, whatever its health said
+  const answer = !c.commitMatched ? "Another commit answered" : c.health === "ok" ? "OK, on this commit" : "Degraded";
+  return [
+    fromCi("Services on Kubernetes here (15+ on AKS at GM)", c.services, n(c.services), f),
+    fromCi("Pods ready once Argo CD synced the Helm chart, last main", c.pods.ready, `${n(c.pods.ready)} of ${n(c.pods.total)}`, f),
+    fromCi(`Applied to synced and healthy, ${n(c.resources)} objects from the chart`, c.syncMs, minSec(c.syncMs), f),
+    fromCi("Health, through the shop’s Kubernetes Service", c.commitMatched && c.health === "ok" ? 1 : 0, answer, f),
+  ];
+}
+
 function boundaryFigures(f: StoredFact | undefined): Figure[] {
   if (!f) return [];
   const b = f.value as FactValue<"boundaries">;
@@ -323,6 +337,7 @@ async function figuresFor(db: Db, now: Date): Promise<{ figures: Record<string, 
   const t = tests?.value as FactValue<"unit-tests"> | undefined;
   const visuals = visualsFor(facts, { unit: unitRuns, ui: uiRuns }, shop, briefs);
   const figures: Record<string, Figure[]> = {
+    aks: clusterFigures(facts.get("cluster")),
     "re-architecture": boundaryFigures(facts.get("boundaries")),
     "ui-tests": testFigures(facts.get("ui-tests"), tests),
     barcode: barcodeFigures(facts.get("barcodes")),

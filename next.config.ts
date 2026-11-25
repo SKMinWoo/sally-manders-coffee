@@ -24,6 +24,9 @@ const base = process.env.SHOP_BASE_PATH || "";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // The container image (Dockerfile) builds with NEXT_OUTPUT=standalone: a server.js with only the
+  // node_modules it traces. Vercel's build never sets it, and builds as it always has.
+  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
   basePath: base || undefined,
   env: { NEXT_PUBLIC_SHOP_BASE: base }, // for the few fetches that build their own URLs
   // PGlite loads its WebAssembly from beside its own files, so it runs from node_modules unbundled.

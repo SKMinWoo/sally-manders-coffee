@@ -25,3 +25,10 @@ test("only the load test's local host is sent to the proxy over plain HTTP; Neon
   assert.equal(localNeonEndpoint("postgres://u:p@db.localtest.me.evil.example/x", env({})), null, "the whole host name, not a prefix");
   assert.equal(localNeonEndpoint("postgres://postgres:postgres@db.localtest.me:5432/main", env({ VERCEL: "1" })), null, "never on Vercel");
 });
+
+test("the cluster names its proxy's address, but only for the local host name", () => {
+  const cluster = env({ LOCAL_NEON_ENDPOINT: "http://neon-proxy:4444/sql" });
+  assert.equal(localNeonEndpoint("postgres://postgres:postgres@db.localtest.me:5432/main", cluster), "http://neon-proxy:4444/sql");
+  assert.equal(localNeonEndpoint(NEON, cluster), null, "a real Neon URL never goes to the override");
+  assert.equal(localNeonEndpoint("postgres://postgres:postgres@db.localtest.me:5432/main", env({ ...cluster, VERCEL: "1" })), null);
+});
