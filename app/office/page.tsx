@@ -1,9 +1,10 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import { shopDb } from "@/server/platform/db/client";
 import type { Role } from "@/server/office";
-import { engineering, SITE, type ClaimReport, type Figure } from "@/server/office";
+import { engineering, SITE, type Chart, type ClaimReport, type Figure } from "@/server/office";
 import { LoadTest } from "@/components/front/LoadTest";
 import { ExhibitVisual } from "@/components/office/ExhibitVisual";
 import s from "./office.module.css";
@@ -31,6 +32,25 @@ function Measured({ f, lead = "Measured" }: { f: Figure; lead?: string }) {
       {lead} {when(f.measuredAt)} by <a href={f.runUrl!}>this run</a> at{" "}
       <a href={`${f.runUrl!.replace(/\/actions\/runs\/\d+$/, "")}/commit/${f.sha}`}><code>{f.sha!.slice(0, 7)}</code></a>
     </>
+  );
+}
+
+/** A ranked bar per thing, its value printed at the end, the first (the worst) in red. */
+function Bars({ chart }: { chart: Chart }) {
+  const max = Math.max(1, ...chart.bars.map((b) => b.value));
+  return (
+    <figure className={s.chart}>
+      <figcaption className={s.chartTitle}>{chart.title}</figcaption>
+      <ol className={s.bars}>
+        {chart.bars.map((b, i) => (
+          <li key={b.label} className={i === 0 ? s.worst : undefined}>
+            <code className={s.barLabel}>{b.label}</code>
+            <span className={s.bar} style={{ "--w": `${(b.value / max) * 100}%` } as CSSProperties} aria-hidden />
+            <span className={s.barValue}>{b.display}</span>
+          </li>
+        ))}
+      </ol>
+    </figure>
   );
 }
 
@@ -63,6 +83,7 @@ function Card({ c }: { c: ClaimReport }) {
           ))}
         </dl>
       )}
+      {c.chart && <Bars chart={c.chart} />}
       {oneRun && <p className={s.measured}><Measured f={c.figures[0]!} lead="All measured" /></p>}
       {/* the load test as the model shows it: the dining room at the run's peak */}
       {c.id === "performance" && <LoadTest />}

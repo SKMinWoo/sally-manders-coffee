@@ -12,13 +12,13 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "node --import tsx --test \"lib/**/*.test.ts\" \"server/**/*.test.ts\" \"app/**/*.test.ts\"",
+    "test": "node --import tsx --test \"lib/**/*.test.ts\" \"server/**/*.test.ts\" \"app/**/*.test.ts\" \"scripts/**/*.test.mjs\"",
     "test:ui": "playwright test",
     "check": "npm run typecheck && npm run lint && npm test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "sim:backfill": "tsx scripts/backfill.ts",
-    "test:ci": "node -e \"require('fs').mkdirSync('.ci',{recursive:true})\" && node --import tsx --enable-source-maps --experimental-test-coverage --test-coverage-include=\"lib/**/*.ts\" --test-coverage-include=\"server/**/*.ts\" --test-coverage-exclude=\"**/*.test.ts\" --test-coverage-exclude=\"server/platform/db/test-db.ts\" --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./scripts/ci/test-facts.mjs --test-reporter-destination=.ci/unit-tests.json --test-reporter=./scripts/ci/coverage-facts.mjs --test-reporter-destination=.ci/coverage.json --test-reporter=lcov --test-reporter-destination=.ci/lcov.info \"lib/**/*.test.ts\" \"server/**/*.test.ts\" \"app/**/*.test.ts\""
+    "test:ci": "node -e \"require('fs').mkdirSync('.ci',{recursive:true})\" && node --import tsx --enable-source-maps --experimental-test-coverage --test-coverage-include=\"lib/**/*.ts\" --test-coverage-include=\"server/**/*.ts\" --test-coverage-exclude=\"**/*.test.ts\" --test-coverage-exclude=\"server/platform/db/test-db.ts\" --test --test-reporter=spec --test-reporter-destination=stdout --test-reporter=./scripts/ci/test-facts.mjs --test-reporter-destination=.ci/unit-tests.json --test-reporter=./scripts/ci/coverage-facts.mjs --test-reporter-destination=.ci/coverage.json --test-reporter=lcov --test-reporter-destination=.ci/lcov.info \"lib/**/*.test.ts\" \"server/**/*.test.ts\" \"app/**/*.test.ts\" \"scripts/**/*.test.mjs\""
   },
   "dependencies": {
     "@neondatabase/serverless": "1.2.0",
