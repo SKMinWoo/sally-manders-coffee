@@ -4,10 +4,13 @@
 // reduced, so the intro and the rail hold still. One pixel off its picture (past Playwright's small
 // colour tolerance) fails the page, and the report shows the old, the new and the difference.
 //
-// When a change is meant, CI's run fails and uploads what it saw: `gh run download <run id> -n
-// browser-tests` gives test-results/, where each changed page has its -actual.png (a new page, with
-// no baseline yet, gets one too). Look at each, and copy the ones that are right over their
-// baselines in visual.spec.ts-snapshots/, named <page>-<project>-linux.png.
+// When a change is meant, CI's run fails and uploads what it saw. The quick way to new baselines is
+// the Screenshot baselines workflow (.github/workflows/baselines.yml): run it for the branch from
+// the Actions tab, and it opens the redrawn pictures as a pull request into that branch to look at
+// and merge. By hand: `gh run download <run id> -n browser-tests` gives test-results/, where each
+// changed page has its -actual.png (a new page, with no baseline yet, gets one too). Look at each,
+// and copy the ones that are right over their baselines in visual.spec.ts-snapshots/, named
+// <page>-<project>-linux.png.
 
 import { existsSync } from "node:fs";
 import { expect, test } from "./fixtures";

@@ -1,0 +1,94 @@
+name: Screenshot baselines
+
+# Draws new screenshot baselines (e2e/visual.spec.ts) for one branch, on the same Linux runner and
+# Chromium as CI, and opens them as a small pull request into that branch, where GitHub shows each
+# picture old and new side by side. Merging that pull request is what makes them the baselines.
+#
+# Why a pull request and not a straight push: a commit pushed by a workflow's own token starts no
+# other workflow, so CI (and the release gate a merge waits for) would never run on it. Your merge
+# of the baselines pull request is your own push, so CI runs on the branch as usual.
+#
+# Run it from the Actions tab: Screenshot baselines, Run workflow, and type the branch. When the
+# branch's pull request is stacked on another branch (its base isn't main), that base is merged in
+# first, so a stacked branch starts from its base's baselines and the stack stays free of conflicts
+# on the pictures. Run a stack bottom-up, merging each baselines pull request before the next run.
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to draw baselines for (feat/load-test, say)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: baselines-${{ inputs.branch }}
+  cancel-in-progress: false
+
+jobs:
+  draw:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      # push the new pictures to their own branch, and open the pull request for them
+      contents: write
+      pull-requests: write
+    env:
+      BRANCH: ${{ inputs.branch }}
+      GH_TOKEN: ${{ github.token }}
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Check the branch name
+        run: git check-ref-format --branch "$BRANCH" > /dev/null
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.branch }}
+          fetch-depth: 0
+      - name: Merge in the base of a stacked pull request
+        id: base
+        run: |
+          base=$(gh pr list --state open --head "$BRANCH" --json baseRefName --jq '.[0].baseRefName // ""')
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          if [ -n "$base" ] && [ "$base" != "main" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git fetch origin "$base"
+            # a conflict stops the run: bring the branch up to date with its base first
+            git merge --no-edit "origin/$base"
+          fi
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - name: Browser for the screenshots
+        run: npx playwright install --with-deps --only-shell chromium
+      # CI=true (set by GitHub) gives CI's Chromium, settings and stopped-clock server; the flag
+      # redraws only the pictures that changed, and draws a new page's first one
+      - name: Draw the pictures that changed
+        run: npx playwright test e2e/visual.spec.ts --update-snapshots=changed
+      - name: Open them as a pull request into the branch
+        run: |
+          if git diff --quiet HEAD -- e2e/visual.spec.ts-snapshots && [ -z "$(git ls-files --others --exclude-standard e2e/visual.spec.ts-snapshots)" ]; then
+            echo "Every picture already matches its baseline on $BRANCH; nothing to update." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          side="baselines/$BRANCH/run-${GITHUB_RUN_NUMBER}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$side"
+          git add e2e/visual.spec.ts-snapshots
+          changed=$(git diff --cached --name-only | sed 's|.*/||; s|^|- |')
+          git commit -m "New screenshot baselines for $BRANCH" -m "Drawn by the Screenshot baselines workflow, run $GITHUB_RUN_NUMBER."
+          git push origin "$side"
+          body=$(printf 'New screenshot baselines for `%s`, drawn on CI'"'"'s Linux runner (run %s).\n\nLook at each picture in Files changed, then merge this to make them the baselines. Merging starts CI on `%s`.\n\n%s\n' "$BRANCH" "$GITHUB_RUN_NUMBER" "$BRANCH" "$changed")
+          if url=$(gh pr create --base "$BRANCH" --head "$side" --title "New screenshot baselines for $BRANCH" --body "$body"); then
+            echo "Opened $url" >> "$GITHUB_STEP_SUMMARY"
+          else
+            # the repository may not let workflows open pull requests; the pictures are pushed either way
+            echo "Pushed the pictures to \`$side\`. Open a pull request from it into \`$BRANCH\`: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/compare/$BRANCH...$side?expand=1" >> "$GITHUB_STEP_SUMMARY"
+          fi
