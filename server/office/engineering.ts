@@ -2,7 +2,7 @@
 // its twin has measured. One function feeds both, so the page and the API cannot disagree.
 
 import type { Db } from "@/server/platform/db/client";
-import { factHistory, latestFacts, ordersToDate, type StoredFact } from "./repository";
+import { deployCounts, factHistory, latestFacts, ordersToDate, type StoredFact } from "./repository";
 import { spanStats } from "@/server/reporting";
 import { briefCounts, type BriefCounts } from "@/server/brief";
 import { addDays, shopToday } from "@/lib/time";
@@ -64,6 +64,12 @@ const fromCi = (label: string, value: number, display: string, f: StoredFact): F
 });
 
 const pct = (x: number) => `${x.toFixed(1)}%`;
+
+/** 59.6 s is "1 min 0 s", not "0 min 60 s": round to the second first. */
+const minSec = (ms: number) => {
+  const took = Math.round(ms / 1000);
+  return `${Math.floor(took / 60)} min ${took % 60} s`;
+};
 
 function coverageFigures(f: StoredFact | undefined): Figure[] {
   if (!f) return [];
@@ -150,7 +156,6 @@ function gateFigures(f: StoredFact | undefined): Figure[] {
   const g = f.value as FactValue<"quality-gates">;
   const ran = g.gates.filter((x) => x.outcome !== "skipped");
   const held = ran.filter((x) => x.outcome !== "success").map((x) => x.name);
-  const took = Math.round(g.durationMs / 1000), minutes = Math.floor(took / 60), seconds = took % 60; // 59.6 s is 1 min 0 s, not 0 min 60 s
   return [
     fromCi(
       "The release gate, last main",
@@ -161,7 +166,7 @@ function gateFigures(f: StoredFact | undefined): Figure[] {
     ...(g.baselines
       ? [fromCi("Screenshot baselines matched, every page on a desktop and a phone", g.baselines.matched, `${n(g.baselines.matched)} of ${n(g.baselines.compared)}`, f)]
       : []),
-    fromCi("Checkout to verdict (the 35% is GM's; the shop has no before to measure against)", g.durationMs, `${minutes} min ${seconds} s`, f),
+    fromCi("Checkout to verdict (the 35% is GM's; the shop has no before to measure against)", g.durationMs, minSec(g.durationMs), f),
   ];
 }
 
@@ -205,6 +210,33 @@ function loadChart(f: StoredFact | undefined): Chart | null {
     sha: f.sha,
     measuredAt: f.recordedAt.toISOString(),
   };
+}
+
+/**
+ * Uptime rounded down, never up: one failed probe in 1,440 is 99.93%, and must not print as 100%.
+ * Only a month with no failure at all reads 100%.
+ */
+const uptimePct = (probes: number, failed: number) => (failed ? Math.floor(((probes - failed) / probes) * 10_000) / 100 : 100);
+
+/** Every deploy counted live, the last one's switch and smoke test, and the uptime probe's month. */
+function deployFigures(counts: { deploys: number; clean: number }, last: StoredFact | undefined, up: StoredFact | undefined, now: Date): Figure[] {
+  const out: Figure[] = [];
+  if (counts.deploys)
+    out.push(live("Production deploys through the pipeline, none dropping a request", counts.clean, `${n(counts.clean)} of ${n(counts.deploys)}`, now));
+  if (last) {
+    const d = last.value as FactValue<"deploy">;
+    out.push(
+      fromCi(`Requests failed while the last deploy switched over, probed every second (longest wait ${latency(d.probe.longestGapMs)})`, d.probe.failed, `${n(d.probe.failed)} of ${n(d.probe.requests)}`, last),
+      fromCi(`Push to live, with ${d.migrations.applied ? `${n(d.migrations.applied)} new migration${d.migrations.applied === 1 ? "" : "s"}` : "no new migrations"}`, d.liveMs, minSec(d.liveMs), last),
+      fromCi("Smoke checks on the live site after", d.smoke.passed, `${n(d.smoke.passed)} of ${n(d.smoke.checks)}`, last),
+    );
+  }
+  if (up) {
+    const u = up.value as FactValue<"uptime">;
+    const p = uptimePct(u.probes, u.failed);
+    out.push(fromCi(`Uptime, ${n(u.probes)} probes over ${n(u.days)} days`, p, `${p}%`, up));
+  }
+  return out;
 }
 
 function boundaryFigures(f: StoredFact | undefined): Figure[] {
@@ -278,11 +310,12 @@ function visualsFor(
 /** Each running claim's figures. A claim whose figure hasn't been measured yet shows none, never a guess. */
 async function figuresFor(db: Db, now: Date): Promise<{ figures: Record<string, Figure[]>; charts: Record<string, Chart | null>; visuals: Record<string, Visual> }> {
   const today = shopToday(now);
-  const [facts, shop, recent, briefs, unitRuns, uiRuns] = await Promise.all([
+  const [facts, shop, recent, briefs, deploys, unitRuns, uiRuns] = await Promise.all([
     latestFacts(db),
     ordersToDate(db, now),
     spanStats(db, { from: addDays(today, -27), to: today }, now),
     briefCounts(db),
+    deployCounts(db),
     factHistory(db, "unit-tests", 20),
     factHistory(db, "ui-tests", 20),
   ]);
@@ -296,6 +329,7 @@ async function figuresFor(db: Db, now: Date): Promise<{ figures: Record<string, 
     "quality-gates": gateFigures(facts.get("quality-gates")),
     "ai-adoption": aiFigures(briefs, facts.get("test-gap"), now),
     performance: loadFigures(facts.get("load-test")),
+    "zero-downtime": deployFigures(deploys, facts.get("deploy"), facts.get("uptime"), now),
     "excel-export": exportFigures(facts.get("export"), recent.lines, now),
     devsecops: [...coverageFigures(facts.get("coverage")), ...securityFigures(facts.get("security"))],
     "full-stack": [

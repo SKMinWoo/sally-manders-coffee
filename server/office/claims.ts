@@ -171,10 +171,15 @@ export const CLAIMS: Claim[] = [
     id: "zero-downtime",
     role: SDET,
     gm: "Efficiency: Automated AIAG 2D-barcode validation, saving 2+ days of tester time per regression cycle; regression baselines cut release verification 35%; **ran monthly patch testing for zero-downtime releases**.",
-    twin: "A pipeline on main: checks, expand-only migrations, the deploy, then a smoke test against the live site, with an uptime probe keeping score.",
+    twin: "Production deploys only through a pipeline on main. Every migration must only expand the schema, so the live code keeps working while the new build goes out. A probe hits the live site every second through the switch, and a smoke test checks every page after. An uptime probe runs every half hour.",
     exhibit: 8,
-    status: "coming",
-    code: [],
+    status: "running",
+    code: [
+      { label: "The deploy job", path: ".github/workflows/ci.yml" },
+      { label: "Expand-only migrations", path: "scripts/ci/expand-only.mjs" },
+      { label: "The switch and the smoke test", path: "scripts/deploy/ship.mjs" },
+      { label: "The uptime probe", path: ".github/workflows/uptime.yml" },
+    ],
   },
 ];
 

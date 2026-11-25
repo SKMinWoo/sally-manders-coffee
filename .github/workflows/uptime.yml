@@ -1,0 +1,57 @@
+name: Uptime
+
+# Every half hour, from GitHub's runners, is the shop up? Each probe run passes or fails, and that
+# record is the uptime: once a day, the report counts the last 30 days of probes and posts the
+# figure to /office (scripts/ci/uptime.mjs). Every 30 minutes, not 5: the probe reads the database,
+# and a 5-minute probe would keep Neon's free compute awake around the clock (ADR 0007).
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+    - cron: "41 9 * * *"
+  workflow_dispatch:
+
+run-name: ${{ github.event.schedule == '41 9 * * *' && 'Uptime report' || 'Uptime probe' }}
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Probe
+    if: ${{ github.event.schedule != '41 9 * * *' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      # Down means no good answer twice, 20 s apart: one dropped packet on the runner's side is not
+      # an outage. Health reads the database, so a site up but cut off from it fails here too.
+      - name: The shop answers its health check
+        run: >-
+          curl -fsS --max-time 15 --retry 1 --retry-delay 20 --retry-all-errors
+          -o /dev/null -w "%{http_code} in %{time_total}s\n"
+          https://sally-manders-coffee.vercel.app/api/v1/health
+
+  report:
+    name: Report
+    if: ${{ github.event.schedule == '41 9 * * *' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read # the probe runs' results
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts/ci
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - name: Count the last 30 days of probes
+        run: node scripts/ci/uptime.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Post the uptime to the back office
+        if: ${{ hashFiles('.ci/uptime.json') != '' }}
+        run: node scripts/ci/post-facts.mjs
+        env:
+          INGEST_URL: https://sally-manders-coffee.vercel.app/api/ingest/ci
+          CI_INGEST_SECRET: ${{ secrets.CI_INGEST_SECRET }}

@@ -23,7 +23,9 @@ test("health is degraded until the simulator has written today and tomorrow, the
   assert.equal(Health.parse(before.body).status, "degraded");
   await ensureDays(db, ["2026-11-13", "2026-11-14"]);
   const r = await health(db, NOON);
-  assert.deepEqual(Health.parse(r.body), { status: "ok", time: NOON.toISOString(), today: "2026-11-13", simulatorAhead: true });
+  assert.deepEqual(Health.parse(r.body), { status: "ok", time: NOON.toISOString(), today: "2026-11-13", simulatorAhead: true, commit: null });
+  const sha = "0123456789abcdef0123456789abcdef01234567";
+  assert.equal(Health.parse((await health(db, NOON, sha)).body).commit, sha, "a deployment names its commit");
   assert.equal(r.cache, "none", "health is never cached");
 });
 

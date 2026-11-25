@@ -8,9 +8,11 @@ on:
 permissions:
   contents: read
 
+# A pull request's newer push replaces its older run. Main's runs queue instead: cancelling one
+# could stop a deploy halfway, with nobody watching the switch.
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -138,12 +140,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_PROJECT_KEY: SKMinWoo_sally-manders-coffee
-      - name: Post figures to the back office
+      # posted by post-checks once production runs this commit, so a new kind of figure finds code
+      # that knows it
+      - name: Keep the figures for the back office
         if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles('.ci/unit-tests.json') != '' }}
-        run: node scripts/ci/post-facts.mjs
-        env:
-          INGEST_URL: https://sally-manders-coffee.vercel.app/api/ingest/ci
-          CI_INGEST_SECRET: ${{ secrets.CI_INGEST_SECRET }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: check-facts
+          path: .ci/*.json
+          retention-days: 3
 
   # The release gate: green only when every gate in check passed. It's the one check a pull request
   # needs before it can merge, and so before main, which is what production deploys from.
@@ -158,6 +163,73 @@ jobs:
         run: test "$CHECK" = success
         env:
           CHECK: ${{ needs.check.result }}
+
+  # Production, from main only (ADR 0007): every migration checked as expand-only, then applied,
+  # then the build switched in through Vercel's deploy hook while a probe watches, then a smoke test
+  # of the live site. Main's own Git deploys are off in vercel.json, so this is the one way in.
+  deploy:
+    name: Deploy to production
+    needs: release-gate
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.release-gate.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # the secrets live in this environment, which only main may deploy from
+    environment: production
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Every migration only expands the schema
+        run: node scripts/ci/expand-only.mjs
+      - name: Migrate production
+        run: node scripts/deploy/migrate.mjs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Deploy, probe the switch, smoke-test the live site
+        run: node scripts/deploy/ship.mjs
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+      - name: Post the deploy to the back office
+        if: ${{ !cancelled() && hashFiles('.ci/deploy.json') != '' }}
+        run: node scripts/ci/post-facts.mjs
+        env:
+          INGEST_URL: https://sally-manders-coffee.vercel.app/api/ingest/ci
+          CI_INGEST_SECRET: ${{ secrets.CI_INGEST_SECRET }}
+
+  # The check job's figures, posted once the deploy is done, or skipped because a gate failed (then
+  # the build already live is the right one). Failing figures are posted as honestly as passing ones.
+  post-checks:
+    name: Post the checks
+    needs: [check, deploy]
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check.result != 'cancelled' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts/ci
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: check-facts
+          path: .ci
+      - name: Post figures to the back office
+        run: node scripts/ci/post-facts.mjs
+        env:
+          INGEST_URL: https://sally-manders-coffee.vercel.app/api/ingest/ci
+          CI_INGEST_SECRET: ${{ secrets.CI_INGEST_SECRET }}
 
   # The test gap, posted on the pull request as one comment that each push edits rather than adds
   # to. It's its own job so that only this one can write to the pull request, and it runs no code
@@ -318,8 +390,8 @@ jobs:
   # proxy image; it runs only the repository's own post script.
   load-test-post:
     name: Post the load test
-    needs: load-test
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.load-test.result == 'success' }}
+    needs: [load-test, deploy]
+    if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.load-test.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:

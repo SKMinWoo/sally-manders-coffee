@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import type { FactKind, IngestBody } from "./facts";
 import type { Db } from "@/server/platform/db/client";
 import { engineeringFacts, orders } from "@/server/platform/db/schema";
@@ -32,6 +32,22 @@ export async function latestFacts(db: Db): Promise<Map<FactKind, StoredFact>> {
     .from(engineeringFacts)
     .orderBy(engineeringFacts.kind, desc(engineeringFacts.recordedAt));
   return new Map(rows.map((r) => [r.kind as FactKind, { ...r, kind: r.kind as FactKind }]));
+}
+
+/**
+ * Every production deploy the pipeline has recorded, and how many went out clean: no probe request
+ * failed during the switch and every smoke check passed. Counted from all of them, not the last.
+ */
+export async function deployCounts(db: Db): Promise<{ deploys: number; clean: number }> {
+  const [row] = await db
+    .select({
+      deploys: sql<number>`count(*)::int`,
+      clean: sql<number>`(count(*) filter (where (${engineeringFacts.value}->'probe'->>'failed')::int = 0
+        and ${engineeringFacts.value}->'smoke'->'passed' = ${engineeringFacts.value}->'smoke'->'checks'))::int`,
+    })
+    .from(engineeringFacts)
+    .where(eq(engineeringFacts.kind, "deploy"));
+  return { deploys: row?.deploys ?? 0, clean: row?.clean ?? 0 };
 }
 
 /** The last `limit` runs' figures of one kind, oldest first: the trend a card draws as a sparkline. */

@@ -334,6 +334,47 @@ test("the load test: the run, the slowest endpoint, and every endpoint charted s
   }
 });
 
+test("deploys: every one counted, the last switch and smoke test shown, and uptime never rounded up", async () => {
+  const at = NOON.getTime() + 1_200_000;
+  const deploy = (failed: number, passed = 10) => ({
+    migrations: { applied: 1, total: 5 },
+    liveMs: 94_400,
+    probe: { requests: 156, failed, longestGapMs: failed ? 4_200 : 1_010 },
+    smoke: { checks: 10, passed },
+  });
+  // three deploys: one dropped two requests, one failed a smoke check, the last went out clean
+  for (const [id, value] of [[911, deploy(2)], [912, deploy(0, 9)], [913, deploy(0)]] as const)
+    assert.equal((await ingestCi(db, req({ run: run(id), facts: [{ kind: "deploy", value }] }), new Date(at + id), SECRET)).status, 201);
+  const uptime = { days: 30, probes: 1_437, failed: 1 };
+  assert.equal((await ingestCi(db, req({ run: run(914), facts: [{ kind: "uptime", value: uptime }] }), new Date(at), SECRET)).status, 201);
+
+  const e = Engineering.parse((await engineering(db, new Date(at + 60_000))).body);
+  const c = e.claims.find((x) => x.id === "zero-downtime")!;
+  assert.equal(c.status, "running");
+  assert.deepEqual(
+    c.figures.map((x) => [x.label, x.display, x.source]),
+    [
+      ["Production deploys through the pipeline, none dropping a request", "1 of 3", "live"],
+      ["Requests failed while the last deploy switched over, probed every second (longest wait 1.01 s)", "0 of 156", "ci"],
+      ["Push to live, with 1 new migration", "1 min 34 s", "ci"],
+      ["Smoke checks on the live site after", "10 of 10", "ci"],
+      ["Uptime, 1,437 probes over 30 days", "99.93%", "ci"],
+    ],
+  );
+  assert.equal(c.figures[1]!.runUrl, `https://github.com/${REPO}/actions/runs/913`, "the last deploy, not the first");
+
+  for (const [kind, bad] of [
+    ["deploy", { ...deploy(0), probe: { requests: 0, failed: 0, longestGapMs: 0 } }],
+    ["deploy", { ...deploy(0), liveMs: -1 }],
+    ["deploy", { ...deploy(0), smoke: { checks: 10 } }],
+    ["uptime", { ...uptime, days: 45 }],
+    ["uptime", { ...uptime, probes: 0 }],
+  ] as const) {
+    const b = { run: run(915), facts: [{ kind, value: bad }] };
+    assert.equal((await ingestCi(db, req(b), new Date(at), SECRET)).status, 422, JSON.stringify(bad));
+  }
+});
+
 test("every file a claim or a factor points at is in the repository", () => {
   const paths = [
     ...CLAIMS.flatMap((c) => c.code.map((x) => x.path)),
