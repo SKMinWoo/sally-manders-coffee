@@ -37,7 +37,7 @@ export const LIMITS = {
 };
 
 export type PlaceResult =
-  | { ok: true; publicId: string; ticket: string }
+  | { ok: true; publicId: string; ticket: string; placedAt: Date; readyAt: Date; items: number }
   | { ok: false; reason: "invalid" | "unknown-item" | "slow-down" | "rail-full"; message: string };
 
 /** Visitor tickets run their own daily series, A-01, A-02, …, so they never collide with the simulator's 0001, 0002, …. */
@@ -72,7 +72,8 @@ export async function placeVisitorOrder(
 
   const subtotal = lines.reduce((s, l) => s + l.qty * l.item!.priceCents, 0);
   const items = lines.reduce((s, l) => s + l.qty, 0);
-  const readyAt = new Date(+now + 1000 * expectedWait(items, await loadNow(db, now)));
+  const { load, pace } = await loadNow(db, now);
+  const readyAt = new Date(+now + 1000 * expectedWait(items, load, pace));
   const rows = lines.map((l) => ({ itemId: l.itemId, qty: l.qty, priceCents: l.item!.priceCents }));
 
   // Visitors ordering at once can count the same number of tickets; the unique (day, ticket)
@@ -83,7 +84,7 @@ export async function placeVisitorOrder(
     const ticket = visitorTicket((await countVisitorOrders(db, day)) + 1);
     try {
       await insertOrder(db, { publicId, day, ticket, source: "visitor", placedAt: now, readyAt, subtotalCents: subtotal, taxCents: taxCents(subtotal), visitorHash }, rows);
-      return { ok: true, publicId, ticket };
+      return { ok: true, publicId, ticket, placedAt: now, readyAt, items };
     } catch (err) {
       if (!isUniqueViolation(err) || attempt === TICKET_TRIES) throw err;
     }

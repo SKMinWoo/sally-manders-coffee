@@ -24,7 +24,7 @@ The figures are filled in from the database when the brief is shown, and stored 
 number in a brief is always the database's. A draft the guard turns back is not retried. The
 template is stored in its place, with the reason, and the template is held to the same rule.
 
-The model is Gemini's free tier (`GEMINI_API_KEY`, `GEMINI_MODEL`, default `gemini-flash-latest`).
+The model is Gemini's free tier (`GEMINI_API_KEY`, `GEMINI_MODEL`, default `gemini-flash-lite-latest`). The lite model was chosen by timing: on the free tier it wrote a brief in about a second, while `gemini-flash-latest`, a thinking model, timed out at 90 seconds or answered 503 on every try.
 It is called with `fetch`, not an SDK, so the shop takes on no dependency. With no key, nothing is
 sent anywhere and the template writes every brief. A local database always uses the template.
 

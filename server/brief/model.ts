@@ -5,7 +5,9 @@
 
 import { z } from "zod";
 
-export const DEFAULT_MODEL = "gemini-flash-latest";
+// the lite model: timed 2026-11-15 on the free tier, it wrote a brief in about a second, while
+// gemini-flash-latest (a thinking model) hadn't answered after 90 s and was often "busy" (503)
+export const DEFAULT_MODEL = "gemini-flash-lite-latest";
 const MODEL_NAME = /^[a-z0-9][a-z0-9.-]{0,63}$/; // it goes into the URL's path, so nothing else gets in
 
 export type ModelConfig = {
@@ -14,6 +16,8 @@ export type ModelConfig = {
   /** the network, swapped out in the tests */
   fetch?: typeof fetch;
   timeoutMs?: number;
+  /** ask for a JSON reply (the board's calls): the text is still the caller's to parse and check */
+  json?: boolean;
 };
 
 export type Draft = { ok: true; text: string; model: string } | { ok: false; reason: string; model: string };
@@ -42,7 +46,7 @@ export async function askModel(system: string, prompt: string, cfg: ModelConfig)
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
         contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
+        generationConfig: { temperature: 0.7, maxOutputTokens: 2048, ...(cfg.json ? { responseMimeType: "application/json" } : {}) },
       }),
       signal: AbortSignal.timeout(cfg.timeoutMs ?? 25_000),
     });

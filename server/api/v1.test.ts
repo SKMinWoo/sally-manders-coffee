@@ -8,8 +8,8 @@ import { cronAuthorised } from "@/server/platform/auth";
 import { openApiDocument } from "./openapi";
 import { respond } from "../platform/http";
 import { writeBrief } from "@/server/brief";
-import { Brief, DayHours, DayItems, DaySummary, Health, Menu, Problem } from "./schemas";
-import { brief, day, dayHours, dayItems, health, menu } from "./v1";
+import { Brief, DayHours, DayItems, DaySummary, Footfall, Health, Menu, Problem } from "./schemas";
+import { brief, day, dayHours, dayItems, footfall, health, menu } from "./v1";
 
 let db: Db, close: () => Promise<void>;
 before(async () => ({ db, close } = await testDb()));
@@ -32,6 +32,22 @@ test("the menu matches its contract, in board order", async () => {
   const items = Menu.parse(r.body).items;
   assert.equal(items[0]!.id, "espresso");
   assert.equal(r.cache, "public");
+});
+
+test("footfall: the last quarter hour by default, since is clamped to it, and a bad since is a 400", async () => {
+  const quarter = new Date(+NOON - 15 * 60_000);
+  const r = await footfall(db, null, NOON);
+  const all = Footfall.parse(r.body);
+  assert.equal(r.cache, "none");
+  assert.equal(all.since, quarter.toISOString());
+  assert.equal(all.guests.length, sim.orders.filter((o) => o.placedAt > quarter && o.placedAt <= NOON).length);
+  assert.deepEqual(Footfall.parse((await footfall(db, "2020-01-01T00:00:00Z", NOON)).body), all, "no further back than 15 minutes");
+
+  const mid = all.guests[Math.floor(all.guests.length / 2)]!.placedAt;
+  const newer = Footfall.parse((await footfall(db, mid, NOON)).body).guests;
+  assert.deepEqual(newer, all.guests.filter((g) => g.placedAt > mid), "only what came after since");
+  assert.equal(Footfall.parse((await footfall(db, "2030-01-01T00:00:00Z", NOON)).body).guests.length, 0, "a future since is now");
+  assert.equal((await footfall(db, "noon-ish", NOON)).status, 400);
 });
 
 test("a day so far: today and its date give the same answer, and later orders don't count", async () => {
@@ -74,7 +90,7 @@ test("responses carry the cache policy, and errors are problem+json", async () =
 
 test("the OpenAPI document covers every endpoint, and every $ref resolves", () => {
   const doc = openApiDocument();
-  assert.deepEqual(Object.keys(doc.paths).sort(), ["/brief", "/days/{date}", "/days/{date}/hours", "/days/{date}/items", "/engineering", "/exports/sales", "/health", "/menu"]);
+  assert.deepEqual(Object.keys(doc.paths).sort(), ["/board", "/brief", "/days/{date}", "/days/{date}/hours", "/days/{date}/items", "/engineering", "/exports/sales", "/footfall", "/health", "/menu"]);
   // collect every $ref, not only the well-formed ones, so a malformed ref fails instead of being skipped
   const refs = [...JSON.stringify(doc).matchAll(/"\$ref":"([^"]*)"/g)].map((m) => m[1]!);
   assert.ok(refs.length > 0);

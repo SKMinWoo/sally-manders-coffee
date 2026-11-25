@@ -2,12 +2,12 @@
 // its twin has measured. One function feeds both, so the page and the API cannot disagree.
 
 import type { Db } from "@/server/platform/db/client";
-import { latestFacts, ordersToDate, type StoredFact } from "./repository";
+import { factHistory, latestFacts, ordersToDate, type StoredFact } from "./repository";
 import { spanStats } from "@/server/reporting";
 import { briefCounts, type BriefCounts } from "@/server/brief";
 import { addDays, shopToday } from "@/lib/time";
 import { CLAIMS, codeUrl, type Claim } from "./claims";
-import type { FactValue } from "./facts";
+import type { FactKind, FactValue } from "./facts";
 
 export type Figure = {
   label: string;
@@ -30,7 +30,29 @@ export type Chart = {
   measuredAt: string;
 };
 
-export type ClaimReport = Omit<Claim, "code"> & { code: { label: string; url: string }[]; figures: Figure[]; chart: Chart | null };
+/** A run-by-run series for a sparkline, oldest first. */
+export type Trend = { at: string; value: number }[];
+type Sev = { critical: number; high: number; moderate: number; low: number };
+
+/**
+ * What each card draws, from the same stored facts as its figures. The page's only; the API's
+ * schema doesn't list it, so /api/v1/engineering stays figures and links.
+ */
+export type Visual =
+  | { kind: "full-stack"; orders: number; visitor: number; tests: Trend }
+  | {
+      kind: "devsecops";
+      coverage: { lines: number; branches: number; functions: number; bars: Bars | null } | null;
+      audit: { shipped: Sev; tooling: Sev } | null;
+    }
+  | { kind: "ui-tests"; tests: number; projects: string[]; passed: number; flaky: number; failed: number; skipped: number; took: Trend }
+  | { kind: "excel-export"; spans: { days: number; rows: number; heapMb: number }[] }
+  | { kind: "barcode"; read: number; unread: number; refused: number; damagedRead: number; misread: number }
+  | { kind: "quality-gates"; gates: { name: string; outcome: "success" | "failure" | "skipped" | "cancelled" }[]; baselines: { compared: number; matched: number } | null }
+  | { kind: "ai-adoption"; written: number; byModel: number; guarded: number; gap: { changed: number; uncovered: number } | null }
+  | { kind: "re-architecture"; modules: number; uses: [string, string][]; violations: number };
+
+export type ClaimReport = Omit<Claim, "code"> & { code: { label: string; url: string }[]; figures: Figure[]; chart: Chart | null; visual: Visual | null };
 
 const n = (x: number) => x.toLocaleString("en-US");
 
@@ -166,7 +188,7 @@ function loadFigures(f: StoredFact | undefined): Figure[] {
   const l = f.value as FactValue<"load-test">;
   const slowest = l.endpoints[0]!;
   return [
-    fromCi(`Requests in the last run, ${n(l.users)} visitors over ${Math.round(l.durationMs / 1000)} s, ${(l.requests / (l.durationMs / 1000)).toFixed(1)} a second (24,700+ a run at GM)`, l.requests, n(l.requests), f),
+    fromCi(`Requests in the last run, ${n(l.users)} visitors over ${Math.round(l.durationMs / 1000)} s, ${(l.requests / (l.durationMs / 1000)).toFixed(1)} a second (~26K a run at GM)`, l.requests, n(l.requests), f),
     fromCi(`Read against ${n(l.seed.orders)} orders, ${n(l.seed.days)} days of the shop`, l.errors, l.errors ? `${n(l.errors)} errors` : "No errors", f),
     fromCi("P95, every request", l.p95Ms, latency(l.p95Ms), f),
     fromCi(`Slowest at P95: ${slowest.name}`, slowest.p95Ms, latency(slowest.p95Ms), f),
@@ -196,18 +218,78 @@ function boundaryFigures(f: StoredFact | undefined): Figure[] {
   ];
 }
 
+const trend = <K extends FactKind>(rows: { value: unknown; recordedAt: Date }[], pick: (v: FactValue<K>) => number): Trend =>
+  rows.map((r) => ({ at: r.recordedAt.toISOString(), value: pick(r.value as FactValue<K>) }));
+
+type Bars = { lines: number | null; branches: number | null; functions: number | null };
+/**
+ * The bar a gate's rule (free text, scripts/ci/coverage-bar.mjs) sets for each measure it names:
+ * "lines ≥ 90% and branches ≥ 80%" → lines 90, branches 80, functions none. A measure the rule
+ * doesn't name gets no line drawn, rather than a guessed one.
+ */
+const barsOf = (rule: string): Bars => {
+  const bar = (name: string) => {
+    const m = new RegExp(`\\b${name}\\b[^%\\d]{0,16}(\\d+(?:\\.\\d+)?)\\s*%`, "i").exec(rule);
+    return m ? Number(m[1]) : null;
+  };
+  return { lines: bar("lines?"), branches: bar("branch(?:es)?"), functions: bar("functions?") };
+};
+
+/** Each running claim's drawing. Like the figures, a claim with nothing measured draws nothing. */
+function visualsFor(
+  facts: Map<FactKind, StoredFact>,
+  history: { unit: { value: unknown; recordedAt: Date }[]; ui: { value: unknown; recordedAt: Date }[] },
+  shop: { orders: number; visitorOrders: number },
+  briefs: BriefCounts,
+): Record<string, Visual> {
+  const v = <K extends FactKind>(k: K) => facts.get(k)?.value as FactValue<K> | undefined;
+  const out: Record<string, Visual> = {
+    "full-stack": { kind: "full-stack", orders: shop.orders, visitor: shop.visitorOrders, tests: trend<"unit-tests">(history.unit, (t) => t.passed) },
+    "ai-adoption": {
+      kind: "ai-adoption",
+      written: briefs.written,
+      byModel: briefs.byModel,
+      guarded: briefs.guarded,
+      gap: v("test-gap") ? { changed: v("test-gap")!.changed, uncovered: v("test-gap")!.uncovered } : null,
+    },
+  };
+  const cov = v("coverage"), sec = v("security");
+  if (cov || sec) {
+    const minus = (a: Sev, b: Sev): Sev => ({ critical: a.critical - b.critical, high: a.high - b.high, moderate: a.moderate - b.moderate, low: a.low - b.low });
+    out.devsecops = {
+      kind: "devsecops",
+      coverage: cov ? { lines: cov.lines, branches: cov.branches, functions: cov.functions, bars: cov.gate ? barsOf(cov.gate.rule) : null } : null,
+      audit: sec ? { shipped: sec.audit.production, tooling: minus(sec.audit.all, sec.audit.production) } : null,
+    };
+  }
+  const ui = v("ui-tests");
+  if (ui) out["ui-tests"] = { kind: "ui-tests", tests: ui.tests, projects: ui.projects, passed: ui.passed, flaky: ui.flaky, failed: ui.failed, skipped: ui.skipped, took: trend<"ui-tests">(history.ui, (u) => u.durationMs) };
+  const ex = v("export");
+  if (ex) out["excel-export"] = { kind: "excel-export", spans: [{ days: ex.baseline.days, rows: ex.baseline.rows, heapMb: ex.baseline.heapPeakMb }, { days: ex.days, rows: ex.rows, heapMb: ex.heapPeakMb }] };
+  const bc = v("barcodes");
+  if (bc) out.barcode = { kind: "barcode", read: bc.read, unread: bc.unread, refused: bc.refused, damagedRead: Math.max(0, bc.damaged - bc.refused - bc.misread), misread: bc.misread };
+  const qg = v("quality-gates");
+  if (qg) out["quality-gates"] = { kind: "quality-gates", gates: qg.gates, baselines: qg.baselines };
+  const bd = v("boundaries");
+  if (bd) out["re-architecture"] = { kind: "re-architecture", modules: bd.modules, uses: bd.uses.map((u) => u.split("→") as [string, string]), violations: bd.violations };
+  return out;
+}
+
 /** Each running claim's figures. A claim whose figure hasn't been measured yet shows none, never a guess. */
-async function figuresFor(db: Db, now: Date): Promise<{ figures: Record<string, Figure[]>; charts: Record<string, Chart | null> }> {
+async function figuresFor(db: Db, now: Date): Promise<{ figures: Record<string, Figure[]>; charts: Record<string, Chart | null>; visuals: Record<string, Visual> }> {
   const today = shopToday(now);
-  const [facts, shop, recent, briefs] = await Promise.all([
+  const [facts, shop, recent, briefs, unitRuns, uiRuns] = await Promise.all([
     latestFacts(db),
     ordersToDate(db, now),
     spanStats(db, { from: addDays(today, -27), to: today }, now),
     briefCounts(db),
+    factHistory(db, "unit-tests", 20),
+    factHistory(db, "ui-tests", 20),
   ]);
   const tests = facts.get("unit-tests");
   const t = tests?.value as FactValue<"unit-tests"> | undefined;
-  const figures = {
+  const visuals = visualsFor(facts, { unit: unitRuns, ui: uiRuns }, shop, briefs);
+  const figures: Record<string, Figure[]> = {
     "re-architecture": boundaryFigures(facts.get("boundaries")),
     "ui-tests": testFigures(facts.get("ui-tests"), tests),
     barcode: barcodeFigures(facts.get("barcodes")),
@@ -224,11 +306,11 @@ async function figuresFor(db: Db, now: Date): Promise<{ figures: Record<string, 
         : []),
     ],
   };
-  return { figures, charts: { performance: loadChart(facts.get("load-test")) } };
+  return { figures, charts: { performance: loadChart(facts.get("load-test")) }, visuals };
 }
 
 export async function engineering(db: Db, now: Date): Promise<{ asOf: string; claims: ClaimReport[] }> {
-  const { figures, charts } = await figuresFor(db, now);
+  const { figures, charts, visuals } = await figuresFor(db, now);
   return {
     asOf: now.toISOString(),
     claims: CLAIMS.map((c) => ({
@@ -236,6 +318,8 @@ export async function engineering(db: Db, now: Date): Promise<{ asOf: string; cl
       code: c.code.map((x) => ({ label: x.label, url: codeUrl(x.path) })),
       figures: figures[c.id] ?? [],
       chart: charts[c.id] ?? null,
+      // a claim still to come draws nothing, whatever facts are lying about
+      visual: c.status === "running" ? (visuals[c.id] ?? null) : null,
     })),
   };
 }

@@ -1,4 +1,4 @@
-// The back office and the twelve factors: what the page says agrees with itself and with the API.
+// How it's built and the twelve factors: what the page says agrees with itself and with the API.
 
 import { expect, test } from "./fixtures";
 
@@ -6,7 +6,7 @@ test("one card per résumé line, and the band counts the running ones", async (
   const report = await (await request.get("/api/v1/engineering")).json();
   const running = report.claims.filter((c: { status: string }) => c.status === "running").length;
   await page.goto("/office");
-  await expect(page.getByText(`The back office · ${running} of ${report.claims.length} running`)).toBeVisible();
+  await expect(page.getByText(`How it’s built · ${running} of ${report.claims.length} running`)).toBeVisible();
   const cards = page.locator('section[aria-labelledby^="role-"] > ul > li');
   await expect(cards).toHaveCount(report.claims.length);
   await expect(cards.filter({ hasText: /^Exhibit \d\dRunning/ })).toHaveCount(running);
@@ -29,6 +29,6 @@ test("the twelve factors are all there, and the band adds them up", async ({ pag
   await expect(factors).toHaveCount(12);
   const gaps = await factors.filter({ hasText: "Short of it" }).count();
   await expect(page.getByText(`Exhibit 10 · ${12 - gaps} met, ${gaps} with a gap`)).toBeVisible();
-  await page.getByRole("link", { name: /back office/i }).first().click();
+  await page.getByRole("main").getByRole("link", { name: "How it’s built" }).click();
   await expect(page).toHaveURL(/\/office$/);
 });

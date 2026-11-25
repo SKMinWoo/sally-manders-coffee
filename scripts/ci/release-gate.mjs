@@ -9,7 +9,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 const gates = JSON.parse(process.env.GATES ?? "[]").map(([name, outcome]) => ({ name, outcome: outcome || "skipped" }));
 if (!gates.length) throw new Error("GATES is empty: the workflow passes every gate's outcome");
 const passed = gates.every((g) => g.outcome === "success" || g.outcome === "skipped") && gates.some((g) => g.outcome === "success");
-const baselines = existsSync(".ci/baselines.json") ? JSON.parse(readFileSync(".ci/baselines.json", "utf8")) : null;
+const baselines = existsSync(".ci/parts/baselines.json") ? JSON.parse(readFileSync(".ci/parts/baselines.json", "utf8")) : null;
 const started = Number(process.env.GATE_STARTED_MS);
 const durationMs = Number.isFinite(started) && started > 0 ? Math.max(0, Date.now() - started) : 0;
 

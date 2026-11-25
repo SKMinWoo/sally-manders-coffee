@@ -63,6 +63,9 @@ test("the check survives a reload, and is cleared once it's on the rail", async 
 
   await submit(page).click();
   await page.waitForURL(/\/order\/[2-9a-z]{10}$/);
+  // the ways on from the ticket: back to the shop, to the model to watch it arrive, or another order
+  await expect(page.getByRole("link", { name: /Back to the shop/ })).toHaveAttribute("href", "/");
+  await expect(page.getByRole("link", { name: /See your order walk in/ })).toHaveAttribute("href", "/#sally-model");
   await page.getByRole("link", { name: "Order something else" }).click();
   await expect(check(page)).toContainText("Tap the board to add");
 });
