@@ -55,6 +55,14 @@
 html:active-view-transition-type(from-study)::view-transition-old(root) { animation: none; }
 html:active-view-transition-type(from-study)::view-transition-new(root) { animation: sally-page .45s .6s ease-out both; }
 @keyframes sally-page { from { opacity: 0; } to { opacity: 1; } }
+/* and the two pages must not add up while one comes up over the other. The browser blends the old and
+   new page with plus-lighter, which suits its own cross-fade (the two opacities always sum to one),
+   but here the Study's sheet stays fully opaque under the shop's page as it fades in, so cream plus
+   cream ran past white and the screen went blank white until the transition ended. Laid over plainly,
+   the shop's page just comes up on the cream */
+html:active-view-transition-type(from-study)::view-transition-image-pair(root) { isolation: auto; }
+html:active-view-transition-type(from-study)::view-transition-old(root),
+html:active-view-transition-type(from-study)::view-transition-new(root) { mix-blend-mode: normal; }
 /* narrow, the stacked page puts the model at the top while the Study left it low on the screen, so it
    travels half the screen, not a few pixels: the same flight and drop, a little longer */
 @media (max-width: 1000px) {
