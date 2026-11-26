@@ -59,24 +59,29 @@ export default async function Shop() {
     claims[f.key] = { status: c.status, exhibit: c.exhibit, figure: fig ? { label: fig.label, display: fig.display } : null, visual: c.visual };
   }
 
-  // act 1: the shop, and the way in
+  // the résumé claims, and how many run: the count leads the page, as it leads the résumé page
+  const proof = { running: report.claims.filter((c) => c.status === "running").length, total: report.claims.length };
+
+  // act 1: the résumé, running, and the café that is its demo
   const shop = (
     <>
       <div>
-        <p className={`cond ${s.kicker}`}>Coffee · Kolaches · Tacos · South Austin</p>
+        <p className={`cond ${s.kicker}`}>My GM résumé, running · {proof.running} of {proof.total} claims live</p>
         <h1 className={`block shade ${s.headline}`}>
           Sally Mander&rsquo;s <span className="script">a coffee shop that runs on real software</span>
         </h1>
       </div>
       <div className={s.lede}>
         <p>
-          A working demo of a South Austin café: you can order from it, and the guests walking in are today&rsquo;s
-          orders, each one stored and timed. Scroll for the numbers it keeps, then for how it&rsquo;s run and built.
+          Each line of my résumé from General Motors, built small and running here. {proof.running} of{" "}
+          {proof.total} are live, and every figure is counted as the page loads or posted by the CI run that measured
+          it. The café is the demo: order from it, and the guests walking in are today&rsquo;s orders.
         </p>
         <p className={s.cta}>
+          <Link href="/office">See the proof</Link>
           <Link href="/order" data-order-cta="">Order ahead</Link>
-          <a href="#board">See the menu</a>
         </p>
+        <p className={`cond ${s.pretend}`}>Not a real café: orders are pretend and free</p>
         {line && (
           // a slip off the board, clipped under the buttons: what the manager is working on, in pen
           <div className={s.slip}>
@@ -157,6 +162,7 @@ export default async function Shop() {
         frozen={frozen}
         base={BASE}
         claims={claims}
+        proof={proof}
         menuCount={menu.length}
         // the order drawer: the board, and (as on the order page) the wait for 0..50 items at this minute's load
         order={{

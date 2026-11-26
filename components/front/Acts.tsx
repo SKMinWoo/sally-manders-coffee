@@ -7,7 +7,7 @@ import type { FixtureClaim } from "./Model";
 import s from "./front.module.css";
 
 /** The shop in three acts. */
-export const ACTS = [{ title: "The shop" }, { title: "The numbers" }, { title: "How it’s built" }] as const satisfies readonly { title: string }[];
+export const ACTS = [{ title: "The shop" }, { title: "The numbers" }, { title: "Résumé, running" }] as const satisfies readonly { title: string }[];
 
 /**
  * The band over the model: three numbered tabs, and the act on show. Wide, the acts share one place
@@ -26,6 +26,7 @@ export function Acts({
   hot,
   onHot,
   card,
+  proof,
 }: {
   act: number;
   wide: boolean;
@@ -39,8 +40,10 @@ export function Acts({
   onHot: (k: FixtureKey | null) => void;
   /** the picked fixture's card, which takes the band's place on a wide screen */
   card: ReactNode;
+  /** the résumé claims, and how many of them run: the same count the résumé page gives */
+  proof: { running: number; total: number };
 }) {
-  // the band counts what it lists: the thirteen parts, and the ones not running yet
+  // the parts not running yet, marked in the list (they have no bead on the model)
   const coming = FIXTURES.filter((f) => claims[f.key]?.status === "coming").length;
   const panel = (i: number, children: ReactNode) => (
     <div key={i} className={s.act} data-act={i} data-on={act === i ? "" : undefined} inert={wide && act !== i}>
@@ -67,14 +70,14 @@ export function Acts({
             <div className={s.actHead}>
               <p className={`cond ${s.actKicker}`}>Every fixture is a working part</p>
               <h2 className={`block shade ${s.actTitle}`}>
-                How it&rsquo;s built <span className="script">the lamp off, the parts lit</span>
+                Résumé, running <span className="script">the lamp off, the parts lit</span>
               </h2>
               <p className={s.actLede}>
-                <b>{FIXTURES.length - coming} of {FIXTURES.length}</b> parts are running, each one a line of the résumé.
+                <b>{proof.running} of {proof.total}</b> résumé claims are running, across the {FIXTURES.length} parts of the shop.
                 Point at a part to find it on the model; pick one for its proof.
               </p>
               <p className={`cond ${s.actLinks}`}>
-                <Link href="/office">Every line, with its proof &rarr;</Link>
+                <Link href="/office">See the proof &rarr;</Link>
                 <Link href="/docs">Read the API</Link>
               </p>
             </div>
@@ -100,10 +103,10 @@ export function Acts({
                             onBlur={() => onHot(null)}
                           >
                             <span className={s.n} aria-hidden="true">{i + 1}</span>
-                            <span className={s.partName}>{f.title.replace(/^The /, "")}</span>
+                            <span className={s.partName}>{f.tech}</span>
                             {/* what it is shows on its bead's tooltip; here it's only for a screen reader */}
                             <span className="visually-hidden">
-                              , {f.tech}
+                              , {f.title}
                               {claims[k]?.status === "coming" && ", coming"}
                             </span>
                           </button>
@@ -115,7 +118,7 @@ export function Acts({
               ))}
               {coming > 0 && (
                 <p className={s.comingNote}>
-                  <span className={s.n} data-coming="" aria-hidden="true" /> a dashed bead is still on the way
+                  <span className={s.n} data-coming="" aria-hidden="true" /> dashed: still on the way, so not on the model yet
                 </p>
               )}
             </div>

@@ -302,7 +302,7 @@ export default async function BoardPage() {
           the same things, so the only difference is the change. A real shop can&rsquo;t do that; it would hold a week
           out and live with the noise. The changes come from a fixed list, and the manager can only choose from it. Code,
           not the model, decides whether a choice stands and whether a change is kept. The board is open as data at{" "}
-          <a href="/api/v1/board">/api/v1/board</a>, and <Link href="/office">How it&rsquo;s built</Link> shows the code behind it.
+          <a href="/api/v1/board">/api/v1/board</a>, and <Link href="/office">Résumé, running</Link> shows the code behind it.
         </p>
       </section>
     </main>

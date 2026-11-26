@@ -1,4 +1,4 @@
-// The cluster figure (exhibit 11, ADR 0008): what kind, Argo CD and the shop said once the chart
+// The cluster figure (exhibit 4, ADR 0008): what kind, Argo CD and the shop said once the chart
 // was synced. CI saves them as JSON in cluster-results/ (ci.yml, job cluster), and this reads them.
 //   cluster-results/app.json     kubectl -n argocd get application sally-manders -o json
 //   cluster-results/pods.json    kubectl -n shop get pods -o json

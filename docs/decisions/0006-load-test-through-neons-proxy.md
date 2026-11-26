@@ -4,7 +4,7 @@ Date: 2026-11-15 · Status: accepted
 
 ## Context
 
-Exhibit 7 stands in for GM's JMeter and Grafana suites, which found the database and API
+Exhibit 3 (numbered 7 when this was written) stands in for GM's JMeter and Grafana suites, which found the database and API
 bottlenecks behind a slow P95. The shop's load test has to find the same kind of thing, and it must
 never run against production: Neon's free compute is metered by the hour, and production is what
 visitors see.

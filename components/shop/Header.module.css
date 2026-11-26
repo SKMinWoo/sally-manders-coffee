@@ -47,7 +47,8 @@
 
 /* a phone: the lockup and the switch share one row, with the switch's short labels */
 @media (max-width: 560px) {
-  .backNote { display: none; }
+  /* a phone keeps the purpose line, in short, so nobody mistakes the demo for a café */
+  .backNote { font-size: 11px; white-space: normal; line-height: 1.3; }
   /* four parts in the switch since the work got its page: the lockup and the switch's padding scale
      with the screen, so the row fits from a small phone up, and nothing gives up a word */
   .bar { flex-wrap: nowrap; gap: 8px; }

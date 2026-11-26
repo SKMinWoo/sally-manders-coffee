@@ -550,7 +550,7 @@
 .keyToday { height: 9px; background: var(--red); border-radius: 2px 2px 0 0; }
 .keyLast { height: 0; border-top: 2.5px solid var(--teal); margin-left: 8px; }
 
-/* ── the load test, as a still (on How it's built, beside exhibit 7): a crop of the same model ── */
+/* ── the load test, as a still (on Résumé, running, beside exhibit 3): a crop of the same model ── */
 .still { margin-top: 14px; }
 .still svg { width: 100%; height: auto; border-radius: 3px; background: var(--cream); box-shadow: inset 0 0 0 1px #1A161326; }
 .stillPeg path { fill: var(--cream); stroke: var(--black); stroke-width: 1.4px; vector-effect: non-scaling-stroke; stroke-linejoin: round; }

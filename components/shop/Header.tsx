@@ -16,7 +16,7 @@ export function Header() {
         <a href={PORTFOLIO}>
           <span aria-hidden="true">← </span>Back to the résumé
         </a>
-        <span className={s.backNote}>Sally Mander&rsquo;s is a working demo, built to show how its developer works</span>
+        <span className={s.backNote}>A working demo of my résumé: the café is pretend, the software is real</span>
       </p>
       <div className={s.bar}>
         <Link className={s.lockup} href="/">

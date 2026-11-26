@@ -101,3 +101,6 @@
 @media (max-width: 860px) {
   .checkrow { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* under the way in: what an order here is, before anyone places one */
+.pretend { margin-top: 8px; font-size: 13px; letter-spacing: .06em; color: #1A1613AA; }

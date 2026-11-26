@@ -4,7 +4,7 @@ Date: 2026-11-16 · Status: accepted
 
 ## Context
 
-Exhibit 8 stands in for GM's release freezes and monthly patch validation, run so that production
+Exhibit 11 (numbered 8 when this was written) stands in for GM's release freezes and monthly patch validation, run so that production
 deploys caused no downtime. Until now the shop deployed the way Vercel does by default: every push
 to main built and went live by itself, whether or not CI passed, and migrations ran by hand.
 

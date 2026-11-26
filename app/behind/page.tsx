@@ -110,7 +110,7 @@ export default async function Behind() {
         </p>
         <p className={s.source}>
           How the shop is built and tested, claim by claim against the résumé, is in{" "}
-          <Link href="/office">how it&rsquo;s built</Link>.
+          <Link href="/office">Résumé, running</Link>.
         </p>
       </section>
     </main>

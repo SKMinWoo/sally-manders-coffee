@@ -36,14 +36,15 @@ test("“Order ahead” opens the order page, from the first act and the check",
   await expect(page.getByRole("heading", { name: "Pick from the board" })).toBeVisible();
 });
 
-test("the model: no beads in the first two acts, thirteen in the third, and each one's card links to its proof", async ({ page, isMobile }) => {
+test("the model: no beads in the first two acts, one per running part in the third, and each one's card links to its proof", async ({ page, isMobile }) => {
   await page.goto("/");
   const model = page.getByRole("region", { name: "The model" });
   await expect(model.locator("button[data-key]")).toHaveCount(0);
 
   // wide, the tab brings the act; on a phone the acts are sections under the stuck model
   if (isMobile) await page.locator('[data-act="2"]').scrollIntoViewIfNeeded();
-  else await page.getByRole("navigation", { name: "The shop in three parts" }).getByRole("button", { name: /How it’s built/ }).click();
+  else await page.getByRole("navigation", { name: "The shop in three parts" }).getByRole("button", { name: /Résumé, running/ }).click();
+  // every part runs, so every part has its bead (a part still coming would show only its dashed line in the list)
   await expect(model.locator("button[data-key]")).toHaveCount(13);
   // a first visit lifts the roof (a beat, then 1.6s), and the beads take no pointer until it's off
   await expect(model.locator('[data-roof="off"]')).toHaveCount(1);
@@ -88,10 +89,10 @@ test("the header names the four parts, says which one you're in, and leads back 
   await expect(parts.getByRole("link", { name: /The numbers/ })).toHaveAttribute("aria-current", "page");
   await expect(parts.getByRole("link", { name: /The shop/ })).not.toHaveAttribute("aria-current", /./);
 
-  await parts.getByRole("link", { name: /How it’s built/ }).click();
+  await parts.getByRole("link", { name: /Résumé, running/ }).click();
   await expect(page).toHaveURL(/\/office$/);
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("How it’s built");
-  await expect(parts.getByRole("link", { name: /How it’s built/ })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Résumé, running");
+  await expect(parts.getByRole("link", { name: /Résumé, running/ })).toHaveAttribute("aria-current", "page");
 
   await page.getByRole("link", { name: "Sally Mander’s" }).click();
   await expect(page).toHaveURL(/\/$/);

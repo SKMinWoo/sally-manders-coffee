@@ -1,4 +1,4 @@
-// Exhibit 5: every barcode is checked the way a scanner checks it, from the pixels. An order's own
+// Exhibit 8: every barcode is checked the way a scanner checks it, from the pixels. An order's own
 // check is screenshotted and read back; so is a sheet of barcodes at several sizes and angles;
 // and damaged ones must be refused, never read as something else. Each test tallies what it saw
 // for the back office (scripts/ci/barcode-facts.mjs), before it asserts, so a failing run is

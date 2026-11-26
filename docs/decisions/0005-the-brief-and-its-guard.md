@@ -4,7 +4,7 @@ Date: 2026-11-15 · Status: accepted
 
 ## Context
 
-Exhibit 9 stands in for GM's work on AI developer adoption. Its visible half is a manager's brief:
+Exhibit 7 (numbered 9 when this was written) stands in for GM's work on AI developer adoption. Its visible half is a manager's brief:
 each morning, a few sentences on yesterday for the team. A language model writes better notes
 than a template does, but it also writes numbers that look right and aren't. On a page whose whole
 point is that every figure is measured, one invented number would undo the rest.

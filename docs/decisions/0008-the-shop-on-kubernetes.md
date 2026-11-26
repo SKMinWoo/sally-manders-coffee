@@ -4,7 +4,7 @@ Date: 2026-11-16 · Status: accepted
 
 ## Context
 
-Exhibit 11 stands in for GM's migration of 15+ microservices to Azure Kubernetes Service, deployed
+Exhibit 4 (numbered 11 when this was written) stands in for GM's migration of 15+ microservices to Azure Kubernetes Service, deployed
 with Argo CD and Helm, which put them behind one origin with no CORS workarounds. The shop is one
 Next.js app on Vercel, and production stays there. The exhibit has to show the same tools doing
 the same job, on something that runs on every change rather than once on a laptop, and it can't

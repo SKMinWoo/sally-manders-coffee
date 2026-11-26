@@ -169,6 +169,8 @@ export function Model({
         {built &&
           FIXTURES.map((f, i) => {
             const n = i + 1;
+            // a part not running yet has no bead on the model: the list beside it says what's coming
+            if (coming.includes(f.key)) return null;
             const [x, y] = meta.anchors[f.key]!;
             return (
               <button
@@ -178,10 +180,9 @@ export function Model({
                 data-key={f.key}
                 data-edge={x / W > 0.72 ? "end" : x / W < 0.2 ? "start" : undefined}
                 data-hot={hot === f.key ? "" : undefined}
-                data-coming={coming.includes(f.key) ? "" : undefined}
                 style={{ left: pct(x, W), top: pct(y, H) }}
                 aria-pressed={picked === f.key}
-                aria-label={`${n}. ${f.title}, ${f.tech}${coming.includes(f.key) ? ", coming" : ""}`}
+                aria-label={`${n}. ${f.tech}, ${f.title}`}
                 onClick={() => onPick(picked === f.key ? null : f.key)}
                 onPointerEnter={() => onHot(f.key)}
                 onPointerLeave={() => onHot(null)}
@@ -190,8 +191,8 @@ export function Model({
               >
                 <span className={s.beadN} aria-hidden="true">{n}</span>
                 <span className={s.tip} aria-hidden="true">
-                  <b>{f.title}</b>
-                  <i>{f.tech}</i>
+                  <b>{f.tech}</b>
+                  <i>{f.title}</i>
                 </span>
               </button>
             );
@@ -222,9 +223,9 @@ export function Card({
       <button type="button" className={s.close} onClick={onClose} aria-label="Close">×</button>
       <div className={s.cardHead}>
         <p className={`cond ${s.cardTech}`}>
-          {String(FIXTURES.indexOf(f) + 1).padStart(2, "0")} · {f.tech}
+          {String(FIXTURES.indexOf(f) + 1).padStart(2, "0")} · {f.title}
         </p>
-        <h3 id="fixture-title">{f.title}</h3>
+        <h3 id="fixture-title">{f.tech}</h3>
       </div>
       <div className={s.cardBody}>
         <p>{f.blurb}</p>

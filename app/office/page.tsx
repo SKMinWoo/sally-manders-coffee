@@ -10,12 +10,42 @@ import { ExhibitVisual } from "@/components/office/ExhibitVisual";
 import s from "./office.module.css";
 import { now } from "@/server/platform/clock";
 
-export const metadata: Metadata = { title: "How it’s built" };
+export const metadata: Metadata = { title: "Résumé, running" };
 
 const ROLES: { role: Role; title: string; years: string }[] = [
   { role: "Full-Stack Software Engineer", title: "Full-stack", years: "General Motors · 2022 – now" },
   { role: "Software Development Engineer in Test", title: "Test engineer", years: "General Motors · 2019 – 2022" },
 ];
+
+/** Each claim's name in the index: what it is, in a few plain words. */
+const NAMES: Record<string, string> = {
+  "full-stack": "Self-service tools",
+  "excel-export": "Server-side Excel export",
+  performance: "Load test and p95",
+  aks: "Cloud deploys",
+  "re-architecture": "Twelve-factor app",
+  devsecops: "Supply chain and coverage",
+  "ai-adoption": "An LLM in production",
+  barcode: "Barcode validation",
+  "ui-tests": "Automated UI tests",
+  "quality-gates": "Regression baselines",
+  "zero-downtime": "Zero-downtime releases",
+};
+
+const flat = (t: string) => t.replace(/\*\*/g, "");
+
+/**
+ * A bullet that backs more than one claim, cut to the clause this claim answers: its lead-in, then the
+ * one part (between semicolons) that holds the bold. The whole bullet stays one tap away.
+ */
+function clause(gm: string): { lead: string; part: string; before: boolean; after: boolean } | null {
+  const m = /^([^:]+):\s([\s\S]*)$/.exec(gm);
+  if (!m) return null;
+  const parts = m[2]!.replace(/\.$/, "").split(/;\s/);
+  const i = parts.findIndex((p) => p.includes("**"));
+  if (parts.length < 2 || i < 0) return null;
+  return { lead: m[1]!, part: parts[i]!, before: i > 0, after: i < parts.length - 1 };
+}
 
 /** The résumé's `**bold**` as <b>, the rest as text. */
 function Bullet({ text }: { text: string }) {
@@ -54,19 +84,40 @@ function Bars({ chart }: { chart: Chart }) {
   );
 }
 
-function Card({ c }: { c: ClaimReport }) {
+function Clause({ gm }: { gm: string }) {
+  const k = clause(gm)!;
+  return (
+    <>
+      <p>
+        {k.lead}: {k.before && "… "}
+        <Bullet text={k.part} />
+        {k.after && " …"}
+      </p>
+      <details className={s.whole}>
+        <summary>The whole line</summary>
+        <p>{flat(gm)}</p>
+      </details>
+    </>
+  );
+}
+
+function Card({ c, no, shared }: { c: ClaimReport; no: number; shared: boolean }) {
   const running = c.status === "running";
   // when one run measured every figure on the card, say so once, under them all
   const oneRun = c.figures.length > 1 && c.figures.every((f) => f.source === "ci" && f.runUrl === c.figures[0]!.runUrl);
   return (
     <li id={c.id} className={running ? s.running : s.coming}>
       <p className={s.no}>
-        <span>Exhibit {String(c.exhibit).padStart(2, "0")}</span>
+        <span>Exhibit {String(no).padStart(2, "0")}</span>
         <span className={s.status}>{running ? "Running" : "Coming"}</span>
       </p>
       <blockquote className={s.gm}>
         <p className={s.where}>At General Motors</p>
-        <p><Bullet text={c.gm} /></p>
+        {shared && clause(c.gm) ? (
+          <Clause gm={c.gm} />
+        ) : (
+          <p><Bullet text={c.gm} /></p>
+        )}
       </blockquote>
       <p className={s.here}>{running ? "Here, running:" : "Here, next:"}</p>
       <p className={s.twin}>{c.twin}</p>
@@ -105,19 +156,40 @@ export default async function Office() {
   await connection();
   const e = await engineering(await shopDb(), now());
   const running = e.claims.filter((c) => c.status === "running").length;
+  // the exhibits are numbered in the page's order: by role, then as the résumé lists them
+  const ordered = [...e.claims].sort((a, b) => a.exhibit - b.exhibit);
+  const no = (c: ClaimReport) => c.exhibit;
+  // a bullet that backs more than one claim is cut to each one's clause, so no two cards read the same
+  const shared = (c: ClaimReport) => e.claims.filter((x) => flat(x.gm) === flat(c.gm)).length > 1;
   return (
     <main>
       <div className="wall-band">
-        <p className="cond">How it&rsquo;s built · {running} of {e.claims.length} running</p>
+        <p className="cond">Résumé, running · {running} of {e.claims.length} running</p>
       </div>
       <section className={s.head}>
-        <h1 className={`script ${s.title}`}>How it&rsquo;s built</h1>
-        <p className={s.lede}>
-          Each line of the résumé from General Motors, beside the small version of it that runs here. A figure on this
-          page is either counted as you load it or posted by the CI run that measured it, linked, so none of it is typed
-          in. Where the shop&rsquo;s version is smaller than GM&rsquo;s, the card says so. The same report is{" "}
-          <Link href="/docs">in the API</Link> as <code>/api/v1/engineering</code>.
-        </p>
+        <div>
+          <h1 className={`script ${s.title}`}>Résumé, running</h1>
+          <p className={s.lede}>
+            My GM résumé, running: <b>{running} of {e.claims.length}</b> claims live, measured by CI. Each line from
+            General Motors sits beside the small version of it that runs here. A figure on this page is either counted
+            as you load it or posted by the CI run that measured it, linked, so none of it is typed in. Where the
+            shop&rsquo;s version is smaller than GM&rsquo;s, the card says so. The same report is{" "}
+            <Link href="/docs">in the API</Link> as <code>/api/v1/engineering</code>.
+          </p>
+        </div>
+        <nav className={s.index} aria-label="The claims">
+          <ol>
+            {ordered.map((c) => (
+              <li key={c.id} data-coming={c.status === "coming" ? "" : undefined}>
+                <a href={`#${c.id}`}>
+                  <span className={s.indexNo}>{String(no(c)).padStart(2, "0")}</span>
+                  {NAMES[c.id] ?? c.id}
+                  <span className={s.indexStatus}>{c.status === "running" ? "Running" : "Coming"}</span>
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
       </section>
       {ROLES.map((r) => (
         <section key={r.role} className={s.role} aria-labelledby={`role-${r.title}`}>
@@ -126,7 +198,7 @@ export default async function Office() {
             <span className={`cond ${s.years}`}>{r.years}</span>
           </h2>
           <ul className={s.cards}>
-            {e.claims.filter((c) => c.role === r.role).map((c) => <Card key={c.id} c={c} />)}
+            {ordered.filter((c) => c.role === r.role).map((c) => <Card key={c.id} c={c} no={no(c)} shared={shared(c)} />)}
           </ul>
         </section>
       ))}

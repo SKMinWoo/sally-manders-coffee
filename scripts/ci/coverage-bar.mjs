@@ -2,7 +2,7 @@
 //
 // The figures are percentages (0 to 100) over every module in lib/ and server/, including ones no
 // test touches (server/every-module.test.ts loads them all, so they count at their true, low
-// number). The UI in app/ is outside it; exhibit 3's Playwright suite covers that.
+// number). The UI in app/ is outside it; exhibit 9's Playwright suite covers that.
 //
 // GM held 80%+. Whatever this returns is what /office prints, word for word, beside that figure.
 

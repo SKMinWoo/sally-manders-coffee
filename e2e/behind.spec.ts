@@ -38,8 +38,8 @@ test.describe("an export longer than 92 days", () => {
   });
 });
 
-test("how it's built is a link away", async ({ page }) => {
+test("the résumé, running, is a link away", async ({ page }) => {
   await page.goto("/behind");
-  await page.getByRole("main").getByRole("link", { name: "how it’s built" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("How it’s built");
+  await page.getByRole("main").getByRole("link", { name: "Résumé, running" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Résumé, running");
 });

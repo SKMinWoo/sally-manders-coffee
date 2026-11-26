@@ -60,3 +60,21 @@
   .bars { grid-template-columns: minmax(0, 1fr) max-content; gap: 3px 12px; }
   .barLabel { grid-column: 1 / -1; margin-top: 6px; }
 }
+
+/* the head's right column: every claim in page order, a jump to its card and whether it runs */
+@media (min-width: 900px) {
+  .head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); gap: 40px; align-items: start; }
+}
+.index ol { list-style: none; margin: 0; padding: 0; border-top: 3px solid var(--black); }
+.index li { border-bottom: 1px solid #1A161333; }
+.index a { display: grid; grid-template-columns: 2.2em 1fr auto; gap: 8px; align-items: baseline; padding: 7px 0; text-decoration: none; font-size: 15px; }
+.index a:hover, .index a:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.indexNo { font: 700 13px/1 var(--font-cond), sans-serif; letter-spacing: .1em; }
+.indexStatus { font: 700 11px/1 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #136A65; }
+.index li[data-coming] a { color: #1A1613AA; }
+.index li[data-coming] .indexStatus { color: #1A161388; }
+
+/* a shared bullet, cut to its clause: the whole line one tap away */
+.whole { margin-top: 6px; font-size: 13.5px; }
+.whole summary { cursor: pointer; font: 700 12px/1.2 var(--font-cond), sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #1A1613AA; }
+.whole p { margin-top: 6px; color: #1A1613BB; }

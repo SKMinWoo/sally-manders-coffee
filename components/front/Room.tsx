@@ -42,6 +42,7 @@ export function Room({
   numbers,
   figures,
   order,
+  proof,
 }: {
   lift: boolean;
   initial: Order[];
@@ -58,6 +59,8 @@ export function Room({
   figures: NumbersData;
   /** the board and the waits, for the order drawer beside the model */
   order: OrderMenu;
+  /** the résumé claims, and how many run */
+  proof: { running: number; total: number };
 }) {
   const [act, setAct] = useState(0);
   const [wide, setWide] = useState(false);
@@ -286,6 +289,7 @@ export function Room({
             </>
           }
           claims={claims}
+          proof={proof}
           picked={picked}
           onPick={setPicked}
           hot={hot}
