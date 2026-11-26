@@ -2,7 +2,9 @@
    a written check on the rail's paper; one still to come is a blank pad, outlined, with its plan. */
 
 .head { max-width: calc(1120px + 2 * var(--gutter)); margin: 0 auto; padding: 40px var(--gutter) 8px; }
-.title { font-size: clamp(56px, 6.5vw, 92px); line-height: 1; color: var(--red); margin-bottom: 14px; }
+/* the proof page, the site's front door, keeps to two faces (the block capitals and the body) and the
+   black, red and teal of the sign: the brush script and the ballpoint stay on the café's own pages */
+.title { font-size: clamp(44px, 5.5vw, 76px); line-height: 1; color: var(--red); margin-bottom: 14px; text-transform: uppercase; }
 .lede { max-width: 70ch; font-size: 17px; }
 .lede a, .cards a { text-decoration: underline; text-underline-offset: 3px; }
 .lede code, .cards code { font: 500 .9em/1 ui-monospace, "Cascadia Mono", Consolas, monospace; }
@@ -30,7 +32,7 @@
 .gm { margin: 0; padding-left: 14px; border-left: 3px solid var(--red); font-size: 15.5px; line-height: 1.5; }
 .gm b { font-weight: 700; }
 .where { font: 700 12px/1 var(--font-cond), sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--red); margin-bottom: 6px; }
-.here { font: 400 22px/1 var(--font-script), cursive; color: var(--pen); margin-top: 4px; }
+.here { font: 900 18px/1 var(--font-block), sans-serif; font-variation-settings: "opsz" 72; letter-spacing: .04em; text-transform: uppercase; color: #136A65; margin-top: 4px; }
 .coming .here { color: #1A161399; }
 .twin { font-size: 15.5px; max-width: 72ch; }
 .coming .twin { color: #1A1613BB; }

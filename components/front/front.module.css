@@ -1,5 +1,5 @@
 /* The home page's first part: the model, pinned while the shop is told in three acts (the shop, the
-   numbers it keeps, how it's built), and the beads and card of the third. The sign-painter kit is in
+   numbers it keeps, the résumé running in it), and the beads and card of the third. The sign-painter kit is in
    app/globals.css; the acts' own type (kicker, headline, figures) is in app/page.module.css. */
 
 .story { position: relative; overflow-x: clip; /* the lamp's pool spills past the model; clip, unlike hidden, keeps the pin sticky */ }
@@ -46,10 +46,6 @@
   .steps > :nth-child(1) { height: 100svh; }
   .steps > :nth-child(2) { height: 75svh; }
   .steps > :nth-child(3) { height: 130svh; }
-  /* the lamp's scroll timeline: this marker's top crossing the middle of the screen is where "How it's
-     built" comes on (Room.tsx's observer line), so the dim runs from 68% of the screen to 32% */
-  .story { --lamp-range: cover 32vh cover 68vh; }
-  .steps > :nth-child(3) { view-timeline: --built block; }
 
   /* the band: the three parts as a short contents list on the left, the act on show beside it, never
      narrower than three readable columns (a short screen caps the model well under the page's width) */
@@ -210,7 +206,7 @@
 .placedWays a { color: var(--red); text-underline-offset: 4px; }
 .placedWays button { text-decoration: underline; text-underline-offset: 4px; letter-spacing: inherit; text-transform: inherit; }
 
-/* ── the contents: 01 The shop / 02 The numbers / 03 How it's built ── */
+/* ── the contents: 01 The shop / 02 The numbers / 03 Résumé, running ── */
 .tabs { display: grid; align-content: center; gap: 2px; padding-right: 16px; border-right: 1.5px solid #1A161330; }
 .tabs button {
   display: flex;
@@ -240,7 +236,7 @@
   .modelCol { align-content: start; }
 }
 
-/* ── act 3: how it's built ── */
+/* ── act 3: the résumé, running ── */
 .actKicker { font-size: 13px; color: var(--red); }
 .actTitle { font-size: clamp(34px, 6vw, 44px); margin-top: 6px; }
 @media (min-width: 1001px) { .actTitle { font-size: clamp(34px, 2.8vw, 48px); } }
@@ -298,32 +294,21 @@
   mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent), linear-gradient(transparent, #000 3%, #000 95%, transparent);
   mask-composite: intersect;
 }
-/* "How it's built" turns the lamp off for real: a render with only the set's own bulbs lit fades in */
+/* "Résumé, running" turns the lamp off for real: a render with only the set's own bulbs lit fades in */
 /* its shadow side is lifted a little (a still filter, never animated), so the lamp-off wall reads as
    dark wood rather than a black patch on the cream and its beads stay readable */
 .dark { position: absolute; inset: 0; filter: contrast(.86) brightness(1.08); }
 /* Everything lit by the lamp goes with it: lampOff is what's only there with the lamp off (the dark
    frame, the figures' lamp-off sprites and their floor shadows, the occluders cut from the dark
    frame), lampOn what's only there with it on (the lit frame and sprites, the pool on the page). The
-   lamp-off things come in first and the lamp-on ones let go after (and the other way round on the way
-   out), so the lamp's shadows on the page never show through the dark frame's clear page, and the
-   people change with the room rather than ahead of it. */
-.dark, .lampOff { opacity: 0; transition: opacity .5s ease .3s; }
+   switch is a short timed change, never scrubbed by the scroll (a scroll that stopped mid-way left
+   both scenes half there, people as ghosts). The lamp-off things sit on top, so they come in over a
+   lit room still whole, and only then does the lit room let go; on the way out the lit room comes
+   back whole underneath first. Neither side is ever see-through over the page. */
+.dark, .lampOff { opacity: 0; transition: opacity .4s ease .4s; }
 .built .dark, .built .lampOff { opacity: 1; transition-delay: 0s; }
-.beauty, .lampOn, .stage::before { transition: opacity .5s ease; }
+.beauty, .lampOn, .stage::before { transition: opacity .4s ease; }
 .built .beauty, .built .lampOn, .built .stage::before { opacity: 0; transition-delay: .4s; }
-/* Where the browser can, the lamp follows the scroll instead: it dims across a third of a screen
-   either side of the line where "How it's built" comes on, and comes back the same way, all on the
-   compositor (a view timeline on that act's marker, opacity only; scrollY is never read). */
-@keyframes lamp-off { from { opacity: 0; } 55%, to { opacity: 1; } }
-@keyframes lamp-on { from, 45% { opacity: 1; } to { opacity: 0; } }
-@supports (timeline-scope: --a) and (animation-range: cover 0% cover 100%) {
-  @media (prefers-reduced-motion: no-preference) {
-    .story { timeline-scope: --built; }
-    .dark, .lampOff { transition: none; animation: lamp-off linear both; animation-timeline: --built; animation-range: var(--lamp-range); }
-    .beauty, .lampOn, .stage::before { transition: none; animation: lamp-on linear both; animation-timeline: --built; animation-range: var(--lamp-range); }
-  }
-}
 /* the visitor's own guest: a brass ring on the floor round its feet (in figure units, 1 = 1.6 m) */
 .mineRing { fill: none; stroke: #C2A06A; stroke-width: .022; }
 
@@ -567,32 +552,34 @@
 
 /* ── narrower: the model sticks to the top and the acts scroll under it as sections ── */
 @media (max-width: 1000px) {
-  .pin { display: flex; flex-direction: column; padding: 0 var(--gutter) 24px; }
+  .pin { display: flex; flex-direction: column; padding: 0 var(--gutter) 24px; --stage-w: min((100vw - 2 * var(--gutter)) * 1.04, 38svh * 3600 / 1885); }
   .steps, .tabs { display: none; }
   /* in "The numbers"' own section, two by two under its figures */
   .charts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; margin-top: 20px; }
   .modelCol { order: -1; position: sticky; top: 0; z-index: 3; background: var(--cream); margin: 0 calc(-1 * var(--gutter)); padding: 8px var(--gutter) 4px; box-shadow: 0 10px 14px -12px #1A161366; }
-  /* stuck to the top, the model keeps to under half the screen so the acts have room to read. The
+  /* the acts pass under the stuck model through a short fade, so a card going under reads as going
+     under rather than cut off at a hard line */
+  .modelCol::after { content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 22px; background: linear-gradient(var(--cream), #F5EAD000); pointer-events: none; }
+  /* stuck to the top, the model keeps well under half the screen so the acts have room to read. The
      render's left fifth is the tree's shadow and the lamp's pool, so the frame runs a quarter wider than
      the column and is drawn left until the set's own middle (57% across the frame) is the column's */
-  .stage { width: min(124%, 45svh * 3600 / 1885); margin: 6px 0 0 50%; translate: -57.25% 0; }
+  .stage { width: var(--stage-w); margin: 6px 0 0 50%; translate: -57.25% 0; }
   /* a picked part's sheet names it, so its bead doesn't also hang a tooltip over the set */
   .bead[aria-pressed="true"]:not(:hover) .tip { opacity: 0; }
   /* a jump to an act (the order page's "see it walk in", a link) lands it under the stuck model, whose
      height is the stage's (its width over the render's ratio) plus the caption */
-  .act { display: grid; gap: 14px; align-content: start; min-height: 46svh; padding: 30px 0 34px; border-top: 1.5px dashed #1A161340; scroll-margin-top: calc(min((100vw - 2 * var(--gutter)) * 1.24, 45svh * 3600 / 1885) * 1885 / 3600 + 68px); }
+  .act { display: grid; gap: 14px; align-content: start; min-height: 46svh; padding: 30px 0 34px; border-top: 1.5px dashed #1A161340; scroll-margin-top: calc(var(--stage-w) * 1885 / 3600 + 68px); }
   .act:first-child { border-top: 0; }
   /* the lamp's scroll timeline: the act comes on as its top passes 63% of the screen (Room.tsx's
      observer line), so the dim runs from 75% to 51% */
-  .story { --lamp-range: cover 25vh cover 49vh; }
-  .act[data-act="2"] { view-timeline: --built block; }
   .groups { margin-top: 4px; }
   /* the stuck model already takes the top half of the screen, so the card is a sheet along the bottom */
   .card { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 10; max-width: 620px; max-height: 50svh; margin: 0 auto; grid-template-columns: minmax(0, 1fr); padding: 16px 18px; }
-  /* the order button rides the bottom of the screen while the story is on it (sticky in the story's
-     column, so it leaves with the story), and the drawer is a sheet up from the bottom, under the stuck
-     model, which stays in view above it */
-  .orderButton { order: 99; position: sticky; bottom: calc(14px + env(safe-area-inset-bottom)); align-self: flex-end; margin-top: -92px; width: 76px; height: 76px; font-size: 16px; }
+  /* the order button rides the stuck model's lower right corner, over the set and never over the
+     words scrolling under it (it used to float at the bottom of the screen and sat on the text);
+     sticky in the story's column, so it leaves with the story. The drawer is a sheet up from the
+     bottom, under the stuck model, which stays in view above it */
+  .orderButton { order: -1; position: sticky; top: calc(var(--stage-w) * 1885 / 3600 - 50px); align-self: flex-end; margin: -60px 0 4px; width: 56px; height: 56px; font-size: 12px; }
   /* while the first act's own "Order ahead" is on screen, the token stands back: on arrival it sat on
      the manager's slip (ship-day panel, four of four), and two ways to order side by side say nothing
      more than one. Room.tsx sets data-shy from an observer on that link */
@@ -606,7 +593,7 @@
     max-width: 620px;
     margin: 0 auto;
     /* up to the stuck model's foot: its stage (as .stage below sizes it) plus the caption and padding */
-    max-height: calc(100svh - min((100vw - 2 * var(--gutter)) * 1.24, 45svh * 3600 / 1885) * 1885 / 3600 - 68px);
+    max-height: calc(100svh - min((100vw - 2 * var(--gutter)) * 1.24, 38svh * 3600 / 1885) * 1885 / 3600 - 68px);
     border-radius: 12px 12px 0 0;
     border-bottom: 0;
     box-shadow: 0 -6px 0 -2px var(--black), 0 -10px 30px #1A161340;

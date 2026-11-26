@@ -42,3 +42,11 @@
 .ways { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 10px 26px; font: 600 14px/1.2 var(--font-cond), sans-serif; letter-spacing: .1em; text-transform: uppercase; }
 .ways a { text-underline-offset: 4px; }
 .ways a.again { font-size: 18px; color: var(--red); }
+
+/* the board and the check side by side on a wide screen, the check held in view while the board is
+   tapped, so every tap shows on the check; narrower, the check follows the board */
+@media (min-width: 1180px) {
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 420px); align-items: start; max-width: 1680px; margin: 0 auto; }
+  .split > .form { position: sticky; top: 12px; padding: 64px var(--gutter) 32px 0; }
+  .split > .form .rail { margin-top: 128px; }
+}

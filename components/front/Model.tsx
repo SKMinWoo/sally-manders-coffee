@@ -66,7 +66,7 @@ export function Model({
 }: {
   meta: Meta;
   beauty: StaticImageData;
-  /** the same set with the reading lamp off, only its own bulbs lit: "How it's built" */
+  /** the same set with the reading lamp off, only its own bulbs lit: "Résumé, running" */
   dark: StaticImageData;
   roof: StaticImageData;
   /** the whole set, roof on, cropped from the Study's cut-out (portfolio scene.py --closed) */
@@ -131,7 +131,7 @@ export function Model({
         <div className={s.lens}>
           <div className={s.film}>
             <Image data-uncovered="" className={s.beauty} src={beauty} alt="A painted-wood model of Sally Mander's with the roof lifted off, standing on the page under a reading lamp: the café with its teal counter, two baristas in red aprons and caps, and menu boards on the right, a dining room with tables and pantry shelving in the middle, the back office on the left, and a toy van at the kerb." sizes={SIZES} quality={QUALITY} priority />
-            {/* the lamp goes off for "How it's built": the set lit only by its own bulbs and the street lamp */}
+            {/* the lamp goes off for "Résumé, running": the set lit only by its own bulbs and the street lamp */}
             <Image className={s.dark} src={dark} alt="" sizes={SIZES} quality={QUALITY} />
             <GuestsLayer world={meta.world} occluders={meta.occluders} state={footfall} width={W} height={H} peg={meta.peg} />
           </div>

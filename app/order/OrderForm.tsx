@@ -7,6 +7,7 @@ import type { MenuGroup, MenuRow } from "@/server/menu";
 import { putOnRail, type OrderState } from "./actions";
 import { RailCheck } from "./RailCheck";
 import { useCart } from "./useCart";
+import s from "./order.module.css";
 
 /**
  * The board and the check, side by side. The cart lives in sessionStorage so a reload keeps it;
@@ -31,7 +32,7 @@ export function OrderForm({
   const ready = items ? formatWait(waits[Math.min(items, waits.length - 1)] ?? 0) : "—";
 
   return (
-    <div>
+    <div className={s.split}>
       <MenuBoard menu={menu} groups={groups} houseId={houseId} title="Pick from the board" onAdd={(id) => step(id, 1)} counts={cart} />
       <RailCheck action={action} pending={pending} message={state?.message} date={date} ready={ready} lines={lines} payload={payload} onStep={step} />
     </div>

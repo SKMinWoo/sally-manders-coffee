@@ -530,7 +530,7 @@ export function GuestCaption({ state, frozen, replay }: { state: FootfallState; 
   return (
     <p className={`cond ${s.caption}`} aria-live="off">
       <span className={s.live}>{t === null ? "—" : clockFmt.format(t).toLowerCase()} in Austin</span>
-      {replaying && <span className={s.replay}>Replay: it&rsquo;s quiet, so this is {clockFmt.format(replay.from).toLowerCase()}&rsquo;s busiest quarter hour</span>}
+      {replaying && <span className={s.replay}>Replay of {clockFmt.format(replay.from).toLowerCase()}, while it&rsquo;s quiet</span>}
       <span>{recent ?? "—"} order{recent === 1 ? "" : "s"} in the last 15 min</span>
       <span>{waiting ?? "—"} waiting at the counter</span>
       <span className={s.key}>

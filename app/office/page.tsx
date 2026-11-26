@@ -168,7 +168,7 @@ export default async function Office() {
       </div>
       <section className={s.head}>
         <div>
-          <h1 className={`script ${s.title}`}>Résumé, running</h1>
+          <h1 className={`block ${s.title}`}>Résumé, running</h1>
           <p className={s.lede}>
             My GM résumé, running: <b>{running} of {e.claims.length}</b> claims live, measured by CI. Each line from
             General Motors sits beside the small version of it that runs here. A figure on this page is either counted

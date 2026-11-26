@@ -23,12 +23,12 @@ const WIDE = "(min-width: 1001px)";
 
 /**
  * The home page's first part: the model, and the shop told in three acts beside it (the shop, the
- * numbers it keeps, how it's built). On a wide screen the model pins while three markers scroll
+ * numbers it keeps, the résumé running in it). On a wide screen the model pins while three markers scroll
  * past behind it, and whichever marker crosses the middle of the screen is the act on show; it lets
  * go where Today's board begins. Narrower, the model sticks to the top and the acts scroll under it
- * as ordinary sections. Either way the act switches and scrollY is never read; the one thing that
- * follows the scroll is the reading lamp dimming into "How it's built", and that is a CSS view
- * timeline on the compositor (front.module.css's lamp-on/lamp-off), not script.
+ * as ordinary sections. Either way the act switches and scrollY is never read; the reading lamp
+ * goes off with "Résumé, running" as a short timed change (front.module.css), never scrubbed by the
+ * scroll, so no stopping point leaves both scenes half there.
  */
 export function Room({
   lift,
@@ -223,7 +223,7 @@ export function Room({
         if (!inView.size) return;
         const next = Math.max(...inView);
         setAct(next);
-        // leaving "How it's built" puts the beads away, and the card with them
+        // leaving "Résumé, running" puts the beads away, and the card with them
         if (next !== 2) {
           setPicked(null);
           setHot(null);
@@ -331,7 +331,7 @@ export function Room({
           ref={orderButton}
           type="button"
           className={s.orderButton}
-          data-shy={shy && !ordering ? "" : undefined}
+          data-shy={(shy || (!wide && act === 2)) && !ordering ? "" : undefined}
           aria-expanded={ordering}
           aria-controls="order-drawer"
           onClick={(e) => (ordering ? closeOrder() : openOrder(e.currentTarget))}
@@ -340,7 +340,7 @@ export function Room({
           Order
         </button>
         {/* wide, the drawer's closed face rests where it comes out, through the shop and its numbers;
-            "How it's built" dims the lamp and points at the model, so the card stands back for it */}
+            "Résumé, running" dims the lamp and points at the model, so the card stands back for it */}
         <OrderRest order={order} on={wide && room && act < 2 && !ordering} onOpen={openOrder} />
         <OrderDrawer id="order-drawer" open={ordering} onClose={closeOrder} onPlaced={placed} order={order} />
       </div>
