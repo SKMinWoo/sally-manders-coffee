@@ -494,6 +494,8 @@
   letter-spacing: .08em;
 }
 .live { color: var(--red); }
+/* the quiet hours' replay, said in so many words: the label is the point, so it reads first */
+.replay { padding: 2px 7px 1px; border-radius: 3px; background: var(--black); color: var(--cream); }
 .key { display: inline-flex; align-items: center; gap: 6px; opacity: .8; }
 .keySim, .keyVisitor { display: inline-block; width: 9px; height: 13px; border-radius: 5px 5px 2px 2px; border: 1.5px solid var(--black); box-shadow: 0 0 0 1px #F5EAD0A0; }
 /* a simulated guest is one of the three paints, so its chip carries all three */

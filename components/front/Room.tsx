@@ -43,6 +43,7 @@ export function Room({
   figures,
   order,
   proof,
+  replay,
 }: {
   lift: boolean;
   initial: Order[];
@@ -61,6 +62,8 @@ export function Room({
   order: OrderMenu;
   /** the résumé claims, and how many run */
   proof: { running: number; total: number };
+  /** while the street is quiet: the busier quarter hour being replayed, already among `initial` */
+  replay?: { from: number; until: number };
 }) {
   const [act, setAct] = useState(0);
   const [wide, setWide] = useState(false);
@@ -317,7 +320,7 @@ export function Room({
             />
           </div>
           <div className={s.below} data-charts={wide && act === 1 ? "" : undefined}>
-            <GuestCaption state={footfall} frozen={frozen} />
+            <GuestCaption state={footfall} frozen={frozen} replay={replay} />
             {wide && charts}
           </div>
         </div>

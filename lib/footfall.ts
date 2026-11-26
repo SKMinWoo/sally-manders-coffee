@@ -58,6 +58,8 @@ export interface Order {
   source: "sim" | "visitor";
   /** this browser placed it (the drawer): known only here, never in the public feed */
   mine?: boolean;
+  /** a stored order from a busier hour, replayed while the street is quiet (lib/replay.ts) */
+  replay?: boolean;
 }
 
 /** What the figure looks like on a leg: walking empty-handed, carrying a cup, or sat down. */

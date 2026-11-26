@@ -517,16 +517,20 @@ export function useDrawnNow(state: FootfallState): number | null {
 }
 
 /** Under the model: Austin's time on the model, the last quarter hour's orders and who's waiting. */
-export function GuestCaption({ state, frozen }: { state: FootfallState; frozen: boolean }) {
+export function GuestCaption({ state, frozen, replay }: { state: FootfallState; frozen: boolean; replay?: { from: number; until: number } }) {
   const t = useDrawnNow(state);
   if (frozen) {
     return <p className={`cond ${s.caption}`}>The clock is stopped, so the guests are too · simulated guests are painted mustard, navy or oxblood, real visitors teal</p>;
   }
-  const recent = t === null ? null : state.orders.filter((o) => o.placedAt > t - KEEP_MS && o.placedAt <= t).length;
-  const waiting = t === null ? null : waitingAt(state.orders, t);
+  // a replayed guest is drawn, never counted
+  const recent = t === null ? null : state.orders.filter((o) => !o.replay && o.placedAt > t - KEEP_MS && o.placedAt <= t).length;
+  const replaying = replay !== undefined && t !== null && t < replay.until;
+  const live = state.orders.filter((o) => !o.replay);
+  const waiting = t === null ? null : waitingAt(live, t);
   return (
     <p className={`cond ${s.caption}`} aria-live="off">
       <span className={s.live}>{t === null ? "—" : clockFmt.format(t).toLowerCase()} in Austin</span>
+      {replaying && <span className={s.replay}>Replay: it&rsquo;s quiet, so this is {clockFmt.format(replay.from).toLowerCase()}&rsquo;s busiest quarter hour</span>}
       <span>{recent ?? "—"} order{recent === 1 ? "" : "s"} in the last 15 min</span>
       <span>{waiting ?? "—"} waiting at the counter</span>
       <span className={s.key}>
@@ -539,5 +543,5 @@ export function GuestCaption({ state, frozen }: { state: FootfallState; frozen: 
 /** How many tickets are on the rail at the instant the model is drawing. */
 export function RailCount({ state }: { state: FootfallState }) {
   const t = useDrawnNow(state);
-  return <>{t === null ? "—" : waitingAt(state.orders, t)} on the rail</>;
+  return <>{t === null ? "—" : waitingAt(state.orders.filter((o) => !o.replay), t)} on the rail</>;
 }

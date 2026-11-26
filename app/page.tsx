@@ -19,6 +19,7 @@ import { getBehind } from "@/server/reporting";
 import { getBoard, inProse, lineOf } from "@/server/board";
 import { PORTFOLIO } from "@/lib/site";
 import { formatCheckDate, weekdayOf } from "@/lib/time";
+import { QUIET, replayOf } from "@/lib/replay";
 import { clock, LEAD_METRICS, METRICS, versus, WEEKDAYS } from "./behind/metrics";
 import s from "./page.module.css";
 import { arriveScript } from "./arrive";
@@ -44,6 +45,14 @@ export default async function Shop() {
     getBoard(),
   ]);
   const line = lineOf(work);
+
+  // a quiet street (the small hours) replays the last day's busiest quarter hour, labelled as one,
+  // rather than leaving the model empty
+  const toOrder = (g: (typeof guests)[number]) => ({ placedAt: g.placedAt.getTime(), readyAt: g.readyAt.getTime(), items: g.items, source: g.source });
+  const live = frozen ? [] : guests.map(toOrder);
+  const replay = frozen || live.length >= QUIET
+    ? null
+    : replayOf(live.length, (await listFootfall(await shopDb(), new Date(at.getTime() - 24 * 3_600_000), at)).map(toOrder), at.getTime());
 
   const lift = shouldLiftRoof({
     fromStudy: cameFromStudy(h.get("referer"), h.get("host"), BASE, PORTFOLIO),
@@ -157,7 +166,8 @@ export default async function Shop() {
           asOf: day.asOf,
         }}
         lift={lift && !frozen}
-        initial={frozen ? [] : guests.map((g) => ({ placedAt: g.placedAt.getTime(), readyAt: g.readyAt.getTime(), items: g.items, source: g.source }))}
+        initial={replay ? [...live, ...replay.orders] : live}
+        replay={replay ? { from: replay.from, until: replay.until } : undefined}
         asOf={at.getTime()}
         frozen={frozen}
         base={BASE}
