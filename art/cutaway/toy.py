@@ -361,6 +361,12 @@ for nm, x0, x1 in (("dining", DX0, DX1), ("office", OX0 + T, OX1 + T)):
         shell_box(nm + "-pier", px0, px1, N0, N1, FLOOR + 0.9, FLOOR + 2.55)
     box("shell-" + nm + "-sill-cap", x0 + 0.35, x1 - 0.35, N0 - 0.02, N1 + 0.05, FLOOR + 0.88, FLOOR + 0.92, WALNUT)
 shell_box("east", OX1, OX1 + T, YS - T, N1, FLOOR + 1.23, RZ)
+# The café's own end wall (room.py's wall-w) sits exactly inside the shell's west wall, face on face,
+# and the two creams fought in the render as stripes across the end of the set. Tuck it a centimetre
+# inside on both sides, so the roof-on frame shows only the shell and the roof-off one only the wall.
+_ww = bpy.data.objects["wall-w"]
+for v in _ww.data.vertices:
+    v.co.x *= (T - 0.02) / T
 # the awning over the café's glass, and the sign board on the roof
 me = bpy.data.meshes.new("shell-awning")
 ay0, ay1, az0, az1 = N1, N1 + 0.75, DOOR[2] + 0.2, DOOR[2] - 0.12
