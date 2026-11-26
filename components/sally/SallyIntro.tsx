@@ -11,11 +11,21 @@ import { useEffect, useRef, type ReactNode } from "react";
 
 const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// TODO(Alex): when should Sally make her entrance? Every page load, once per visit
-// (sessionStorage), or only on the storefront? Return false to skip it; she is drawn at rest
-// either way, so skipping never leaves the logo half-drawn.
+// Once per visit (decision 0009, proposed): her entrance is a hello, and a hello on every page
+// gets in the way of reading. The first page of a browser session plays it, on whichever page the
+// visitor lands; the rest of the visit she's drawn at rest, and hovering still replays the wink.
+// Reduced motion never plays it. Where storage is blocked, she plays, as she always did.
+const SEEN = "sally_intro";
+
 function shouldPlayIntro(): boolean {
-  return !reducedMotion();
+  if (reducedMotion()) return false;
+  try {
+    if (sessionStorage.getItem(SEEN)) return false;
+    sessionStorage.setItem(SEEN, "1");
+  } catch {
+    // private mode or blocked storage: play it
+  }
+  return true;
 }
 
 const SETTLE = "cubic-bezier(.3, .7, .4, 1)";

@@ -8,8 +8,7 @@
   const [inside, tail, body, gills, arm, eye, lid] = ["in", "tail", "body", "gills", "arm", "eye", "lid"].map(part);
   if (!lid) return; // not the full mark, so nothing to animate
 
-  // TODO(Alex): when should Sally make her entrance? Every page load, once per visit, or only on the
-  // storefront? Return false to skip it; she is drawn at rest either way.
+  // The mockup plays her entrance on every load. The app plays it once a visit (decision 0009).
   function shouldPlayIntro() {
     return !matchMedia("(prefers-reduced-motion: reduce)").matches;
   }

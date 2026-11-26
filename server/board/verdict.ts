@@ -24,25 +24,22 @@ export function deltas(e: Effect) {
 export type Deltas = ReturnType<typeof deltas>;
 
 /**
- * Whether a change that ran its week stays.
+ * Whether a change that ran its week stays. The shop's policy (decision 0009, proposed):
  *
- * TODO(Alex): this is the shop's policy, so it's yours to set. It decides what the board shows as
- * kept and what it shows as taken back, and every kept change becomes part of the shop for good.
- * The questions in it:
- *   - How much quicker must the wait get to be worth anything? Is a 2% gain noise to you?
- *   - What is a barista hour worth against the wait? The third barista costs three hours a day
- *     and only shortens the morning; a change that costs hours should probably have to earn them.
- *   - Can takings buy a slower wait (the pastry pairing raises checks but makes orders bigger)?
- * The rule below is a placeholder so the board runs: keep it when something got better (the wait
- * by 3% or more, or takings by 1% or more) and nothing got worse (the wait by over 5%, or takings
- * by over 1%). It ignores staff hours, so a change that costs hours and moves nothing is still
- * taken back only because nothing got better. Replace it with your rule (5 to 10 lines).
+ *   - Better means the typical or the slowest wait fell by 3% or more, or takings rose by 1% or
+ *     more. Below that it's noise on a simulated week.
+ *   - Worse means the typical wait grew by over 5%, or takings fell by over 1%. Takings can't buy a
+ *     much slower wait: the shop's promise is the wait.
+ *   - A barista hour has to earn its keep: a change that adds hours must cut the typical wait in its
+ *     hours by at least 5% for each extra hour a day. The third morning barista (three hours) has to
+ *     find 15%; a second evening barista (two hours) has to find 10%.
  */
 export function shouldKeep(d: Deltas, lever: LeverId): boolean {
-  void LEVERS[lever]; // the lever is here for a rule that weighs its cost (LEVERS[lever].staffHours)
   const better = d.wait <= -0.03 || d.slow <= -0.03 || d.takings >= 0.01;
   const worse = d.wait > 0.05 || d.takings < -0.01;
-  return better && !worse;
+  const hours = Math.max(d.staffHoursPerDay, LEVERS[lever].staffHours);
+  const earnsItsHours = hours <= 0 || d.wait <= -0.05 * hours;
+  return better && !worse && earnsItsHours;
 }
 
 export const verdictOf = (e: Effect, lever: LeverId): Verdict => (shouldKeep(deltas(e), lever) ? "kept" : "rolled-back");

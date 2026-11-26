@@ -183,3 +183,11 @@ test("the verdict keeps a plain win and takes back a plain loss", () => {
   assert.equal(shouldKeep(d({ wait: 0.1, takings: -0.03 }), "sidewalkSign"), false);
   assert.equal(shouldKeep(d({ staffHoursPerDay: 2 }), "eveningBarista"), false, "costs hours and moves nothing");
 });
+
+test("the verdict makes a barista hour earn its keep: 5% off the typical wait for each extra hour a day", () => {
+  assert.equal(shouldKeep(d({ wait: -0.07, staffHoursPerDay: 2 }), "eveningBarista"), false, "7% is short of the 10% two hours must find");
+  assert.equal(shouldKeep(d({ wait: -0.12, staffHoursPerDay: 2 }), "eveningBarista"), true);
+  assert.equal(shouldKeep(d({ wait: -0.17, staffHoursPerDay: 3 }), "rushBarista"), true, "the morning rush finds its 15%");
+  assert.equal(shouldKeep(d({ wait: -0.1, takings: 0.03 }), "pastryPairing"), true, "no hours, so no bar beyond better and not worse");
+  assert.equal(shouldKeep(d({ wait: 0.08, takings: 0.05 }), "pastryPairing"), false, "takings can't buy a much slower wait");
+});

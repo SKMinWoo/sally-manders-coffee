@@ -19,9 +19,11 @@ function pair(lever: LeverId, inHours = true) {
 }
 
 test("a day without levers is byte for byte the day it was before the levers existed", () => {
-  // pinned before levers were added (60 of 60 days from 2026-10-01 matched, the clock change included)
+  // first pinned before levers were added (60 of 60 days from 2026-10-01 matched, the clock change
+  // included), and pinned again when demand was reshaped (decision 0009): days already in the
+  // database keep the shape they were written with, and this pins the one every new day gets
   const fingerprint = createHash("sha256").update(JSON.stringify(simulateDay("2026-11-13"))).digest("hex").slice(0, 16);
-  assert.equal(fingerprint, "cc9d46f6342757f7");
+  assert.equal(fingerprint, "76c12bfaea967ebc");
 });
 
 test("with levers, each order draws from its own stream, so a change that doesn't move demand leaves the same guests", () => {
@@ -40,10 +42,12 @@ test("each lever moves its figure the way its card says", () => {
     const { on, off } = pair(id);
     assert.ok(median(on.map(wait)) < median(off.map(wait)), `${id} shortens the wait in its hours`);
   }
-  // the evenings never queue at one barista (a handful of orders an hour against the bar's 16), so
-  // the second barista costs two hours and changes almost nothing: the measurement should take it back
+  // the evenings rarely queue at one barista (about one guest every ten minutes against the bar's 16
+  // an hour), so the second barista helps a little now and then, nowhere near the 10% its two hours
+  // must find under the board's rule (decision 0009): the measurement should take it back
   const evening = pair("eveningBarista");
-  assert.ok(Math.abs(median(evening.on.map(wait)) / median(evening.off.map(wait)) - 1) < 0.02, "a second evening barista barely moves the wait");
+  const eveningGain = 1 - median(evening.on.map(wait)) / median(evening.off.map(wait));
+  assert.ok(eveningGain >= 0 && eveningGain < 0.1, `a second evening barista barely moves the wait (${(eveningGain * 100).toFixed(1)}%)`);
   const pastry = pair("pastryPairing");
   const items = (os: typeof pastry.on) => os.reduce((n, o) => n + o.lines.reduce((m, l) => m + l.qty, 0), 0);
   assert.ok(items(pastry.on) > items(pastry.off), "the pastry pairing makes morning orders bigger");

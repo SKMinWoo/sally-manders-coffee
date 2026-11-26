@@ -44,9 +44,9 @@ measured against the same seven days replayed in memory without it. From the mom
 passed, every hour and every order draws from its own random stream. So the replay has the same
 guests, ordering the same things, wherever the change didn't alter them (common random numbers).
 Days written before this keep the single stream; a fingerprint test pins them byte for byte.
-`shouldKeep` in `server/board/verdict.ts` turns the effect into kept or taken back. The rule there
-now is provisional: something got better and nothing got worse. It is the shop's policy, marked
-TODO(Alex).
+`shouldKeep` in `server/board/verdict.ts` turns the effect into kept or taken back. The rule is
+the shop's policy and is set out in decision 0009: something got better, nothing got worse, and a
+change that adds barista hours has to cut the wait enough to earn them.
 
 **Planned and trying are dates, not states.** An experiment is live or measured. The board derives
 planned (it starts after today) and trying (day n of 7) from its dates, so a missed cron can't

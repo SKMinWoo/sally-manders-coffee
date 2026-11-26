@@ -76,11 +76,10 @@ export const FIXTURES: readonly Fixture[] = [
   },
 ];
 
-// TODO(Alex): how "How it's built" reads to a recruiter. The home page's third act lists the
-// thirteen fixtures under these headings, in this order, and each line lights its bead on the
-// model. Group them the way you'd talk through the system in an interview: by what the visitor
-// touches first, by your two roles (full-stack, test engineer), or by the stages an order goes
-// through. Every key should appear once; four short groups fit the band on a wide screen.
+// How the home page's "Résumé, running" act lists the thirteen fixtures, each line lighting its bead
+// on the model (decision 0009, proposed): in the order you'd talk the system through in an
+// interview, starting with what a visitor touches first. Every key appears once; four short groups
+// fit the band on a wide screen.
 export const GROUPS: readonly { title: string; keys: readonly FixtureKey[] }[] = [
   { title: "Serving orders", keys: ["door", "boards", "till", "rail", "pantry"] },
   { title: "Testing & quality", keys: ["scanner", "certificate", "dining"] },

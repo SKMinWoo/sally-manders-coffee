@@ -44,7 +44,7 @@ export const CLAIMS: Claim[] = [
     id: "excel-export",
     role: FS,
     gm: "Scale & data integrity: JDBC batch writes (50% fewer DB round trips), composite indexes on 600K-row tables, a batched API replacing 460 parallel calls, and **server-side Excel for 20K+ row workbooks with no-op change detection**.",
-    twin: "“Export sales” on Behind the scenes: an .xlsx of every order line over up to 92 days, written by hand (no spreadsheet library) and streamed from the database a page at a time, so memory stays flat however long the span. Every check is validated before a byte is sent, the workbook is reopened and checked against its own Totals sheet in CI, and each workbook carries a tag so a repeat request can be answered “Nothing changed” (the rule for “nothing new” is still to be set, so until then every request gets a fresh workbook). The shop’s own month is about 12,000 rows, under GM’s 20K+; the 90-day figure is a simulated history streamed in CI.",
+    twin: "“Export sales” on Behind the scenes: an .xlsx of every order line over up to 92 days, written by hand (no spreadsheet library) and streamed from the database a page at a time, so memory stays flat however long the span. Every check is validated before a byte is sent, the workbook is reopened and checked against its own Totals sheet in CI, and each workbook carries a tag, so a repeat request for the same span with no new orders in it is answered “Nothing changed” and nothing is built. The shop’s own month is about 12,000 rows, under GM’s 20K+; the 90-day figure is a simulated history streamed in CI.",
     exhibit: 4,
     status: "running",
     code: [

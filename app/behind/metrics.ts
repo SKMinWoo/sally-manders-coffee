@@ -22,10 +22,9 @@ export const METRICS: Record<MetricKey, Metric> = {
   visitorOrders: { label: "Ordered here", value: (d) => d.visitorOrders, format: (n) => n.toLocaleString("en-US") },
 };
 
-// TODO(Alex): which three figures head the rail? They're pinned up big, with last week beside
-// them; the other three sit underneath in small type. A café owner glancing in at 10 am wants
-// different things from a recruiter reading the résumé: takings and orders say "busy", the p95
-// wait says "and it's run well". Pick any three keys of METRICS, most important first.
+// The three figures that head the rail, pinned up big with last week beside them (decision 0009,
+// proposed): takings and orders say "busy", and the slowest 1 in 20 waits says "and it's run
+// well", which is the p95 a performance reviewer looks for. The other three sit underneath.
 export const LEAD_METRICS: [MetricKey, MetricKey, MetricKey] = ["sales", "orders", "waitP95"];
 
 export const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

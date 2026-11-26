@@ -15,11 +15,19 @@ export type ExportMark = Span & Pick<SpanStats, "orders" | "lines" | "lastOrderI
  * between requests. Simulated days are written ahead and only become visible as their time comes.
  */
 export function isNothingNew(before: ExportMark, now: ExportMark): boolean {
-  // TODO(Alex): decide what "nothing changed" means. Return true only when re-sending would give
-  // the visitor the same rows. Every field of `now` is counted fresh for this request.
-  void before;
-  void now;
-  return false;
+  // Same rows means the same span, and the same orders in it. Orders are only ever added (a day
+  // is written ahead and shows as its time comes; a half-written day is cleared and written again
+  // under new ids), so a span whose order count, line count, newest order id and line total all
+  // match the tag holds the rows the visitor already has. Anything else (a new order, a rewritten
+  // day, another span) builds a fresh workbook.
+  return (
+    before.from === now.from &&
+    before.to === now.to &&
+    before.orders === now.orders &&
+    before.lines === now.lines &&
+    before.lastOrderId === now.lastOrderId &&
+    before.lineTotalCents === now.lineTotalCents
+  );
 }
 
 const PREFIX = "sales-v1.";

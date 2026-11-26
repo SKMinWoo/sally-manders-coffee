@@ -13,16 +13,14 @@ export interface RoofVisit {
 }
 
 /**
- * TODO(Alex): should this visit see the roof lift off?
+ * Should this visit see the roof lift off? (decision 0009, proposed)
  *
- * Lifting it every time is delightful once and tiresome on the fifth visit. Never lifting it wastes
- * the gag. Arriving from the Study is the zoom's punchline, so it probably always lifts.
- * Return true to arrive roofed and lift it; false to arrive already open.
+ * Arriving from the Study always lifts it: that's the zoom's punchline. Otherwise it lifts once a
+ * browser session, the first time the shop is opened, and the rest of the visit arrives open, so
+ * the fifth trip back from the order page doesn't sit through it again.
  */
 export function shouldLiftRoof({ fromStudy, seenThisSession }: RoofVisit): boolean {
-  void fromStudy;
-  void seenThisSession;
-  return true;
+  return fromStudy || !seenThisSession;
 }
 
 /**

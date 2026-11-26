@@ -5,7 +5,7 @@ import { demandAt } from "./demand";
 // The day's shape, as the front page's model shows it: each order is a guest who walks in, so an hour
 // with too few orders is an empty room on the model. These checks hold the curve to "busy in the
 // morning, never empty"; the numbers in the last test are the round-2 ask (more guests, spread more
-// evenly) and stay marked todo until demandAt is reshaped to meet them.
+// evenly), which demandAt meets since decision 0009.
 
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const WEEKDAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -33,7 +33,6 @@ test("the day stays inside what the simulator's other checks expect (200 to 400 
 
 test(
   "steadier guests: a little more each day, the quietest hour at least one order every ten minutes, the rush no more than 6.5 times the lull",
-  { todo: "TODO(Alex): reshape demandAt in demand.ts; then drop this todo" },
   () => {
     for (const weekday of WEEKDAYS) {
       const day = dayOf(weekday);

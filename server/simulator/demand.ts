@@ -11,19 +11,17 @@ const bump = (hour: number, peak: number, width: number) => Math.exp(-((hour - p
  * @returns the mean number of orders for that hour; the simulator draws the real count around it
  */
 export function demandAt({ hour, weekday }: { hour: number; weekday: number }): number {
-  // TODO(Alex): this is the shop's personality, so it is yours to shape. The default below is a
-  // commuter shop that never closes: a sharp 8 am rush, a small lunch bump, a quiet afternoon,
-  // weekends that start later and run flatter, and a trickle of night owls (about two an hour)
-  // between 9 pm and 6 am. Things you might want instead, or as well:
-  //   - a 3 pm cold-brew bump (Austin heat), or a Friday that beats Monday;
-  //   - a Saturday farmers'-market spike that dwarfs any weekday;
-  //   - a slow Monday, so the report has a "worst day" worth explaining;
-  //   - a late-night bump when the bars on South Congress let out.
+  // The shop's personality (decision 0009, proposed): a commuter shop that never closes and is
+  // never empty. A rush at 8 that the bar has to work for, a lunch bump, a quiet afternoon and a
+  // small after-work trickle; weekends start later and run flatter. The floor is about one guest every ten minutes, all night, so
+  // the model always has someone walking in, and the rush stays within 6.5 times the lull.
   const night = hour < 6 || hour >= 21;
-  const base = night ? 2 : 5;
+  const base = night ? 6.4 : 9;
   const weekend = weekday === 0 || weekday === 6;
-  if (weekend) return base + 30 * bump(hour, 10, 2.2) + 8 * bump(hour, 14, 1.6) + 4 * bump(hour, 19, 1.5);
-  return base + 44 * bump(hour, 8, 1.1) + 16 * bump(hour, 12.5, 1.2) + 7 * bump(hour, 15.5, 1.4) + 3 * bump(hour, 18.5, 1.2);
+  // the night never passes about 40% of what one barista makes, so the evenings still don't queue
+  // and the evening-barista lever is still the board's honest "no"
+  if (weekend) return base + 24 * bump(hour, 10, 2.2) + 8 * bump(hour, 14, 1.6) + 5 * bump(hour, 19, 1.5);
+  return base + 31 * bump(hour, 8, 1.1) + 13 * bump(hour, 12.5, 1.2) + 7 * bump(hour, 15.5, 1.4) + 3 * bump(hour, 18.5, 1.2);
 }
 
 /**

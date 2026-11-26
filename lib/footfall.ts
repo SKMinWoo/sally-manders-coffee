@@ -119,12 +119,10 @@ export function hashOf(key: string, salt = 0): number {
 /**
  * Who stays for a seat in the dining room once their cup is up, rather than taking it away.
  *
- * TODO(Alex): this is a café-feel call, and it decides how full the dining room looks. My working
- * default is below: a guest with two or more items stays (a coffee and a pastry is a sit-down), and
- * one in three of the rest stay too, picked by the order's own hash so it never flickers between
- * polls. Seats are claimed one guest each, and when they're all taken a guest takes away whatever
- * this says. Things to weigh: the simulator writes mostly 1–3 item orders, the room has 8 chairs,
- * and a seated guest stays 3–6 minutes, so a generous rule fills the room on a busy hour.
+ * A café-feel call (decision 0009, proposed): a guest with two or more items stays (a coffee and a
+ * pastry is a sit-down), and one in three of the rest stay too, picked by the order's own hash so
+ * it never flickers between polls. Seats are claimed one guest each, and when the 8 chairs are all
+ * taken a guest takes away whatever this says, so a busy hour fills the room without overflowing it.
  */
 export function staysToSit(order: Order, key: string): boolean {
   return order.items >= 2 || hashOf(key, 7) % 3 === 0;

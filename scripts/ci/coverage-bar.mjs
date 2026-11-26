@@ -13,7 +13,9 @@
  *   null means no gate yet: CI passes and the page says the bar isn't set.
  */
 export function bar(c) {
-  // TODO(Alex): set the bar. Return { rule, passed }: for "lines ≥ 80%", that rule string and c.lines >= 80.
-  void c;
-  return null;
+  // Above GM's 80%: lines are where the shop already sits (97% on Nov 25), so the bar is set a
+  // little under it to leave room for honest new code, and branches carry their own floor because
+  // a line can run without its other branch ever being taken.
+  const passed = c.lines >= 90 && c.branches >= 80;
+  return { rule: "Lines ≥ 90% and branches ≥ 80%, over every module", passed };
 }

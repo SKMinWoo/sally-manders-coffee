@@ -7,7 +7,7 @@ import { orders } from "@/server/platform/db/schema";
 import { testDb } from "@/server/platform/db/test-db";
 import { ensureDays } from "@/server/simulator";
 import { checkSalesWorkbook, readWorkbook, unzip } from "./check";
-import { marksIn, tagFor } from "./nothing-new";
+import { isNothingNew, marksIn, tagFor } from "./nothing-new";
 import { exportSales, MAX_DAYS } from "./sales";
 import { workbook } from "./xlsx";
 
@@ -110,4 +110,20 @@ test("no-op detection: the tag carries the span's mark, and only a matching span
   assert.deepEqual(marksIn('"sales-v1.not-base64-json", "abc", *'), []);
   const m = { from: "2026-11-12", to: "2026-11-12", orders: 3, lines: 5, lastOrderId: 9, lineTotalCents: 1234 };
   assert.deepEqual(marksIn(tagFor(m)), [m]);
+});
+
+test("no-op detection: a repeat with the same rows is answered 'Nothing changed', and any new order builds afresh", async () => {
+  const first = await exportSales(db, q("2026-11-12", "2026-11-12"), NOON);
+  assert.equal(first.kind, "workbook");
+  const tag = first.kind === "workbook" ? first.tag : "";
+  // the default rule: the same span, read again at the same moment, holds the same rows
+  const again = await exportSales(db, q("2026-11-12", "2026-11-12", tag), NOON);
+  assert.equal(again.kind, "unchanged");
+  // any one figure moving means the visitor's copy is out of date
+  const [m] = marksIn(tag);
+  for (const k of ["orders", "lines", "lastOrderId", "lineTotalCents"] as const) {
+    assert.equal(isNothingNew(m!, { ...m!, [k]: m![k] + 1 }), false, k);
+  }
+  assert.equal(isNothingNew(m!, { ...m!, to: "2026-11-13" }), false, "another span");
+  assert.equal(isNothingNew(m!, { ...m! }), true);
 });
