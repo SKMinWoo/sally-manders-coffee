@@ -6,6 +6,7 @@ import beauty from "@/public/cutaway/hero-beauty.webp";
 import dark from "@/public/cutaway/hero-dark.webp";
 import roof from "@/public/cutaway/hero-shell.webp";
 import closed from "@/public/cutaway/hero-closed.webp";
+import shade from "@/public/cutaway/hero-shade.webp";
 import { Acts, ACTS } from "./Acts";
 import cutaway from "./cutaway.json";
 import { FIXTURES, type FixtureKey } from "./fixtures";
@@ -302,6 +303,7 @@ export function Room({
               dark={dark}
               roof={roof}
               closed={closed}
+              shade={shade}
               lift={lift}
               view={act === 2 ? "built" : "guests"}
               picked={picked}

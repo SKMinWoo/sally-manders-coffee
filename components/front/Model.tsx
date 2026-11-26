@@ -55,6 +55,7 @@ export function Model({
   dark,
   roof,
   closed,
+  shade,
   lift,
   view,
   picked,
@@ -69,8 +70,16 @@ export function Model({
   /** the same set with the reading lamp off, only its own bulbs lit: "How it's built" */
   dark: StaticImageData;
   roof: StaticImageData;
-  /** the whole set, roof on, cropped from the Study's cut-out (portfolio scene.py --closed) */
+  /** the whole set, roof on: beauty + shade + roof composed into one picture (art/cutaway/closed.mjs);
+   *  the portfolio's Study zooms in on a byte copy of it (public/study/shop-closed.webp) */
   closed: StaticImageData;
+  /**
+   * What the roof shades while it is on: the set in this page's own light with the roof's shadow
+   * on the deck, the van and the rooms, the roof itself left out (cutaway.py's shade pass). The page
+   * stacks beauty, this and the roof, which is exactly `closed`, so the swap at the lift changes no
+   * pixel; then the shadow lets go as the roof rises, and only then.
+   */
+  shade: StaticImageData;
   /** arrive roofed and lift it off (decided on the server: see roof.ts) */
   lift: boolean;
   view: View;
@@ -139,6 +148,17 @@ export function Model({
         {roofState !== "off" && (
           <Image
             data-uncovered=""
+            className={`${s.shade} ${roofState === "lifting" ? s.lifting : ""}`}
+            src={shade}
+            alt=""
+            sizes={SIZES}
+            quality={QUALITY}
+            priority
+          />
+        )}
+        {roofState !== "off" && (
+          <Image
+            data-uncovered=""
             className={`${s.roof} ${roofState === "lifting" ? s.lifting : ""}`}
             src={roof}
             alt=""
@@ -149,8 +169,8 @@ export function Model({
           />
         )}
         {/* the set as it stands, roof on and casting the roof's own shadow: the very file the Study's
-            zoom flies in, so the page change swaps a picture for the same picture. It lets go as the
-            roof starts up, taking the roof's shadow with it. `data-arrives`: the Study's cut-out
+            zoom flies in, so the page change swaps a picture for the same picture. It is beauty, shade
+            and roof composed, so it goes at once as the roof starts up and nothing under it changes. `data-arrives`: the Study's cut-out
             waits for this picture before letting go (app/page.tsx) */}
         {roofState !== "off" && (
           <Image
