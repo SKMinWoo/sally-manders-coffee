@@ -15,6 +15,12 @@ scaling one picture onto the other.
             on the beauty pass and lifts it away           public/cutaway/hero-shell.webp
     dark    roof off, the lamp switched off, only the rooms' own lights: "What runs it"
                                                           public/cutaway/hero-dark.webp
+    shade   roof on but unseen: what the roof shades (the deck, the van, the rooms through the
+            windows), no page shadow (alpha cut below 0.98), so the page holds it under the roof
+            and lets it go as the roof clears        public/cutaway/hero-shade.webp (--width=2400)
+    hero-closed.webp is beauty + shade + shell, composed by closed.mjs, so the page's swap from it
+    to its layers at the lift changes nothing (it used to be the Study's lamplit frame: every wall
+    and shadow shifted as the roof started up).
 
 All three are transparent, with the model's shadow on a shadow catcher, so the model stands on
 the page's own parchment. Also writes components/front/cutaway.json: the frame size, the crop box
@@ -660,8 +666,9 @@ def show(pass_):
     for ob in BUILT:
         if not alive(ob) or ob.type not in ("MESH", "FONT"):
             continue
-        ob.hide_render = (not shell and ob in SHELL_OBS) or ob in STAFF_OBS
+        ob.hide_render = (pass_ not in ("shell", "shade") and ob in SHELL_OBS) or ob in STAFF_OBS
         ob.is_holdout = shell and ob not in SHELL_OBS   # in front of the shell it still hides it
+        ob.visible_camera = not (pass_ == "shade" and ob in SHELL_OBS)   # shade: casts, unseen
     # with the lamp off, the walls would "shadow" the whole page from the rooms' own lights
     CATCHER.hide_render = pass_ in ("shell", "dark")
 # ── close-ups (--close): each fixture's rectangle, at twice the density, focused on the fixture ──
