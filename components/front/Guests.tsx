@@ -280,6 +280,29 @@ export function GuestsLayer({ world, occluders, state, width, height, peg }: {
     };
     let raf = 0, onScreen = true, order = "", last = performance.now();
 
+    // What stands in front of an occluder where the two overlap on the render is cut out of it: the
+    // street lamp's globe and the window bar are holes in the counter. A figure that occluder hides is
+    // hidden by those too, and the sprite's long cast shadow reaches well past the peg, so without
+    // them the shadow shows through the holes: a barista at the machine greyed the street lamp's globe
+    // (Alex, 2026-11-27). `ahead` lists, for each occluder, the ones in front of it that overlap it (a
+    // sight line from a point of its floor to the camera crosses theirs), each with its farthest depth,
+    // so a figure takes one only when it is nearer than the whole figure.
+    const sight = { ...world, pegRadius: 0 };
+    const corners = ([x0, x1, y0, y1]: readonly number[]): XY[] => [[(x0! + x1!) / 2, (y0! + y1!) / 2], [x0!, y0!], [x0!, y1!], [x1!, y0!], [x1!, y1!]];
+    const overlaps = (a: readonly number[], b: readonly number[]) => a[0]! < b[0]! + b[2]! && b[0]! < a[0]! + a[2]! && a[1]! < b[1]! + b[3]! && b[1]! < a[1]! + a[3]!;
+    const ahead = new Map(
+      occluders.items.map((a) => [
+        a,
+        occluders.items
+          .filter((b) => b !== a && overlaps(a.frame, b.frame) && a.floor.some((ra) => corners(ra).some((p) => b.floor.some((rb) => inFront(sight, p, rb)))))
+          .map((b) => ({ o: b, far: Math.max(...b.floor.flatMap((r) => corners(r).map(([x, y]) => depth(world, x, y)))) })),
+      ]),
+    );
+    // and the order to lay them in: each after everything it stands in front of
+    const rank = new Map(occluders.items.map((o) => [o, 0]));
+    for (let pass = 0; pass < occluders.items.length; pass++)
+      for (const [a, bs] of ahead) for (const { o } of bs) rank.set(o, Math.max(rank.get(o)!, rank.get(a)! + 1));
+
     const [sx, sy, , shy] = spotOf(world, [world.steam[0], world.steam[1]], world.steam[2] - world.floor);
     machineSteam.setAttribute("transform", `translate(${sx.toFixed(1)} ${sy.toFixed(1)}) scale(${(sy - shy).toFixed(1)})`);
 
@@ -309,6 +332,12 @@ export function GuestsLayer({ world, occluders, state, width, height, peg }: {
         const [ox, oy, ow, oh] = o.frame;
         return ox < x0 + w && x0 < ox + ow && oy < y0 + hh && y0 < oy + oh && o.floor.some((r) => inFront(world, at, r));
       });
+      // and what's in front of those where they're cut out, if it's nearer than the whole peg
+      const near = Math.min(...[[-1, 0], [1, 0], [0, -1], [0, 1]].map(([dx, dy]) => depth(world, at[0] + dx! * world.pegRadius, at[1] + dy! * world.pegRadius)));
+      for (let i = 0; i < hide.length; i++)
+        for (const { o, far } of ahead.get(hide[i]!) ?? [])
+          if (far < near && !hide.includes(o) && overlaps(o.frame, [x0, y0, w, hh])) hide.push(o);
+      hide.sort((a, b) => rank.get(a)! - rank.get(b)!);
       const occ = hide.map((o) => o.id).join(",");
       if (occ !== f.occ) {
         f.occ = occ;
