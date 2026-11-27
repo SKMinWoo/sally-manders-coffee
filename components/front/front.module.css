@@ -356,45 +356,33 @@
 .machineSteam[data-on] { opacity: 1; }
 .stillPeg path.under { fill: none; stroke: #F5EAD0A0; stroke-width: 4px; }
 
-/* the roof: on for a beat, then lifted off with a settle before it rises. The shell is a solid thing:
-   it settles, then rises straight up, and is never see-through over the room. It used to fade out
-   whole while it was still over the set, and for half a second its walls and striped awning lay
-   across the room like a double exposure (Alex, 2026-11-27: "I'm still seeing the stripes"). Now
-   it goes from its foot up: a soft edge climbs the shell as it rises (the third mask layer below), so
-   every point of the room shows either the roof, opaque, or the room, never both. A soft shadow says
-   it's off the ground. */
-.roof { position: absolute; inset: 0; width: 100%; height: auto; transform-origin: 50% 70%; will-change: transform, mask-position; pointer-events: none; }
-/* the wipe: opaque over the tile's top 100/206, a soft edge 6% of the picture tall, then clear. At
-   position 0% the shell is whole; at 100% the clear part covers it (the tile is 2.06 pictures tall,
-   so 100% moves it up 1.06 pictures), and the edge has climbed from its foot to its top. A wider edge
-   (12%) left a band of the awning see-through over the dining room on its way up. */
-.roof {
-  mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent), linear-gradient(transparent, #000 3%, #000 95%, transparent), linear-gradient(#000 48.54%, transparent 51.46%);
-  mask-size: 100% 100%, 100% 100%, 100% 206%;
-  mask-position: 0 0, 0 0, 0 0%;
-  mask-repeat: no-repeat;
-}
-.roof.lifting { animation: lift 1.6s linear forwards, lift-wipe 1.6s linear forwards, lift-go 1.6s linear forwards, lift-shadow 1.6s linear forwards; }
-@keyframes lift-wipe {
-  0%, 14% { mask-position: 0 0, 0 0, 0 0%; animation-timing-function: cubic-bezier(.4, 0, .6, 1); }
-  66%, 100% { mask-position: 0 0, 0 0, 0 100%; }
-}
-/* the soft shadow comes in with the settle rather than snapping on as the lift starts */
-@keyframes lift-shadow {
-  0% { filter: drop-shadow(0 0 0 #1A161300); }
-  12%, 100% { filter: drop-shadow(0 14px 12px #1A161333); }
-}
+/* the roof: on for a beat, then lifted off, then faded away (Alex, 2026-11-27: "I want the roof to
+   fade away. Perhaps it can lift off then start to fade away?"). It settles, rises clear of the walls
+   while still solid, and only then fades. As it fades it also goes out of focus, as if lifted toward
+   the lens: a see-through roof laid its striped awning across the room like a double exposure
+   ("I'm still seeing the stripes"), and the blur runs ahead of the fade, so by the time the room shows
+   through, the awning is a soft band with no stripes left in it. A soft shadow says it's off the
+   ground, and goes with it. The rise stays short so the ridge never crosses the page title while
+   it can still be read. */
+.roof { position: absolute; inset: 0; width: 100%; height: auto; transform-origin: 50% 70%; will-change: transform, opacity, filter; pointer-events: none; }
+.roof.lifting { animation: lift 1.6s linear forwards, lift-look 1.6s linear forwards, lift-go 1.6s linear forwards; }
 @keyframes lift {
   0% { transform: none; animation-timing-function: ease-out; }
-  12% { transform: translateY(.9%); animation-timing-function: cubic-bezier(.5, 0, .35, 1); }
+  12% { transform: translateY(.9%); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
+  50% { transform: translateY(-8%) scale(1.01); animation-timing-function: ease-out; }
   100% { transform: translateY(-13%) scale(1.02); }
 }
-/* gone before it is a tenth of the set's height up: rising the whole picture's height, it crossed the
-   page title above the model on a wide screen (round 1, all four), and at -62% with the fade ending at
-   78% it still ghosted over the title for a beat (the round 2 flight capture, desktop, 4.2 s). Opaque
-   now until the wipe clears it at 66%, it may rise only about 8% by then, or its ridge would sit on
-   the title's second line. This only makes sure nothing is left painted after the wipe. */
-@keyframes lift-go { 0%, 66% { opacity: 1; } 68%, 100% { opacity: 0; } }
+/* the shadow comes in with the settle; the blur starts with the fade and runs ahead of it */
+@keyframes lift-look {
+  0% { filter: drop-shadow(0 0 0 #1A161300) blur(0); }
+  12% { filter: drop-shadow(0 14px 12px #1A161333) blur(0); }
+  50% { filter: drop-shadow(0 14px 12px #1A161333) blur(0); animation-timing-function: cubic-bezier(0, 0, .4, 1); }
+  85%, 100% { filter: drop-shadow(0 14px 12px #1A161300) blur(10px); }
+}
+@keyframes lift-go {
+  0%, 50% { opacity: 1; animation-timing-function: ease-in-out; }
+  85%, 100% { opacity: 0; }
+}
 /* the set as the Study hands it over, roof on and its shadow cast: on top until the roof starts up,
    then gone during the settle (the first 0.3s), before the roof has moved enough to show twice */
 .closed { position: absolute; inset: 0; width: 100%; height: auto; pointer-events: none; }
