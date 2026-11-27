@@ -53,7 +53,10 @@
 
   /* the band: the three parts as a short contents list on the left, the act on show beside it, never
      narrower than three readable columns (a short screen caps the model well under the page's width) */
+  /* above the model, so the lifting roof passes under the lettering */
   .band {
+    position: relative;
+    z-index: 3;
     width: min(100%, 1240px);
     display: grid;
     grid-template-columns: 11em minmax(0, 1fr);
@@ -357,31 +360,33 @@
 .stillPeg path.under { fill: none; stroke: #F5EAD0A0; stroke-width: 4px; }
 
 /* the roof: on for a beat, then lifted off, then faded away (Alex, 2026-11-27: "I want the roof to
-   fade away. Perhaps it can lift off then start to fade away?"). It settles, rises clear of the walls
-   while still solid, and only then fades. As it fades it also goes out of focus, as if lifted toward
-   the lens: a see-through roof laid its striped awning across the room like a double exposure
-   ("I'm still seeing the stripes"), and the blur runs ahead of the fade, so by the time the room shows
-   through, the awning is a soft band with no stripes left in it. A soft shadow says it's off the
-   ground, and goes with it. The rise stays short: at -8% the solid ridge already sat on the title's
-   second line on a wide screen, so it rises 3.5% while solid and 7% by the time it's gone. */
-.roof { position: absolute; inset: 0; width: 100%; height: auto; transform-origin: 50% 70%; will-change: transform, opacity, filter; pointer-events: none; }
-.roof.lifting { animation: lift 1.6s linear forwards, lift-look 1.6s linear forwards, lift-go 1.6s linear forwards; }
+   fade away. Perhaps it can lift off then start to fade away?", then "just have the roof go up
+   underneath the text then fade away"). It settles, rises up behind the page title while still solid
+   (the band sits above the model on a wide screen, so the lettering stays on top), and only then
+   fades. As it fades it also goes out of focus, as if lifted toward the lens: a see-through roof laid
+   its striped awning across the room like a double exposure ("I'm still seeing the stripes"), and the
+   blur runs ahead of the fade, so by the time the room shows through, the awning is a soft band with
+   no stripes left in it. A soft shadow says it's off the ground, and goes with it. On a narrow screen
+   the model sits right under the header with no title above it, so there the rise stays short. */
+.roof { --rise-solid: -13%; --rise-end: -20%; position: absolute; inset: 0; width: 100%; height: auto; transform-origin: 50% 70%; will-change: transform, opacity, filter; pointer-events: none; }
+.roof.lifting { animation: lift 2s linear forwards, lift-look 2s linear forwards, lift-go 2s linear forwards; }
+@media (max-width: 1000px) { .roof { --rise-solid: -3.5%; --rise-end: -7%; } .roof.lifting { animation-duration: 1.6s; } }
 @keyframes lift {
   0% { transform: none; animation-timing-function: ease-out; }
   12% { transform: translateY(.9%); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
-  50% { transform: translateY(-3.5%) scale(1.01); animation-timing-function: ease-out; }
-  100% { transform: translateY(-7%) scale(1.02); }
+  55% { transform: translateY(var(--rise-solid)) scale(1.01); animation-timing-function: ease-out; }
+  100% { transform: translateY(var(--rise-end)) scale(1.02); }
 }
 /* the shadow comes in with the settle; the blur starts with the fade and runs ahead of it */
 @keyframes lift-look {
   0% { filter: drop-shadow(0 0 0 #1A161300) blur(0); }
   12% { filter: drop-shadow(0 14px 12px #1A161333) blur(0); }
-  50% { filter: drop-shadow(0 14px 12px #1A161333) blur(0); animation-timing-function: cubic-bezier(0, 0, .4, 1); }
-  85%, 100% { filter: drop-shadow(0 14px 12px #1A161300) blur(10px); }
+  55% { filter: drop-shadow(0 14px 12px #1A161333) blur(0); animation-timing-function: cubic-bezier(0, 0, .4, 1); }
+  88%, 100% { filter: drop-shadow(0 14px 12px #1A161300) blur(10px); }
 }
 @keyframes lift-go {
-  0%, 50% { opacity: 1; animation-timing-function: ease-in-out; }
-  85%, 100% { opacity: 0; }
+  0%, 55% { opacity: 1; animation-timing-function: ease-in-out; }
+  88%, 100% { opacity: 0; }
 }
 /* the set as the Study hands it over, roof on and its shadow cast: on top until the roof starts up,
    then gone during the settle (the first 0.3s), before the roof has moved enough to show twice */
