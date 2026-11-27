@@ -297,7 +297,7 @@
 .beauty, .dark { display: block; width: 100%; height: auto; position: relative; }
 /* the renders' shadow catcher darkens the whole frame a shade as the lamp falls off, so its edge would
    show as a faint rectangle on the cream: the frames dissolve into the page instead */
-.beauty, .dark, .shade, .roof, .closed {
+.beauty, .dark, .shade, .roof, .front, .closed {
   mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent), linear-gradient(transparent, #000 3%, #000 95%, transparent);
   mask-composite: intersect;
 }
@@ -399,13 +399,20 @@
    ready): the frame is part see-through where the page shadow falls, and over the very same layers
    that shadow came out twice as dark and lightened at the swap. */
 @media (prefers-reduced-motion: no-preference) {
-  .stage[data-roof="on"] .film, .stage[data-roof="on"] .shade, .stage[data-roof="on"] .roof { opacity: .001; }
+  .stage[data-roof="on"] .film, .stage[data-roof="on"] .shade, .stage[data-roof="on"] .roof, .stage[data-roof="on"] .front.inShade { opacity: .001; }
 }
 /* the roof's shadow on the deck, the van and the rooms: held through the settle, then gone as the roof
    clears the walls, so the light comes in with the roof going and never ahead of it */
 .shade { position: absolute; inset: 0; width: 100%; height: auto; pointer-events: none; }
 .shade.lifting { animation: shade-go 1.6s linear forwards; }
 @keyframes shade-go { 0%, 12% { opacity: 1; } 42%, 100% { opacity: 0; } }
+/* what stands in front of the roof (the lamp, the board, the van's roof), laid over it as it lifts: in
+   the roof's shadow while the shadow holds, crossing to the page's light as it lets go, in step */
+.front { position: absolute; inset: 0; width: 100%; height: auto; pointer-events: none; opacity: 0; }
+.front.inShade { opacity: 1; }
+.front.lifting { animation: shade-come 1.6s linear forwards; }
+.front.inShade.lifting { animation-name: shade-go; }
+@keyframes shade-come { 0%, 12% { opacity: 0; } 42%, 100% { opacity: 1; } }
 
 /* ── the beads ── */
 /* A painted bead per fixture, cream with an ink numeral in a thin brass rim, like the play set's own
@@ -658,7 +665,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .roof, .closed, .shade { display: none; }
+  .roof, .closed, .shade, .front { display: none; }
   .stage[data-roof="on"] .bead { opacity: 1; pointer-events: auto; } /* no roof to wait for */
   .stage::before, .beauty, .dark, .lampOn, .lampOff, .act,.act[data-on], .beadN, .tip, .tabs button, .machineSteam, .orderButton, .drawer, .drawer[data-open], .modelCol, .rest, .rest[data-on], .restOpen { transition: none; }
   .card, .bead { animation: none; }

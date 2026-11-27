@@ -56,6 +56,8 @@ export function Model({
   roof,
   closed,
   shade,
+  front,
+  frontShade,
   lift,
   view,
   picked,
@@ -80,6 +82,14 @@ export function Model({
    * pixel; then the shadow lets go as the roof rises, and only then.
    */
   shade: StaticImageData;
+  /**
+   * What stands in front of the roof and was cut out of it: the street lamp and its post, the sandwich
+   * board and the van's roof (art/cutaway/front.mjs). The roof is whole, so these go over it while it
+   * lifts: `frontShade` as they look under the roof's shadow, crossing to `front` as that shadow lets
+   * go. Beauty, shade, roof and `frontShade` are still exactly `closed`.
+   */
+  front: StaticImageData;
+  frontShade: StaticImageData;
   /** arrive roofed and lift it off (decided on the server: see roof.ts) */
   lift: boolean;
   view: View;
@@ -167,6 +177,13 @@ export function Model({
             priority
             onAnimationEnd={lifted}
           />
+        )}
+        {/* the lamp, the board and the van stay in front of the roof as it goes up past them */}
+        {roofState !== "off" && (
+          <>
+            <Image data-uncovered="" className={`${s.front} ${s.inShade} ${roofState === "lifting" ? s.lifting : ""}`} src={frontShade} alt="" sizes={SIZES} quality={QUALITY} priority />
+            <Image data-uncovered="" className={`${s.front} ${roofState === "lifting" ? s.lifting : ""}`} src={front} alt="" sizes={SIZES} quality={QUALITY} priority />
+          </>
         )}
         {/* the set as it stands, roof on and casting the roof's own shadow: the very file the Study's
             zoom flies in, so the page change swaps a picture for the same picture. It is beauty, shade
