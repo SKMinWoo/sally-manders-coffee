@@ -89,3 +89,7 @@ python -m http.server 5178 --bind 127.0.0.1 --directory design/mockups
 ```
 
 Then open http://localhost:5178/.
+
+## License
+
+[MIT](LICENSE), © 2026 Alex Kim.

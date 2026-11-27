@@ -2,6 +2,7 @@
   "name": "sally-manders-coffee",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Sally Mander's, a simulated coffee shop in South Austin that never closes.",
   "engines": {
     "node": ">=24"
