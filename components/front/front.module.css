@@ -362,15 +362,15 @@
    the lens: a see-through roof laid its striped awning across the room like a double exposure
    ("I'm still seeing the stripes"), and the blur runs ahead of the fade, so by the time the room shows
    through, the awning is a soft band with no stripes left in it. A soft shadow says it's off the
-   ground, and goes with it. The rise stays short so the ridge never crosses the page title while
-   it can still be read. */
+   ground, and goes with it. The rise stays short: at -8% the solid ridge already sat on the title's
+   second line on a wide screen, so it rises 3.5% while solid and 7% by the time it's gone. */
 .roof { position: absolute; inset: 0; width: 100%; height: auto; transform-origin: 50% 70%; will-change: transform, opacity, filter; pointer-events: none; }
 .roof.lifting { animation: lift 1.6s linear forwards, lift-look 1.6s linear forwards, lift-go 1.6s linear forwards; }
 @keyframes lift {
   0% { transform: none; animation-timing-function: ease-out; }
   12% { transform: translateY(.9%); animation-timing-function: cubic-bezier(.45, 0, .55, 1); }
-  50% { transform: translateY(-8%) scale(1.01); animation-timing-function: ease-out; }
-  100% { transform: translateY(-13%) scale(1.02); }
+  50% { transform: translateY(-3.5%) scale(1.01); animation-timing-function: ease-out; }
+  100% { transform: translateY(-7%) scale(1.02); }
 }
 /* the shadow comes in with the settle; the blur starts with the fade and runs ahead of it */
 @keyframes lift-look {
